@@ -701,17 +701,14 @@ function renderLevel() {
 }
 
 function switchTab(btn, targetId) {
-  // Scope tab switching to the parent tbl-tabs container only
   var tabBar = btn.parentElement;
   tabBar.querySelectorAll('.tbl-tab').forEach(function(t){ t.classList.remove('active'); });
   btn.classList.add('active');
-  // Hide all sibling tbl-tab-content panels (next siblings of tabBar's parent)
   var wrap = tabBar.parentElement;
   wrap.querySelectorAll('.tbl-tab-content').forEach(function(p){ p.style.display='none'; });
   document.getElementById(targetId).style.display = 'block';
 }
 
-function runQuery() {
 function runQuery() {
   var userSQL = document.getElementById('sql-input').value.trim();
   if (!userSQL) return;
@@ -762,13 +759,6 @@ function showCompletion() {
   html += '<button class="btn btn-run" onclick="renderHome()" style="margin:0 auto;display:inline-block">← Back to Levels</button>';
   html += '</div>';
   document.getElementById('app').innerHTML = html;
-}
-
-function toggleMobileTbl(btn) {
-  var panel = document.getElementById('tbl-mobile');
-  var isOpen = panel.style.display === 'block';
-  panel.style.display = isOpen ? 'none' : 'block';
-  btn.querySelector('.arrow').textContent = isOpen ? '▼' : '▲';
 }
 
 function updateDot() {

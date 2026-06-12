@@ -2,8 +2,81 @@
 
 import { useState } from "react";
 
+const IT_JOB_ROLES = [
+  "Software Engineer / Developer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "React Developer",
+  "Angular Developer",
+  "Vue.js Developer",
+  "Node.js Developer",
+  "Python Developer",
+  "Java Developer",
+  ".NET Developer",
+  "PHP Developer",
+  "Mobile Developer (Android)",
+  "Mobile Developer (iOS)",
+  "React Native Developer",
+  "Data Analyst",
+  "Data Scientist",
+  "Data Engineer",
+  "Machine Learning Engineer",
+  "AI / Generative AI Engineer",
+  "Computer Vision Engineer",
+  "NLP Engineer",
+  "Business Intelligence Developer",
+  "Power BI Developer",
+  "Tableau Developer",
+  "SQL Developer / Database Developer",
+  "Database Administrator (DBA)",
+  "DevOps Engineer",
+  "Site Reliability Engineer (SRE)",
+  "Cloud Engineer (AWS)",
+  "Cloud Engineer (Azure)",
+  "Cloud Engineer (GCP)",
+  "Platform Engineer",
+  "Kubernetes / Docker Engineer",
+  "QA Engineer / Test Engineer",
+  "Automation Test Engineer (Selenium / Cypress)",
+  "Performance Test Engineer",
+  "Cybersecurity Analyst",
+  "Information Security Engineer",
+  "Penetration Tester / Ethical Hacker",
+  "Network Engineer",
+  "System Administrator",
+  "IT Support Engineer / Help Desk",
+  "Technical Lead",
+  "Solution Architect",
+  "Enterprise Architect",
+  "Cloud Architect",
+  "Product Manager (Technical)",
+  "Business Analyst",
+  "Scrum Master",
+  "Agile Coach",
+  "IT Project Manager",
+  "Salesforce Developer",
+  "SAP Consultant",
+  "ERP Consultant",
+  "Blockchain Developer",
+  "Embedded Systems Engineer",
+  "Game Developer",
+  "UI/UX Designer",
+  "Technical Writer",
+];
+
+const EXPERIENCE_LEVELS = [
+  "Fresher (0 years)",
+  "0 – 2 years",
+  "2 – 5 years",
+  "5 – 8 years",
+  "8 – 10 years",
+  "10 – 15 years",
+  "15+ years",
+];
+
 const features = [
-  { icon: "📊", title: "ATS Score", desc: "See exactly how well your resume matches the job description with a clear percentage score." },
+  { icon: "📊", title: "ATS Score", desc: "See exactly how well your resume matches the job role with a clear percentage score." },
   { icon: "🔑", title: "Missing Keywords", desc: "Discover the critical keywords recruiters are searching for that are missing from your resume." },
   { icon: "✏️", title: "Resume Rewrite", desc: "Get a professionally rewritten resume optimised for both ATS systems and human recruiters." },
   { icon: "🎯", title: "Interview Questions", desc: "Receive likely interview questions for the role so you walk in fully prepared." },
@@ -11,18 +84,19 @@ const features = [
 
 const steps = [
   { step: "01", title: "Upload Resume", desc: "Upload your resume in PDF or Word format." },
-  { step: "02", title: "Paste Job Description", desc: "Copy-paste the job description you are applying for." },
+  { step: "02", title: "Select Job Role", desc: "Choose your target job role and experience level from the dropdown." },
   { step: "03", title: "Pay ₹99", desc: "One-time payment via UPI — no subscription, no hidden charges." },
-  { step: "04", title: "Get Your Report", desc: "Receive your full ATS report, rewritten resume, and interview questions within minutes." },
+  { step: "04", title: "Get Your Report", desc: "Receive your full ATS report, rewritten resume, interview questions, and FREE SQL & Python bonus guide — all within 3 hours." },
 ];
 
 const faqs = [
-  { q: "What is an ATS score?", a: "ATS (Applicant Tracking System) is software used by companies to filter resumes before a human reads them. Your ATS score shows how well your resume matches the job description. A score below 60% means your resume is likely being rejected automatically." },
-  { q: "What do I get for ₹99?", a: "You get a complete ATS score with detailed breakdown, a list of missing keywords, a fully rewritten resume optimised for the job, and 10–15 likely interview questions tailored to the role." },
-  { q: "How long does it take?", a: "Your report is delivered within 5–10 minutes of payment confirmation." },
-  { q: "In what format will I receive the report?", a: "You will receive the ATS score report and rewritten resume as a downloadable PDF sent to your email." },
-  { q: "Is my data safe?", a: "Yes. Your resume and job description are used only for generating your report and are not stored or shared with any third party." },
-  { q: "Can I use this for any job or industry?", a: "Absolutely. Our AI works for any industry — IT, finance, marketing, healthcare, engineering, and more." },
+  { q: "What is an ATS score?", a: "ATS (Applicant Tracking System) is software used by companies to filter resumes before a human reads them. Your ATS score shows how well your resume matches the job role. A score below 60% means your resume is likely being rejected automatically." },
+  { q: "What do I get for ₹99?", a: "You get a complete ATS score with detailed breakdown, a list of missing keywords, a fully rewritten resume optimised for the job, 10–15 tailored interview questions, and as a FREE bonus — 100 SQL & Python Interview Questions and Answers worth ₹499." },
+  { q: "How long does it take?", a: "Your report is delivered within 3 hours of payment confirmation." },
+  { q: "What is the free bonus I get?", a: "Every purchase includes a FREE copy of '100 SQL & Python Interview Questions and Answers' — a premium guide worth ₹499. It covers the most commonly asked technical interview questions with detailed answers, perfect for IT and software job seekers." },
+  { q: "In what format will I receive the report?", a: "You will receive the ATS score report, rewritten resume, and the bonus SQL & Python guide as downloadable PDFs sent to your email." },
+  { q: "Is my data safe?", a: "Yes. Your resume and job role details are used only for generating your report and are not stored or shared with any third party." },
+  { q: "Can I use this for any job or industry?", a: "Absolutely. Our service works for any industry — IT, finance, marketing, healthcare, engineering, and more." },
 ];
 
 function Navbar({ onUpload }: { onUpload: () => void }) {
@@ -55,14 +129,14 @@ function Hero({ onUpload }: { onUpload: () => void }) {
       <div className="relative max-w-4xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          AI-Powered • Instant Results • ₹99 Only
+          Expert-Reviewed • Results in 3 Hours • ₹99 Only
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
           Increase Your Interview Calls{" "}
-          <span className="text-blue-200">with AI Resume Analysis</span>
+          <span className="text-blue-200">with Expert Resume Analysis</span>
         </h1>
         <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Upload your resume and job description. Get ATS score, missing keywords, resume improvements, and interview questions.
+          Upload your resume and select your target job role. Get ATS score, missing keywords, resume improvements, and interview questions.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button onClick={onUpload} className="flex items-center justify-center gap-2 bg-white text-blue-700 font-bold px-8 py-4 rounded-2xl shadow-lg hover:bg-blue-50 transition text-lg">
@@ -77,7 +151,7 @@ function Hero({ onUpload }: { onUpload: () => void }) {
           <span className="hidden sm:block text-blue-400">|</span>
           <div>✅ 78% saw interview calls increase</div>
           <span className="hidden sm:block text-blue-400">|</span>
-          <div>⚡ Report in under 10 minutes</div>
+          <div>⚡ Report delivered within 3 hours</div>
         </div>
       </div>
     </section>
@@ -147,8 +221,9 @@ function Pricing({ onUpload }: { onUpload: () => void }) {
               "✅  List of missing keywords",
               "✅  Professionally rewritten resume (PDF)",
               "✅  10–15 tailored interview questions",
-              "✅  Delivered to your email in under 10 min",
+              "✅  Delivered to your email within 3 hours",
               "✅  Works for any job / any industry",
+              "🎁  FREE: 100 SQL & Python Interview Q&A (worth ₹499)",
             ].map((item) => (
               <li key={item} className="text-sm text-blue-50">{item}</li>
             ))}
@@ -197,7 +272,9 @@ function FAQ() {
 
 function UploadModal({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
-  const [jd, setJd] = useState("");
+  const [jobRole, setJobRole] = useState("");
+  const [experience, setExperience] = useState("");
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative">
@@ -207,14 +284,49 @@ function UploadModal({ onClose }: { onClose: () => void }) {
           <h3 className="text-2xl font-extrabold text-slate-800">Upload Your Resume</h3>
           <p className="text-slate-500 text-sm mt-1">PDF or Word · Max 5MB</p>
         </div>
+
+        {/* File Upload */}
         <label className="block border-2 border-dashed border-blue-200 rounded-2xl p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition mb-4">
           <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
           {file ? <p className="text-blue-600 font-semibold">✅ {file.name}</p> : (
             <><p className="text-slate-500 text-sm">Drag & drop or <span className="text-blue-600 font-semibold">browse file</span></p><p className="text-slate-400 text-xs mt-1">PDF, DOC, DOCX</p></>
           )}
         </label>
-        <textarea className="w-full border border-slate-200 rounded-2xl p-4 text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 mb-6 h-28" placeholder="Paste the job description here..." value={jd} onChange={(e) => setJd(e.target.value)} />
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition text-lg mb-3 disabled:opacity-50" disabled={!file || !jd.trim()}>
+
+        {/* Job Role Dropdown */}
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Target Job Role</label>
+          <select
+            className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white appearance-none cursor-pointer"
+            value={jobRole}
+            onChange={(e) => setJobRole(e.target.value)}
+          >
+            <option value="">— Select Job Role —</option>
+            {IT_JOB_ROLES.map((role) => (
+              <option key={role} value={role}>{role}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Experience Dropdown */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Years of Experience</label>
+          <select
+            className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white appearance-none cursor-pointer"
+            value={experience}
+            onChange={(e) => setExperience(e.target.value)}
+          >
+            <option value="">— Select Experience —</option>
+            {EXPERIENCE_LEVELS.map((level) => (
+              <option key={level} value={level}>{level}</option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition text-lg mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!file || !jobRole || !experience}
+        >
           💳 Continue to Pay — ₹99
         </button>
         <p className="text-center text-slate-400 text-xs">🔒 Secure · Your data is never shared</p>

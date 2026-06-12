@@ -712,6 +712,86 @@ function switchTab(btn, targetId) {
 }
 
 function runQuery() {
+function runQuery() {
   var userSQL = document.getElementById('sql-input').value.trim();
   if (!userSQL) return;
-  var q
+  var qs = QUESTIONS[currentLevel];
+  var q = qs[currentIdx];
+  var result = cmp(userSQL, q[3]);
+  var html = '';
+  if (result.error) {
+    html = '<div class="feedback wrong">❌ Error: ' + result.error + '</div>';
+  } else if (result.ok) {
+    results[currentLevel] = results[currentLevel] || {};
+    results[currentLevel][currentIdx] = 'correct';
+    html = '<div class="feedback correct">✅ Correct! Your query matches the expected output.</div>';
+    html += tableHTML(result.u);
+    updateDot();
+  } else {
+    html = '<div class="feedback wrong">❌ Not quite. Check your output vs expected below.</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">';
+    html += '<div><p style="font-size:.75rem;font-weight:700;color:#64748b;margin-bottom:4px">YOUR OUTPUT</p>' + tableHTML(result.u) + '</div>';
+    html += '<div><p style="font-size:.75rem;font-weight:700;color:#64748b;margin-bottom:4px">EXPECTED OUTPUT</p>' + tableHTML(result.e) + '</div>';
+    html += '</div>';
+  }
+  document.getElementById('result-area').innerHTML = html;
+}
+
+function showAnswer() {
+  var qs = QUESTIONS[currentLevel];
+  var q = qs[currentIdx];
+  document.getElementById('sql-input').value = q[3];
+  runQuery();
+}
+
+function nextQ() {
+  var qs = QUESTIONS[currentLevel];
+  if (currentIdx < qs.length - 1) {
+    currentIdx++;
+    renderLevel();
+  }
+}
+
+function showCompletion() {
+  var sc = score(currentLevel);
+  var labels = {easy:'Easy', medium:'Medium', intermediate:'Intermediate', complex:'Complex'};
+  var html = '<div style="text-align:center;padding:60px 20px">';
+  html += '<div style="font-size:3rem;margin-bottom:16px">🎉</div>';
+  html += '<h2 style="font-size:1.8rem;font-weight:800;margin-bottom:8px">Level Complete!</h2>';
+  html += '<p style="color:#64748b;margin-bottom:24px">You scored <strong>' + sc.correct + ' / ' + sc.total + '</strong> on ' + labels[currentLevel] + '</p>';
+  html += '<button class="btn btn-run" onclick="renderHome()" style="margin:0 auto;display:inline-block">← Back to Levels</button>';
+  html += '</div>';
+  document.getElementById('app').innerHTML = html;
+}
+
+function toggleMobileTbl(btn) {
+  var panel = document.getElementById('tbl-mobile');
+  var isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  btn.querySelector('.arrow').textContent = isOpen ? '▼' : '▲';
+}
+
+function updateDot() {
+  var qs = QUESTIONS[currentLevel];
+  var sc = score(currentLevel);
+  var pill = document.querySelector('.score-pill');
+  if (pill) pill.textContent = '✓ ' + sc.correct + ' / ' + qs.length;
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+initSqlJs({
+  locateFile: function(file) {
+    return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/' + file;
+  }
+}).then(function(SQL) {
+  db = new SQL.Database();
+  db.run(SETUP);
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  renderHome();
+}).catch(function(err) {
+  document.getElementById('loading').innerHTML = '<p style="color:#dc2626">Failed to load SQL engine: ' + err.message + '</p>';
+});
+</script>
+</body>
+</html>

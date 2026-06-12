@@ -7,130 +7,204 @@
 <meta name="description" content="Practice SQL with 200 real questions across 4 levels. Write actual queries, get instant feedback. Perfect for Data Analyst interview prep.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
 a{color:inherit;text-decoration:none}
+
 /* ── NAV ── */
-nav{background:#1e293b;border-bottom:1px solid #334155;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-size:1.2rem;font-weight:700;color:#38bdf8}
-.logo span{color:#e2e8f0}
-.nav-cta{background:#f97316;color:#fff;padding:8px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;border:none}
-/* ── HERO ── */
-.hero{text-align:center;padding:48px 20px 32px;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%)}
-.hero h1{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;line-height:1.2;margin-bottom:12px}
-.hero h1 span{color:#38bdf8}
-.hero p{color:#94a3b8;font-size:1rem;max-width:580px;margin:0 auto 24px}
-.schema-badge{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
-.badge{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:4px 14px;font-size:.78rem;color:#94a3b8}
-.badge strong{color:#38bdf8}
-/* ── LEVELS ── */
-.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:920px;margin:0 auto;padding:0 20px 40px}
-.level-card{background:#1e293b;border:2px solid #334155;border-radius:14px;padding:24px;cursor:pointer;transition:.2s;text-align:center}
-.level-card:hover{border-color:#38bdf8;transform:translateY(-2px)}
-.level-card.active{border-color:#38bdf8;background:#162032}
-.level-icon{font-size:2rem;margin-bottom:10px}
-.level-card h3{font-size:1.1rem;font-weight:700;margin-bottom:4px}
-.level-card p{color:#64748b;font-size:.82rem}
-.level-count{font-size:.75rem;color:#38bdf8;font-weight:600;margin-top:8px}
-.easy .level-icon{color:#22c55e}
-.easy.active,.easy:hover{border-color:#22c55e}
-.medium .level-icon{color:#f59e0b}
-.medium.active,.medium:hover{border-color:#f59e0b}
-.intermediate .level-icon{color:#f97316}
-.intermediate.active,.intermediate:hover{border-color:#f97316}
-.complex .level-icon{color:#a78bfa}
-.complex.active,.complex:hover{border-color:#a78bfa}
-/* ── QUESTION AREA ── */
-#question-area{max-width:920px;margin:0 auto;padding:0 20px 60px;display:none}
-.q-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.q-back{background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:.15s}
-.q-back:hover{background:#334155;color:#e2e8f0}
-.progress-bar{flex:1;min-width:120px;background:#1e293b;border-radius:99px;height:8px;overflow:hidden}
-.progress-fill{height:100%;border-radius:99px;background:#38bdf8;transition:.3s}
-.progress-txt{font-size:.78rem;color:#64748b;white-space:nowrap}
-.score-display{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 14px;font-size:.82rem;color:#94a3b8}
-.score-display span{color:#22c55e;font-weight:700}
-/* question nav */
-.q-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
-.q-dot{width:28px;height:28px;border-radius:6px;border:1px solid #334155;background:#1e293b;cursor:pointer;font-size:.72rem;color:#64748b;display:flex;align-items:center;justify-content:center;transition:.15s}
-.q-dot:hover{border-color:#64748b}
-.q-dot.correct{background:#14532d;border-color:#22c55e;color:#22c55e}
-.q-dot.wrong{background:#450a0a;border-color:#ef4444;color:#ef4444}
-.q-dot.current{border-color:#38bdf8;color:#38bdf8}
-/* question card */
-.q-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px;margin-bottom:16px}
-.q-num{font-size:.75rem;color:#64748b;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.q-title{font-size:1.15rem;font-weight:700;margin-bottom:8px;line-height:1.4}
-.q-desc{color:#94a3b8;font-size:.9rem;line-height:1.6;margin-bottom:16px}
-.q-hint{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#64748b;margin-bottom:16px}
-.q-hint strong{color:#f59e0b}
-/* editor */
-.editor-label{font-size:.78rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;font-weight:600}
-.sql-editor{width:100%;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;font-family:'Courier New',Consolas,monospace;font-size:.9rem;color:#e2e8f0;resize:vertical;min-height:100px;outline:none;transition:.2s;line-height:1.5}
-.sql-editor:focus{border-color:#38bdf8}
-.btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-.btn{padding:10px 20px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:.15s}
-.btn-run{background:#38bdf8;color:#0f172a}
-.btn-run:hover{background:#7dd3fc}
-.btn-run:disabled{background:#334155;color:#64748b;cursor:not-allowed}
-.btn-answer{background:#1e293b;border:1px solid #334155;color:#94a3b8}
-.btn-answer:hover{background:#334155;color:#e2e8f0}
-.btn-next{background:#22c55e;color:#0f172a}
-.btn-next:hover{background:#4ade80}
-/* feedback */
-.feedback{margin-top:16px;border-radius:10px;padding:14px;font-size:.88rem;display:none}
-.feedback.correct{background:#14532d;border:1px solid #166534;color:#bbf7d0}
-.feedback.wrong{background:#450a0a;border:1px solid #7f1d1d;color:#fecaca}
-.feedback.info{background:#1e293b;border:1px solid #334155;color:#94a3b8}
-/* results table */
-.result-wrap{overflow-x:auto;margin-top:12px}
-.result-table{border-collapse:collapse;width:100%;font-size:.8rem}
-.result-table th{background:#0f172a;padding:6px 12px;text-align:left;color:#38bdf8;font-weight:600;border-bottom:1px solid #334155}
-.result-table td{padding:6px 12px;border-bottom:1px solid #1e293b;color:#cbd5e1}
+nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06);height:52px}
+.logo{font-size:1.15rem;font-weight:800;color:#2563eb;cursor:pointer}
+.logo:hover{opacity:.85}
+.nav-cta{background:#2563eb;color:#fff;padding:8px 18px;border-radius:8px;font-size:.84rem;font-weight:700;cursor:pointer;border:none;animation:pulse-btn 2s ease-in-out infinite;box-shadow:0 0 0 0 rgba(37,99,235,.4)}
+@keyframes pulse-btn{0%{box-shadow:0 0 0 0 rgba(37,99,235,.5)}70%{box-shadow:0 0 0 10px rgba(37,99,235,0)}100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}}
+.nav-cta:hover{background:#1d4ed8;animation:none}
+
+/* ── HOME ── */
+.hero{text-align:center;padding:52px 20px 36px;background:linear-gradient(135deg,#eff6ff 0%,#f8fafc 60%,#fef3c7 100%)}
+.hero-tag{display:inline-block;background:#dbeafe;color:#1d4ed8;font-size:.74rem;font-weight:700;padding:4px 14px;border-radius:99px;margin-bottom:16px;letter-spacing:.05em;text-transform:uppercase}
+.hero h1{font-size:clamp(1.8rem,4vw,2.7rem);font-weight:900;line-height:1.2;margin-bottom:12px;color:#0f172a}
+.hero h1 .highlight{background:linear-gradient(90deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{color:#475569;font-size:1rem;max-width:540px;margin:0 auto 8px;line-height:1.7}
+.levels-section{max-width:960px;margin:0 auto;padding:24px 20px 16px}
+.levels-section h2{font-size:.85rem;font-weight:700;color:#94a3b8;margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em}
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.level-card{background:#fff;border:2px solid #e2e8f0;border-radius:14px;padding:22px;cursor:pointer;transition:.2s;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.level-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.09)}
+.level-icon{font-size:2rem;margin-bottom:9px}
+.level-card h3{font-size:1rem;font-weight:800;margin-bottom:4px;color:#0f172a}
+.level-card p{color:#64748b;font-size:.79rem;line-height:1.5}
+.level-count{font-size:.74rem;font-weight:700;margin-top:9px}
+.easy{border-top:4px solid #22c55e}.easy:hover{border-color:#22c55e;box-shadow:0 8px 20px rgba(34,197,94,.15)}.easy .level-count{color:#16a34a}
+.medium{border-top:4px solid #f59e0b}.medium:hover{border-color:#f59e0b;box-shadow:0 8px 20px rgba(245,158,11,.15)}.medium .level-count{color:#d97706}
+.intermediate{border-top:4px solid #f97316}.intermediate:hover{border-color:#f97316;box-shadow:0 8px 20px rgba(249,115,22,.15)}.intermediate .level-count{color:#ea580c}
+.complex{border-top:4px solid #8b5cf6}.complex:hover{border-color:#8b5cf6;box-shadow:0 8px 20px rgba(139,92,246,.15)}.complex .level-count{color:#7c3aed}
+.home-cta{max-width:960px;margin:8px auto 40px;padding:0 20px}
+.cta-banner{background:linear-gradient(135deg,#eff6ff,#fff);border:1.5px solid #bfdbfe;border-radius:14px;padding:24px;text-align:center;box-shadow:0 2px 8px rgba(37,99,235,.08)}
+.cta-banner h3{font-size:1rem;font-weight:800;margin-bottom:5px;color:#1e293b}
+.cta-banner p{color:#64748b;font-size:.83rem;margin-bottom:14px}
+.cta-btn{display:inline-block;background:#2563eb;color:#fff;padding:10px 28px;border-radius:8px;font-weight:800;font-size:.88rem;cursor:pointer;border:none;animation:pulse-btn 2s ease-in-out infinite;box-shadow:0 4px 14px rgba(37,99,235,.3)}
+.cta-btn:hover{background:#1d4ed8;animation:none}
+
+/* ── SPLIT PANEL QUESTION VIEW ── */
+.q-topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#fff;border-bottom:1px solid #e2e8f0;height:46px;position:sticky;top:52px;z-index:50}
+.q-back{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:600;transition:.15s;white-space:nowrap}
+.q-back:hover{background:#e2e8f0;color:#1e293b}
+.q-topbar-center{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.q-nav-btn{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:.15s}
+.q-nav-btn:hover:not(:disabled){background:#e2e8f0}
+.q-nav-btn:disabled{opacity:.35;cursor:not-allowed}
+.q-counter{font-size:.82rem;font-weight:700;color:#1e293b;min-width:56px;text-align:center}
+.q-progress{flex:1;max-width:160px;background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden}
+.q-progress-fill{height:100%;border-radius:99px;transition:.3s}
+.score-pill{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:99px;padding:4px 12px;font-size:.78rem;font-weight:700;color:#16a34a;white-space:nowrap}
+
+/* Two-panel layout */
+.q-layout{display:flex;height:calc(100vh - 98px);overflow:hidden}
+
+/* LEFT — description + tables */
+.q-left{width:42%;min-width:280px;border-right:1px solid #e2e8f0;overflow-y:auto;background:#fff;display:flex;flex-direction:column}
+.q-left-body{padding:20px;flex:1}
+.diff-tag{display:inline-block;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.q-title{font-size:1.05rem;font-weight:800;color:#0f172a;margin-bottom:10px;line-height:1.45}
+.q-desc{color:#475569;font-size:.87rem;line-height:1.7;margin-bottom:14px}
+.q-hint{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:9px 13px;font-size:.8rem;color:#78350f;margin-bottom:18px}
+.q-hint strong{color:#b45309}
+.tbl-section-label{font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.tbl-tabs{display:flex;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.tbl-tab{padding:6px 13px;font-size:.76rem;font-weight:700;color:#64748b;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;white-space:nowrap}
+.tbl-tab:hover{color:#2563eb}
+.tbl-tab.active{color:#2563eb;border-bottom-color:#2563eb;background:#fff}
+.tbl-tab-content{overflow-x:auto;overflow-y:auto;max-height:320px}
+.mini-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.mini-table th{background:#f8fafc;padding:6px 10px;text-align:left;color:#475569;font-weight:700;border-bottom:1px solid #e2e8f0;position:sticky;top:0}
+.mini-table td{padding:5px 10px;border-bottom:1px solid #f1f5f9;color:#334155}
+.mini-table tr:last-child td{border-bottom:none}
+.mini-table tr:hover td{background:#f8fafc}
+
+/* RIGHT — editor + results */
+.q-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#fafafa}
+.editor-bar{padding:8px 14px;background:#fff;border-bottom:1px solid #e2e8f0;font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em}
+.sql-editor{flex:1;width:100%;resize:none;border:none;border-bottom:1px solid #e2e8f0;padding:14px 16px;font-family:'Courier New',Consolas,monospace;font-size:.9rem;color:#0f172a;outline:none;line-height:1.6;background:#fff;min-height:0}
+.sql-editor:focus{background:#fffbeb}
+.btn-bar{display:flex;gap:8px;padding:10px 14px;background:#fff;border-top:1px solid #e2e8f0;flex-shrink:0;flex-wrap:wrap}
+.btn{padding:8px 18px;border-radius:7px;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:.15s}
+.btn-run{background:#2563eb;color:#fff}
+.btn-run:hover{background:#1d4ed8}
+.btn-answer{background:#fff;border:1.5px solid #e2e8f0;color:#475569}
+.btn-answer:hover{background:#f8fafc}
+.btn-next{background:#16a34a;color:#fff}
+.btn-next:hover{background:#15803d}
+.result-area{overflow-y:auto;overflow-x:auto;padding:12px 14px;flex:1;min-height:0}
+.feedback{border-radius:8px;padding:10px 14px;font-size:.84rem;line-height:1.6}
+.feedback.correct{background:#f0fdf4;border:1px solid #86efac;color:#14532d}
+.feedback.wrong{background:#fef2f2;border:1px solid #fca5a5;color:#7f1d1d}
+.feedback.info{background:#f8fafc;border:1px solid #e2e8f0;color:#475569}
+.result-wrap{overflow-x:auto;margin-top:10px}
+.result-table{border-collapse:collapse;width:100%;font-size:.78rem}
+.result-table th{background:#f1f5f9;padding:6px 10px;text-align:left;color:#2563eb;font-weight:700;border-bottom:2px solid #e2e8f0}
+.result-table td{padding:5px 10px;border-bottom:1px solid #f1f5f9;color:#334155}
+.result-table tr:hover td{background:#f8fafc}
 .result-table tr:last-child td{border-bottom:none}
-/* schema panel */
-.schema-toggle{background:#0f172a;border:1px solid #334155;border-radius:10px;margin-bottom:16px;overflow:hidden}
-.schema-toggle-btn{width:100%;background:none;border:none;color:#94a3b8;padding:10px 16px;text-align:left;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:space-between}
-.schema-toggle-btn:hover{color:#e2e8f0}
-.schema-content{padding:0 16px;display:none;font-family:monospace;font-size:.78rem;color:#64748b;line-height:1.8}
-.schema-content.open{display:block;padding:0 16px 14px}
-.schema-content .tbl{color:#38bdf8;font-weight:600}
-.schema-content .col{color:#e2e8f0}
-.schema-content .type{color:#f59e0b}
-/* CTA banner */
-.cta-banner{background:linear-gradient(135deg,#1e293b,#162032);border:1px solid #38bdf8;border-radius:14px;padding:24px;text-align:center;margin:24px 0}
-.cta-banner h3{font-size:1.1rem;font-weight:700;margin-bottom:6px}
-.cta-banner p{color:#94a3b8;font-size:.85rem;margin-bottom:14px}
-.cta-btn{display:inline-block;background:#f97316;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:.15s}
-.cta-btn:hover{background:#ea580c}
+
 /* loading */
-#loading{text-align:center;padding:60px 20px}
-#loading .spinner{width:40px;height:40px;border:3px solid #334155;border-top-color:#38bdf8;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+#loading{text-align:center;padding:80px 20px}
+#loading .spinner{width:40px;height:40px;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
 /* completion */
-#completion{text-align:center;padding:40px 20px;display:none}
-.completion-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:32px;max-width:520px;margin:0 auto}
-.completion-emoji{font-size:3rem;margin-bottom:12px}
-.completion-card h2{font-size:1.5rem;font-weight:800;margin-bottom:8px}
-.completion-card p{color:#94a3b8;margin-bottom:20px}
-.score-big{font-size:2.5rem;font-weight:900;color:#22c55e;margin:16px 0}
-/* responsive */
-@media(max-width:600px){
-  .hero h1{font-size:1.6rem}
-  .levels{grid-template-columns:1fr 1fr}
-  .q-dot{width:24px;height:24px;font-size:.65rem}
+.completion-card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:36px;max-width:500px;margin:40px auto;box-shadow:0 4px 20px rgba(0,0,0,.06);text-align:center}
+.completion-emoji{font-size:3.2rem;margin-bottom:12px}
+.completion-card h2{font-size:1.4rem;font-weight:900;margin-bottom:8px;color:#0f172a}
+.completion-card p{color:#64748b;margin-bottom:16px;font-size:.9rem}
+.score-big{font-size:2.6rem;font-weight:900;color:#16a34a;margin:14px 0}
+
+/* mobile toggle hidden on desktop */
+.mobile-tbl-toggle{display:none}
+.tbl-collapsible{display:none}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  #tbl-desktop,#tbl-desktop-label{display:none}
+  .mobile-tbl-toggle{display:flex}
+
+  /* Nav */
+  nav{padding:10px 14px;height:48px}
+  .logo{font-size:1rem}
+  .nav-cta{padding:6px 11px;font-size:.76rem;white-space:nowrap}
+
+  /* Home hero */
+  .hero{padding:32px 16px 24px}
+  .hero h1{font-size:1.55rem}
+  .hero-sub{font-size:.88rem}
+  .levels-section{padding:20px 14px 12px}
+  .levels{grid-template-columns:1fr 1fr;gap:10px}
+  .level-card{padding:16px 10px}
+  .level-icon{font-size:1.6rem;margin-bottom:6px}
+  .level-card h3{font-size:.9rem}
+  .level-card p{font-size:.74rem}
+  .home-cta{padding:0 14px;margin-bottom:32px}
+  .cta-banner{padding:18px 16px}
+  .cta-banner h3{font-size:.9rem}
+  .cta-btn{padding:10px 20px;font-size:.84rem}
+
+  /* Topbar */
+  .q-topbar{padding:6px 12px;height:42px;top:48px;gap:6px}
+  .q-back{font-size:.74rem;padding:4px 10px}
+  .q-progress{display:none}
+  .q-counter{font-size:.76rem;min-width:44px}
+  .q-nav-btn{width:26px;height:26px;font-size:.9rem}
+  .score-pill{font-size:.72rem;padding:3px 9px}
+
+  /* Stack panels vertically, full-page scroll */
+  .q-layout{flex-direction:column;height:auto;overflow:visible}
+
+  /* Left panel */
+  .q-left{width:100%;min-width:0;border-right:none;border-bottom:2px solid #e2e8f0;overflow:visible}
+  .q-left-body{padding:14px 14px 0}
+  .diff-tag{font-size:.66rem;padding:2px 9px;margin-bottom:10px}
+  .q-title{font-size:.95rem;margin-bottom:8px}
+  .q-desc{font-size:.82rem;margin-bottom:10px}
+  .q-hint{font-size:.78rem;padding:8px 11px;margin-bottom:12px}
+  .tbl-section-label{font-size:.65rem;margin-bottom:6px}
+
+  /* Tables collapsible toggle on mobile */
+  .mobile-tbl-toggle{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 13px;cursor:pointer;margin-bottom:0;font-size:.8rem;font-weight:700;color:#475569;-webkit-tap-highlight-color:transparent}
+  .mobile-tbl-toggle .arrow{transition:.2s;font-size:.7rem}
+  .mobile-tbl-toggle.open .arrow{transform:rotate(180deg)}
+  .tbl-collapsible{display:none;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;margin-bottom:14px;overflow:hidden}
+  .tbl-collapsible.open{display:block}
+  .tbl-tab-content{max-height:170px}
+  .mini-table{font-size:.7rem}
+  .mini-table th,.mini-table td{padding:4px 8px;white-space:nowrap}
+
+  /* Right panel — flows below left */
+  .q-right{flex:none;height:auto;overflow:visible}
+  .editor-bar{padding:6px 12px;font-size:.68rem}
+  .sql-editor{height:130px;min-height:0;flex:none;font-size:.85rem;resize:none}
+  .btn-bar{padding:8px 12px;gap:6px}
+  .btn{padding:10px 0;font-size:.82rem;flex:1;text-align:center}
+  .result-area{flex:none;overflow:visible;padding:10px 12px;min-height:60px}
+  .feedback{font-size:.8rem}
+  .result-table{font-size:.73rem}
+  .result-table th,.result-table td{padding:5px 8px}
+}
+
+@media(max-width:380px){
+  .levels{grid-template-columns:1fr}
+  .nav-cta{font-size:.7rem;padding:5px 9px}
+  .q-back span{display:none}
 }
 </style>
 </head>
 <body>
 <nav>
-  <div class="logo">Score<span>MyCV</span>.in</div>
-  <button class="nav-cta" onclick="openCTA()">Get CV Reviewed – ₹99</button>
+  <div class="logo">📄ScoreMyCV</div>
+  <button class="nav-cta" onclick="openCTA()">🚀 Get My CV Reviewed – ₹99</button>
 </nav>
 
 <div id="app">
   <div id="loading">
     <div class="spinner"></div>
-    <p style="color:#64748b">Loading SQL engine…</p>
+    <p>Loading SQL engine…</p>
   </div>
 </div>
 
@@ -195,16 +269,14 @@ INSERT INTO orders VALUES
 (15,2,'Vikram Singh',2,90000,'2024-05-15','Delivered');
 `;
 
-const SCHEMA_HTML = `<span class="tbl">employees</span>(<span class="col">id</span>, <span class="col">name</span>, <span class="col">department</span>, <span class="col">salary</span>, <span class="col">hire_year</span>, <span class="col">age</span>, <span class="col">city</span>, <span class="col">manager_id</span>)<br>
-<span class="tbl">departments</span>(<span class="col">id</span>, <span class="col">name</span>, <span class="col">budget</span>, <span class="col">location</span>)<br>
-<span class="tbl">products</span>(<span class="col">id</span>, <span class="col">name</span>, <span class="col">category</span>, <span class="col">price</span>, <span class="col">stock</span>)<br>
-<span class="tbl">orders</span>(<span class="col">id</span>, <span class="col">product_id</span>, <span class="col">customer_name</span>, <span class="col">qty</span>, <span class="col">amount</span>, <span class="col">order_date</span>, <span class="col">status</span>)`;
+const SCHEMA_HTML = `<span class="tbl">employees</span>(<span class="col">id, name, department, salary, hire_year, age, city, manager_id</span>)<br>
+<span class="tbl">departments</span>(<span class="col">id, name, budget, location</span>)<br>
+<span class="tbl">products</span>(<span class="col">id, name, category, price, stock</span>)<br>
+<span class="tbl">orders</span>(<span class="col">id, product_id, customer_name, qty, amount, order_date, status</span>)`;
 
 // ─── QUESTIONS ───────────────────────────────────────────────────
-// Format: [title, description, hint, answer_sql]
 const QUESTIONS = {
 easy: [
-// 1-10: Basic SELECT
 ["Select all employees","Fetch every row and column from the employees table.","Use SELECT * to get all columns","SELECT * FROM employees"],
 ["Select all products","Fetch every row and column from the products table.","Use SELECT * FROM table_name","SELECT * FROM products"],
 ["Select all orders","Fetch every row and column from the orders table.","Use SELECT * FROM table_name","SELECT * FROM orders"],
@@ -213,8 +285,6 @@ easy: [
 ["Show product names and prices","Display the name and price columns from the products table.","SELECT col1, col2 FROM table","SELECT name, price FROM products"],
 ["Show employee name, department, salary","Display only these three columns for all employees.","List the columns separated by commas","SELECT name, department, salary FROM employees"],
 ["Show order customer and amount","Display only customer_name and amount from the orders table.","SELECT col1, col2 FROM table","SELECT customer_name, amount FROM orders"],
-
-// 9-18: COUNT, MAX, MIN, SUM, AVG
 ["Count total employees","How many employees are in the company?","Use COUNT(*) and alias it as total","SELECT COUNT(*) AS total FROM employees"],
 ["Count total products","How many products does the company sell?","Use COUNT(*)","SELECT COUNT(*) AS total FROM products"],
 ["Count total orders","How many orders have been placed?","Use COUNT(*)","SELECT COUNT(*) AS total FROM orders"],
@@ -223,11 +293,9 @@ easy: [
 ["Find average salary","What is the average salary across all employees?","Use AVG() aggregate function","SELECT AVG(salary) AS avg_salary FROM employees"],
 ["Find total salary payout","What is the sum of all employee salaries combined?","Use SUM() aggregate function","SELECT SUM(salary) AS total_salary FROM employees"],
 ["Find the most expensive product","What is the highest price among all products?","Use MAX() on the price column","SELECT MAX(price) AS max_price FROM products"],
-["Find the cheapest product","What is the lowest price among all products?","Use MIN() on the price column","SELECT MIN(price) AS min_price FROM products"],
-
-// 19-30: WHERE filters
-["Find Engineering employees","Show all employees who work in the Engineering department.","Use WHERE department = 'value'","SELECT * FROM employees WHERE department = 'Engineering'"],
-["Find HR employees","Show all employees who work in the HR department.","Use WHERE with string comparison","SELECT * FROM employees WHERE department = 'HR'"],
+["Find the cheapest product price","What is the lowest price among all products?","Use MIN() on the price column","SELECT MIN(price) AS min_price FROM products"],
+["Find all Engineering employees","Show all employees who work in the Engineering department.","Use WHERE department = 'value'","SELECT * FROM employees WHERE department = 'Engineering'"],
+["Find all HR employees","Show all employees who work in the HR department.","Use WHERE with string comparison","SELECT * FROM employees WHERE department = 'HR'"],
 ["Find employees in Bangalore","Show all employees living in Bangalore.","Use WHERE city = 'value'","SELECT * FROM employees WHERE city = 'Bangalore'"],
 ["Find employees earning above 80000","Show employees with salary greater than 80000.","Use WHERE salary > value","SELECT * FROM employees WHERE salary > 80000"],
 ["Find employees earning below 65000","Show employees with salary less than 65000.","Use WHERE salary < value","SELECT * FROM employees WHERE salary < 65000"],
@@ -238,8 +306,6 @@ easy: [
 ["Find Delivered orders","Show all orders with status 'Delivered'.","Use WHERE status = 'value'","SELECT * FROM orders WHERE status = 'Delivered'"],
 ["Find Pending orders","Show all orders with status 'Pending'.","Use WHERE with exact string match","SELECT * FROM orders WHERE status = 'Pending'"],
 ["Find orders above 50000","Show orders where the amount is greater than 50000.","Use WHERE amount > value","SELECT * FROM orders WHERE amount > 50000"],
-
-// 31-40: BETWEEN, IN, LIKE, NOT, IS NULL
 ["Salary between 70000 and 90000","Find employees earning between 70000 and 90000 (both inclusive).","Use BETWEEN value1 AND value2","SELECT * FROM employees WHERE salary BETWEEN 70000 AND 90000"],
 ["Employees in Engineering or Finance","Show employees from either Engineering or Finance department.","Use IN ('val1','val2') or use OR","SELECT * FROM employees WHERE department IN ('Engineering','Finance')"],
 ["Employees NOT in HR","Show all employees who are NOT in the HR department.","Use != or NOT IN","SELECT * FROM employees WHERE department != 'HR'"],
@@ -249,9 +315,6 @@ easy: [
 ["Employees who have a manager","Show employees who do have a manager assigned.","Use IS NOT NULL","SELECT * FROM employees WHERE manager_id IS NOT NULL"],
 ["Products priced above 20000","Find all products with price greater than 20000.","Use WHERE price > value","SELECT * FROM products WHERE price > 20000"],
 ["Products with low stock","Find products where stock is less than 100.","Use WHERE stock < value","SELECT * FROM products WHERE stock < 100"],
-["Orders from Bangalore employees","Show orders placed by 'Rahul Sharma' (from Bangalore).","Filter by customer_name","SELECT * FROM orders WHERE customer_name = 'Rahul Sharma'"],
-
-// 41-50: ORDER BY, LIMIT, DISTINCT
 ["Sort employees by salary (high to low)","Show all employees sorted from highest to lowest salary.","Use ORDER BY column DESC","SELECT * FROM employees ORDER BY salary DESC"],
 ["Sort employees by salary (low to high)","Show all employees sorted from lowest to highest salary.","Use ORDER BY column ASC (ASC is default)","SELECT * FROM employees ORDER BY salary ASC"],
 ["Sort employees alphabetically","Show all employees sorted alphabetically by name.","Use ORDER BY name","SELECT * FROM employees ORDER BY name"],
@@ -260,12 +323,13 @@ easy: [
 ["Most recently hired employee","Show the single most recently hired employee.","ORDER BY hire_year DESC, use LIMIT 1","SELECT * FROM employees ORDER BY hire_year DESC LIMIT 1"],
 ["Show distinct departments","What are all the unique department names?","Use SELECT DISTINCT","SELECT DISTINCT department FROM employees"],
 ["Show distinct cities","What are all the unique cities where employees live?","Use SELECT DISTINCT","SELECT DISTINCT city FROM employees"],
-["Cheapest product","Show the single cheapest product.","ORDER BY price ASC LIMIT 1","SELECT * FROM products ORDER BY price ASC LIMIT 1"],
-["Most expensive product (row)","Show the complete details of the single most expensive product.","ORDER BY price DESC LIMIT 1","SELECT * FROM products ORDER BY price DESC LIMIT 1"]
+["Cheapest product (full row)","Show the complete details of the single cheapest product.","ORDER BY price ASC LIMIT 1","SELECT * FROM products ORDER BY price ASC LIMIT 1"],
+["Most expensive product (full row)","Show the complete details of the single most expensive product.","ORDER BY price DESC LIMIT 1","SELECT * FROM products ORDER BY price DESC LIMIT 1"],
+["Orders with quantity more than 1","Show all orders where more than 1 item was ordered.","WHERE qty > 1","SELECT * FROM orders WHERE qty > 1"],
+["Employees in Bangalore earning above 80000","Show employees in Bangalore with salary above 80000.","Combine two WHERE conditions with AND","SELECT * FROM employees WHERE city = 'Bangalore' AND salary > 80000"]
 ],
 
 medium: [
-// 1-10: Basic GROUP BY
 ["Count employees per department","Show how many employees work in each department.","Use GROUP BY department with COUNT(*)","SELECT department, COUNT(*) AS count FROM employees GROUP BY department"],
 ["Average salary per department","Calculate the average salary for each department.","Use GROUP BY with AVG()","SELECT department, AVG(salary) AS avg_salary FROM employees GROUP BY department"],
 ["Total salary cost per department","Calculate the total salary bill for each department.","Use GROUP BY with SUM()","SELECT department, SUM(salary) AS total_salary FROM employees GROUP BY department"],
@@ -275,9 +339,7 @@ medium: [
 ["Average age per department","What is the average age of employees in each department?","AVG(age) GROUP BY department","SELECT department, AVG(age) AS avg_age FROM employees GROUP BY department"],
 ["Count products per category","How many products are in each category?","GROUP BY category with COUNT(*)","SELECT category, COUNT(*) AS count FROM products GROUP BY category"],
 ["Total stock per category","What is the total stock level for each category?","SUM(stock) GROUP BY category","SELECT category, SUM(stock) AS total_stock FROM products GROUP BY category"],
-["Count orders per status","How many orders are in each status (Delivered/Pending/etc)?","GROUP BY status with COUNT(*)","SELECT status, COUNT(*) AS count FROM orders GROUP BY status"],
-
-// 11-20: HAVING
+["Count orders per status","How many orders are in each status?","GROUP BY status with COUNT(*)","SELECT status, COUNT(*) AS count FROM orders GROUP BY status"],
 ["Departments with avg salary above 70000","Show only departments where the average salary exceeds 70000.","Add HAVING AVG(salary) > 70000 after GROUP BY","SELECT department, AVG(salary) AS avg_salary FROM employees GROUP BY department HAVING AVG(salary) > 70000"],
 ["Departments with more than 3 employees","Show departments that have more than 3 employees.","Use HAVING COUNT(*) > 3","SELECT department, COUNT(*) AS count FROM employees GROUP BY department HAVING COUNT(*) > 3"],
 ["Cities with more than 2 employees","Show cities where more than 2 employees live.","HAVING COUNT(*) > 2","SELECT city, COUNT(*) AS count FROM employees GROUP BY city HAVING COUNT(*) > 2"],
@@ -286,244 +348,237 @@ medium: [
 ["Products ordered more than once","Which products have been ordered more than once?","GROUP BY product_id, HAVING COUNT(*) > 1","SELECT product_id, COUNT(*) AS times_ordered FROM orders GROUP BY product_id HAVING COUNT(*) > 1"],
 ["Departments with total salary above 300000","Show departments where the combined salary exceeds 300000.","HAVING SUM(salary) > 300000","SELECT department, SUM(salary) AS total FROM employees GROUP BY department HAVING SUM(salary) > 300000"],
 ["Hire years with more than 2 new hires","Show years when more than 2 employees were hired.","GROUP BY hire_year, HAVING COUNT(*) > 2","SELECT hire_year, COUNT(*) AS hired FROM employees GROUP BY hire_year HAVING COUNT(*) > 2"],
-
-// 21-30: Multiple conditions + ORDER BY with aggregation
-["Top department by total salary","Which department spends the most on salaries? Show top 1.","GROUP BY, SUM, then ORDER BY DESC LIMIT 1","SELECT department, SUM(salary) AS total FROM employees GROUP BY department ORDER BY total DESC LIMIT 1"],
+["Top department by total salary","Which department spends the most on salaries?","GROUP BY, SUM, then ORDER BY DESC LIMIT 1","SELECT department, SUM(salary) AS total FROM employees GROUP BY department ORDER BY total DESC LIMIT 1"],
 ["Top 3 highest-paid employees","Show name and salary of the 3 highest-paid employees.","ORDER BY salary DESC, LIMIT 3","SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 3"],
 ["Engineering employees earning above 80000","Show Engineering employees with salary greater than 80000.","Use WHERE with two conditions using AND","SELECT name, salary FROM employees WHERE department = 'Engineering' AND salary > 80000"],
 ["Employees hired after 2019 earning above 70000","Filter employees joined after 2019 AND earning above 70000.","Combine two WHERE conditions with AND","SELECT name, hire_year, salary FROM employees WHERE hire_year > 2019 AND salary > 70000"],
 ["Employees in HR or Finance departments","Show all employees from HR or Finance.","Use IN or two OR conditions","SELECT name, department FROM employees WHERE department IN ('HR','Finance')"],
-["Bangalore employees earning above 80000","Show employees living in Bangalore with salary above 80000.","AND condition with city and salary","SELECT name, city, salary FROM employees WHERE city = 'Bangalore' AND salary > 80000"],
 ["Orders in January 2024","Show all orders placed in January 2024.","Use LIKE '2024-01%' to match the month","SELECT * FROM orders WHERE order_date LIKE '2024-01%'"],
 ["Orders before March 2024","Show all orders placed before 1st March 2024.","Use order_date < '2024-03-01'","SELECT * FROM orders WHERE order_date < '2024-03-01'"],
-["Total revenue per product_id","Calculate total revenue (sum of amount) for each product_id in orders.","SUM(amount) GROUP BY product_id","SELECT product_id, SUM(amount) AS total_revenue FROM orders GROUP BY product_id"],
+["Total revenue per product_id","Calculate total revenue for each product_id in orders.","SUM(amount) GROUP BY product_id","SELECT product_id, SUM(amount) AS total_revenue FROM orders GROUP BY product_id"],
 ["Average order amount per customer","What is the average order amount for each customer?","AVG(amount) GROUP BY customer_name","SELECT customer_name, AVG(amount) AS avg_amount FROM orders GROUP BY customer_name"],
-
-// 31-40: CASE WHEN + string/math functions
-["Label employees as Senior or Junior","Add a column 'level': employees earning above 80000 are 'Senior', others are 'Junior'.","Use CASE WHEN salary > 80000 THEN 'Senior' ELSE 'Junior' END","SELECT name, salary, CASE WHEN salary > 80000 THEN 'Senior' ELSE 'Junior' END AS level FROM employees"],
+["Label employees as Senior or Junior","Add a column: employees earning above 80000 are 'Senior', others are 'Junior'.","Use CASE WHEN salary > 80000 THEN 'Senior' ELSE 'Junior' END","SELECT name, salary, CASE WHEN salary > 80000 THEN 'Senior' ELSE 'Junior' END AS level FROM employees"],
 ["Grade salaries Low/Mid/High","Classify salary: below 60000='Low', 60000-80000='Mid', above 80000='High'.","Use CASE WHEN with multiple conditions","SELECT name, salary, CASE WHEN salary < 60000 THEN 'Low' WHEN salary <= 80000 THEN 'Mid' ELSE 'High' END AS grade FROM employees"],
-["Count employees per salary grade","Using CASE, count how many employees fall in each salary grade (Low/Mid/High).","Wrap CASE in GROUP BY","SELECT CASE WHEN salary < 60000 THEN 'Low' WHEN salary <= 80000 THEN 'Mid' ELSE 'High' END AS grade, COUNT(*) AS count FROM employees GROUP BY grade"],
+["Count employees per salary grade","Count how many employees fall in each salary grade (Low/Mid/High).","Wrap CASE in GROUP BY","SELECT CASE WHEN salary < 60000 THEN 'Low' WHEN salary <= 80000 THEN 'Mid' ELSE 'High' END AS grade, COUNT(*) AS count FROM employees GROUP BY grade"],
 ["Employee names in uppercase","Show all employee names converted to uppercase.","Use UPPER() function","SELECT UPPER(name) AS name FROM employees"],
 ["Employee names in lowercase","Show all employee names converted to lowercase.","Use LOWER() function","SELECT LOWER(name) AS name FROM employees"],
 ["Length of employee names","Show each employee's name and the length of their name.","Use LENGTH() function","SELECT name, LENGTH(name) AS name_length FROM employees"],
-["Combine name and city","Show a single column that combines employee name and city like 'Rahul Sharma - Bangalore'.","Use || to concatenate strings","SELECT name || ' - ' || city AS name_city FROM employees"],
-["Salary in thousands","Show employee names and salary divided by 1000 (salary in 'k').","Divide salary by 1000 in SELECT","SELECT name, salary / 1000 AS salary_k FROM employees"],
-["Total inventory value per category","Calculate total inventory value (price × stock) for each product category.","Multiply price * stock, then SUM and GROUP BY category","SELECT category, SUM(price * stock) AS inventory_value FROM products GROUP BY category"],
-["Monthly order count","Show how many orders were placed each month (grouped by year-month).","Use SUBSTR(order_date, 1, 7) to extract year-month","SELECT SUBSTR(order_date,1,7) AS month, COUNT(*) AS orders FROM orders GROUP BY month ORDER BY month"],
-
-// 41-50: Mixed medium
-["Departments sorted by average salary","Show each department and its average salary, sorted from highest to lowest.","GROUP BY, AVG, ORDER BY DESC","SELECT department, AVG(salary) AS avg_salary FROM employees GROUP BY department ORDER BY avg_salary DESC"],
+["Combine name and city","Show a column combining employee name and city like 'Name - City'.","Use || to concatenate strings","SELECT name || ' - ' || city AS name_city FROM employees"],
+["Salary in thousands","Show employee names and salary divided by 1000.","Divide salary by 1000 in SELECT","SELECT name, salary / 1000 AS salary_k FROM employees"],
+["Total inventory value per category","Calculate total value (price × stock) for each product category.","Multiply price * stock, then SUM and GROUP BY","SELECT category, SUM(price * stock) AS inventory_value FROM products GROUP BY category"],
+["Monthly order count","Show how many orders were placed each month.","Use SUBSTR(order_date, 1, 7) to extract year-month","SELECT SUBSTR(order_date,1,7) AS month, COUNT(*) AS orders FROM orders GROUP BY month ORDER BY month"],
+["Departments sorted by average salary","Show each department and its average salary, sorted highest first.","GROUP BY, AVG, ORDER BY DESC","SELECT department, AVG(salary) AS avg_salary FROM employees GROUP BY department ORDER BY avg_salary DESC"],
 ["Total revenue from Delivered orders","What is the total amount collected from Delivered orders only?","Filter WHERE status then SUM","SELECT SUM(amount) AS total FROM orders WHERE status = 'Delivered'"],
 ["Employees hired per year","Show how many employees were hired each year.","GROUP BY hire_year","SELECT hire_year, COUNT(*) AS hired FROM employees GROUP BY hire_year ORDER BY hire_year"],
 ["Products with stock between 50 and 150","Find products where stock quantity is between 50 and 150.","Use BETWEEN","SELECT name, stock FROM products WHERE stock BETWEEN 50 AND 150"],
 ["Average salary excluding HR","What is the average salary of all employees NOT in HR?","Use WHERE department != 'HR' before aggregating","SELECT AVG(salary) AS avg_salary FROM employees WHERE department != 'HR'"],
 ["Top 3 cities by employee count","Which 3 cities have the most employees?","GROUP BY city, COUNT, ORDER BY DESC, LIMIT 3","SELECT city, COUNT(*) AS count FROM employees GROUP BY city ORDER BY count DESC LIMIT 3"],
-["Count of Delivered vs non-Delivered orders","Show count of Delivered orders and count of all other orders.","Use CASE WHEN inside COUNT or GROUP BY status","SELECT CASE WHEN status = 'Delivered' THEN 'Delivered' ELSE 'Not Delivered' END AS category, COUNT(*) AS count FROM orders GROUP BY category"],
 ["Most popular order month","Which month had the most orders?","SUBSTR for month, GROUP BY, ORDER BY count DESC, LIMIT 1","SELECT SUBSTR(order_date,1,7) AS month, COUNT(*) AS orders FROM orders GROUP BY month ORDER BY orders DESC LIMIT 1"],
-["Department headcount and avg salary","For each department show employee count AND average salary together.","Multiple aggregates in one GROUP BY query","SELECT department, COUNT(*) AS headcount, AVG(salary) AS avg_salary FROM employees GROUP BY department"],
-["Employees hired in 2020 or 2021 by department","Count employees hired in 2020 or 2021, grouped by department.","Filter hire_year IN (2020,2021) then GROUP BY department","SELECT department, COUNT(*) AS count FROM employees WHERE hire_year IN (2020,2021) GROUP BY department"]
+["Department headcount and avg salary","For each department show employee count AND average salary.","Multiple aggregates in one GROUP BY query","SELECT department, COUNT(*) AS headcount, AVG(salary) AS avg_salary FROM employees GROUP BY department"],
+["Employees hired in 2020 or 2021 by department","Count employees hired in 2020 or 2021, grouped by department.","Filter hire_year IN (2020,2021) then GROUP BY","SELECT department, COUNT(*) AS count FROM employees WHERE hire_year IN (2020,2021) GROUP BY department"],
+["Total amount per order status","Show total revenue grouped by Delivered, Pending, Shipped, Cancelled.","SUM(amount) GROUP BY status","SELECT status, SUM(amount) AS total FROM orders GROUP BY status ORDER BY total DESC"],
+["Products with price above 30000 by category","Show count of products priced above 30000 in each category.","WHERE price > 30000 then GROUP BY","SELECT category, COUNT(*) AS count FROM products WHERE price > 30000 GROUP BY category"],
+["Average order quantity per product","What is the average quantity ordered for each product_id?","AVG(qty) GROUP BY product_id","SELECT product_id, AVG(qty) AS avg_qty FROM orders GROUP BY product_id"],
+["Employees hired before 2020 earning above 75000","Show employees who joined before 2020 AND earn more than 75000.","Two WHERE conditions with AND","SELECT name, hire_year, salary FROM employees WHERE hire_year < 2020 AND salary > 75000"],
+["Show name + salary + bonus (10% of salary)","Add a column showing 10% of each employee's salary as a bonus.","salary * 0.10 in SELECT","SELECT name, salary, salary * 0.10 AS bonus FROM employees"]
 ],
 
 intermediate: [
-// 1-10: Subqueries in WHERE
-["Employees earning above company average","Show employees whose salary is above the overall company average.","Use a subquery: WHERE salary > (SELECT AVG(salary) FROM employees)","SELECT name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees)"],
+["Employees earning above company average","Show employees whose salary is above the overall company average.","WHERE salary > (SELECT AVG(salary) FROM employees)","SELECT name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees)"],
 ["Employees earning below company average","Show employees whose salary is below the overall company average.","Subquery with < AVG","SELECT name, salary FROM employees WHERE salary < (SELECT AVG(salary) FROM employees)"],
-["Employee with the highest salary","Show the name and salary of the highest-paid employee using a subquery.","WHERE salary = (SELECT MAX(salary) ...)","SELECT name, salary FROM employees WHERE salary = (SELECT MAX(salary) FROM employees)"],
-["Employee with the lowest salary","Show the name and salary of the lowest-paid employee using a subquery.","WHERE salary = (SELECT MIN(salary) ...)","SELECT name, salary FROM employees WHERE salary = (SELECT MIN(salary) FROM employees)"],
+["Employee with the highest salary","Show the name and salary of the highest-paid employee.","WHERE salary = (SELECT MAX(salary) ...)","SELECT name, salary FROM employees WHERE salary = (SELECT MAX(salary) FROM employees)"],
+["Employee with the lowest salary","Show the name and salary of the lowest-paid employee.","WHERE salary = (SELECT MIN(salary) ...)","SELECT name, salary FROM employees WHERE salary = (SELECT MIN(salary) FROM employees)"],
 ["Employees earning more than top HR salary","Show employees earning more than the highest-paid HR employee.","Subquery: SELECT MAX(salary) FROM employees WHERE department='HR'","SELECT name, salary FROM employees WHERE salary > (SELECT MAX(salary) FROM employees WHERE department = 'HR')"],
-["Employees earning above average Engineering salary","Show employees earning more than the average Engineering salary.","Subquery for AVG in WHERE clause","SELECT name, department, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees WHERE department = 'Engineering')"],
+["Employees above average Engineering salary","Show employees earning more than the average Engineering salary.","Subquery for AVG in WHERE clause","SELECT name, department, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees WHERE department = 'Engineering')"],
 ["The second highest salary","Find the second highest salary value in the company.","SELECT MAX(salary) WHERE salary < (SELECT MAX(salary) ...)","SELECT MAX(salary) AS second_highest FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)"],
-["Employees in the same city as Kavya Rao","Show employees who live in the same city as Kavya Rao (excluding Kavya herself).","Subquery to find Kavya's city, then filter","SELECT name, city FROM employees WHERE city = (SELECT city FROM employees WHERE name = 'Kavya Rao') AND name != 'Kavya Rao'"],
-["Employees hired the same year as Naveen Kumar","Find employees who joined in the same year as Naveen Kumar (excluding Naveen).","Subquery to get Naveen's hire_year","SELECT name, hire_year FROM employees WHERE hire_year = (SELECT hire_year FROM employees WHERE name = 'Naveen Kumar') AND name != 'Naveen Kumar'"],
-["Products more expensive than average price","Show products whose price is above the average price across all products.","WHERE price > (SELECT AVG(price) FROM products)","SELECT name, price FROM products WHERE price > (SELECT AVG(price) FROM products)"],
-
-// 11-20: IN/NOT IN subqueries + EXISTS
+["Employees in same city as Kavya Rao","Show employees who live in the same city as Kavya Rao (excluding her).","Subquery to find Kavya's city, then filter","SELECT name, city FROM employees WHERE city = (SELECT city FROM employees WHERE name = 'Kavya Rao') AND name != 'Kavya Rao'"],
+["Employees hired same year as Naveen Kumar","Find employees who joined in the same year as Naveen Kumar (excluding him).","Subquery to get Naveen's hire_year","SELECT name, hire_year FROM employees WHERE hire_year = (SELECT hire_year FROM employees WHERE name = 'Naveen Kumar') AND name != 'Naveen Kumar'"],
+["Products more expensive than average","Show products whose price is above the average price across all products.","WHERE price > (SELECT AVG(price) FROM products)","SELECT name, price FROM products WHERE price > (SELECT AVG(price) FROM products)"],
 ["Employees who placed an order","Show employees who have at least one order in the orders table.","Use IN with subquery on customer_name","SELECT name FROM employees WHERE name IN (SELECT customer_name FROM orders)"],
 ["Employees who never placed an order","Show employees who have no orders at all.","Use NOT IN with subquery","SELECT name FROM employees WHERE name NOT IN (SELECT customer_name FROM orders)"],
 ["Products that have been ordered","Show products that appear in at least one order.","IN subquery on product_id","SELECT name FROM products WHERE id IN (SELECT product_id FROM orders)"],
 ["Products never ordered","Show products that have never been ordered.","NOT IN subquery","SELECT name FROM products WHERE id NOT IN (SELECT product_id FROM orders)"],
-["Employees with salary in top 25%","Show employees whose salary is in the top quartile (above the 75th percentile approximation).","Find the salary at the 75th percentile using a subquery","SELECT name, salary FROM employees WHERE salary >= (SELECT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 3)"],
-["Employees earning more than any HR employee","Show employees whose salary is higher than the maximum HR salary.","Equivalent to: salary > MAX(salary WHERE dept='HR')","SELECT name, salary FROM employees WHERE salary > (SELECT MAX(salary) FROM employees WHERE department = 'HR')"],
-["Find employees with duplicate salaries","Find salary values that are shared by more than one employee.","GROUP BY salary HAVING COUNT(*) > 1","SELECT salary, COUNT(*) AS count FROM employees GROUP BY salary HAVING COUNT(*) > 1"],
+["Employees earning more than any HR employee","Show employees earning more than the maximum HR salary.","salary > MAX(salary WHERE dept='HR')","SELECT name, salary FROM employees WHERE salary > (SELECT MAX(salary) FROM employees WHERE department = 'HR')"],
+["Find employees with duplicate salaries","Find salary values shared by more than one employee.","GROUP BY salary HAVING COUNT(*) > 1","SELECT salary, COUNT(*) AS count FROM employees GROUP BY salary HAVING COUNT(*) > 1"],
 ["Employees earning same as any Finance employee","Show employees whose salary matches any Finance employee's salary.","Use IN (SELECT salary FROM employees WHERE department='Finance')","SELECT name, department, salary FROM employees WHERE salary IN (SELECT salary FROM employees WHERE department = 'Finance')"],
-
-// 21-30: INNER JOINs
 ["Employee name with department budget","Show each employee's name, department, and that department's budget.","JOIN employees with departments ON employees.department = departments.name","SELECT e.name, e.department, d.budget FROM employees e JOIN departments d ON e.department = d.name"],
 ["Employee name with department location","Show each employee with their department's office location.","JOIN on department names","SELECT e.name, e.department, d.location FROM employees e JOIN departments d ON e.department = d.name"],
 ["Employees in Mumbai-based departments","Show employees whose department's office is located in Mumbai.","JOIN then filter WHERE d.location = 'Mumbai'","SELECT e.name, e.department, d.location FROM employees e JOIN departments d ON e.department = d.name WHERE d.location = 'Mumbai'"],
 ["Order details with product name","Show each order with the actual product name instead of product_id.","JOIN orders with products ON orders.product_id = products.id","SELECT o.customer_name, p.name AS product, o.amount, o.status FROM orders o JOIN products p ON o.product_id = p.id"],
 ["Orders with product category","Show orders along with the category of the product ordered.","JOIN orders with products","SELECT o.customer_name, p.name AS product, p.category, o.amount FROM orders o JOIN products p ON o.product_id = p.id"],
 ["Total spending per product category","Show total order revenue for each product category.","JOIN orders+products, then GROUP BY category","SELECT p.category, SUM(o.amount) AS total_revenue FROM orders o JOIN products p ON o.product_id = p.id GROUP BY p.category"],
-["Which Electronics have been ordered","Show Electronics products that appear in orders.","JOIN + WHERE category = 'Electronics'","SELECT DISTINCT p.name, p.category FROM orders o JOIN products p ON o.product_id = p.id WHERE p.category = 'Electronics'"],
-["Orders placed by Engineering employees","Show orders made by employees in the Engineering department.","JOIN orders with employees ON customer_name = name, then filter dept","SELECT o.customer_name, o.amount, o.status FROM orders o JOIN employees e ON o.customer_name = e.name WHERE e.department = 'Engineering'"],
-
-// 31-40: 3-table JOINs, self-join, correlated subqueries
-["Employee name, department budget, and product ordered","Show what each employee ordered, with their department name and budget.","3-table JOIN: orders+employees+departments","SELECT e.name, e.department, d.budget, p.name AS product FROM orders o JOIN employees e ON o.customer_name = e.name JOIN departments d ON e.department = d.name JOIN products p ON o.product_id = p.id"],
-["Self-join: Employee with their manager's name","Show each employee alongside their manager's name.","Self-join: JOIN employees AS manager ON e.manager_id = m.id","SELECT e.name AS employee, m.name AS manager FROM employees e LEFT JOIN employees m ON e.manager_id = m.id"],
+["Orders placed by Engineering employees","Show orders made by employees in Engineering.","JOIN orders with employees, filter dept","SELECT o.customer_name, o.amount, o.status FROM orders o JOIN employees e ON o.customer_name = e.name WHERE e.department = 'Engineering'"],
+["3-table JOIN: employee, department, product ordered","Show each employee's order with their department budget and product name.","JOIN orders+employees+departments+products","SELECT e.name, e.department, d.budget, p.name AS product FROM orders o JOIN employees e ON o.customer_name = e.name JOIN departments d ON e.department = d.name JOIN products p ON o.product_id = p.id"],
+["Self-join: Employee with manager name","Show each employee alongside their manager's name.","Self-join: JOIN employees AS m ON e.manager_id = m.id","SELECT e.name AS employee, m.name AS manager FROM employees e LEFT JOIN employees m ON e.manager_id = m.id"],
 ["Employees earning more than their manager","Show employees whose salary exceeds their manager's salary.","Self-join and compare e.salary > m.salary","SELECT e.name, e.salary, m.name AS manager, m.salary AS manager_salary FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary"],
 ["Direct reports of Kavya Rao","Show all employees who report directly to Kavya Rao.","Subquery to get Kavya's id, then filter manager_id","SELECT name, department FROM employees WHERE manager_id = (SELECT id FROM employees WHERE name = 'Kavya Rao')"],
 ["Count direct reports per manager","For each manager, show how many employees report to them.","Self-join: GROUP BY manager_id","SELECT m.name AS manager, COUNT(*) AS reports FROM employees e JOIN employees m ON e.manager_id = m.id GROUP BY m.name ORDER BY reports DESC"],
-["Employees who earn above their city average","Find employees whose salary is above the average salary in their city.","Correlated subquery: AVG(salary) WHERE city = e.city","SELECT name, city, salary FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE city = e.city)"],
-["Employees earning above their department average","Find employees whose salary is above the average salary in their own department.","Correlated subquery comparing each employee to their dept avg","SELECT name, department, salary FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department = e.department)"],
+["Employees who earn above their city average","Find employees whose salary is above the average for their city.","Correlated subquery: AVG(salary) WHERE city = e.city","SELECT name, city, salary FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE city = e.city)"],
+["Employees earning above their department average","Find employees whose salary is above the average for their own department.","Correlated subquery","SELECT name, department, salary FROM employees e WHERE salary > (SELECT AVG(salary) FROM employees WHERE department = e.department)"],
 ["Products costing above their category average","Find products priced higher than the average for their category.","Correlated subquery","SELECT name, category, price FROM products p WHERE price > (SELECT AVG(price) FROM products WHERE category = p.category)"],
-["Show employee salary vs department average","For each employee, show their salary and the average salary of their department side by side.","Correlated subquery in SELECT clause","SELECT name, department, salary, (SELECT ROUND(AVG(salary)) FROM employees WHERE department = e.department) AS dept_avg FROM employees e"],
-["Employee count per department with department budget","Show each department's name, budget, and number of employees working in it.","JOIN departments with employees, GROUP BY dept","SELECT d.name, d.budget, COUNT(e.id) AS emp_count FROM departments d JOIN employees e ON d.name = e.department GROUP BY d.name"],
-
-// 41-50: More intermediate
-["Total amount spent by each employee (JOIN)","Show each employee's name and the total amount they have spent on orders.","JOIN employees+orders, GROUP BY name","SELECT e.name, SUM(o.amount) AS total_spent FROM employees e JOIN orders o ON e.name = o.customer_name GROUP BY e.name ORDER BY total_spent DESC"],
-["Most expensive product per category (subquery)","Show the name and price of the highest-priced product in each category.","Correlated MAX subquery","SELECT name, category, price FROM products p WHERE price = (SELECT MAX(price) FROM products WHERE category = p.category)"],
-["Employees who are NOT managers","Show employees whose ID never appears as a manager_id (they manage nobody).","NOT IN (SELECT manager_id WHERE NOT NULL)","SELECT name FROM employees WHERE id NOT IN (SELECT manager_id FROM employees WHERE manager_id IS NOT NULL)"],
+["Employee salary vs department average (side by side)","For each employee, show their salary and the average salary of their department.","Correlated subquery in SELECT clause","SELECT name, department, salary, (SELECT ROUND(AVG(salary)) FROM employees WHERE department = e.department) AS dept_avg FROM employees e"],
+["Department headcount with budget","Show each department's name, budget, and number of employees working in it.","JOIN departments with employees, GROUP BY dept","SELECT d.name, d.budget, COUNT(e.id) AS emp_count FROM departments d JOIN employees e ON d.name = e.department GROUP BY d.name"],
+["Total amount spent per employee (JOIN)","Show each employee's name and total amount they've spent on orders.","JOIN employees+orders, GROUP BY name","SELECT e.name, SUM(o.amount) AS total_spent FROM employees e JOIN orders o ON e.name = o.customer_name GROUP BY e.name ORDER BY total_spent DESC"],
+["Most expensive product per category (subquery)","Show the highest-priced product in each category.","Correlated MAX subquery","SELECT name, category, price FROM products p WHERE price = (SELECT MAX(price) FROM products WHERE category = p.category)"],
+["Employees who are NOT managers","Show employees whose ID never appears as a manager_id.","NOT IN (SELECT manager_id WHERE NOT NULL)","SELECT name FROM employees WHERE id NOT IN (SELECT manager_id FROM employees WHERE manager_id IS NOT NULL)"],
 ["Employees hired in the earliest year","Find employees who were hired in the earliest year on record.","WHERE hire_year = (SELECT MIN(hire_year) ...)","SELECT name, hire_year FROM employees WHERE hire_year = (SELECT MIN(hire_year) FROM employees)"],
 ["Orders with above-average amount","Show orders where the amount is above the average order amount.","Subquery for AVG(amount)","SELECT customer_name, amount FROM orders WHERE amount > (SELECT AVG(amount) FROM orders)"],
 ["Employees within 10000 of average salary","Find employees whose salary is within ±10000 of the company average.","Use ABS(salary - avg) <= 10000","SELECT name, salary FROM employees WHERE ABS(salary - (SELECT AVG(salary) FROM employees)) <= 10000"],
-["Department with most employees (subquery)","Which department has the most employees? Show just the department name.","Subquery: ORDER BY COUNT DESC LIMIT 1","SELECT department FROM employees GROUP BY department ORDER BY COUNT(*) DESC LIMIT 1"],
+["Department with most employees","Which department has the most employees? Show just the department name.","ORDER BY COUNT DESC LIMIT 1","SELECT department FROM employees GROUP BY department ORDER BY COUNT(*) DESC LIMIT 1"],
 ["Employees reporting to Naveen Kumar","Show all employees who report directly to Naveen Kumar.","Subquery to find Naveen's id","SELECT name, department FROM employees WHERE manager_id = (SELECT id FROM employees WHERE name = 'Naveen Kumar')"],
-["Longest-tenured employees","Show the 3 employees with the most years at the company (lowest hire_year).","ORDER BY hire_year ASC LIMIT 3","SELECT name, hire_year FROM employees ORDER BY hire_year ASC LIMIT 3"],
-["Most popular product by order count","Which product has been ordered the most times? Use JOIN to show product name.","JOIN orders+products, GROUP BY name, ORDER BY count DESC LIMIT 1","SELECT p.name, COUNT(*) AS order_count FROM orders o JOIN products p ON o.product_id = p.id GROUP BY p.name ORDER BY order_count DESC LIMIT 1"]
+["3 longest-tenured employees","Show the 3 employees with most years at the company.","ORDER BY hire_year ASC LIMIT 3","SELECT name, hire_year FROM employees ORDER BY hire_year ASC LIMIT 3"],
+["Most popular product by order count","Which product has been ordered the most times?","JOIN orders+products, COUNT, ORDER BY DESC LIMIT 1","SELECT p.name, COUNT(*) AS order_count FROM orders o JOIN products p ON o.product_id = p.id GROUP BY p.name ORDER BY order_count DESC LIMIT 1"],
+["Electronics revenue via JOIN","What is the total revenue from Electronics products?","JOIN + WHERE category = 'Electronics' then SUM","SELECT SUM(o.amount) AS total FROM orders o JOIN products p ON o.product_id = p.id WHERE p.category = 'Electronics'"],
+["Department salary as % of company total","Show each department's total salary as a percentage of the company total.","SUM(salary)*100.0 / (SELECT SUM(salary) FROM employees)","SELECT department, SUM(salary) * 100.0 / (SELECT SUM(salary) FROM employees) AS pct FROM employees GROUP BY department"],
+["Employees with salary in top 25%","Show employees whose salary is in the top quartile.","WHERE salary >= ORDER BY salary DESC LIMIT 1 OFFSET 3","SELECT name, salary FROM employees WHERE salary >= (SELECT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 3)"],
+["Employees in Finance earning above company average","Show Finance employees earning above the overall company average.","WHERE department='Finance' AND salary > subquery","SELECT name, salary FROM employees WHERE department = 'Finance' AND salary > (SELECT AVG(salary) FROM employees)"],
+["Products in same price range as Laptop","Show products priced within 30000 of the Laptop's price.","ABS(price - Laptop price) <= 30000","SELECT name, price FROM products WHERE ABS(price - (SELECT price FROM products WHERE name = 'Laptop')) <= 30000 AND name != 'Laptop'"],
+["Average amount per order for each department","Show average order amount for employees in each department.","JOIN orders+employees, GROUP BY department","SELECT e.department, AVG(o.amount) AS avg_order FROM orders o JOIN employees e ON o.customer_name = e.name GROUP BY e.department"],
+["Count employees who ordered Laptops","How many employees ordered the Laptop (product_id=1)?","Subquery or direct filter","SELECT COUNT(DISTINCT customer_name) AS count FROM orders WHERE product_id = 1"]
 ],
 
 complex: [
-// 1-10: Window function basics
-["Rank employees by salary (RANK)","Assign a salary rank to each employee using RANK() — highest salary gets rank 1. Ties get the same rank.","SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rank","SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rank FROM employees"],
+["Rank employees by salary (RANK)","Assign a salary rank to each employee — highest salary gets rank 1. Ties get the same rank.","RANK() OVER (ORDER BY salary DESC)","SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rank FROM employees"],
 ["Rank employees by salary (DENSE_RANK)","Assign salary rank using DENSE_RANK() — no gaps in rank numbers for ties.","DENSE_RANK() OVER (ORDER BY salary DESC)","SELECT name, salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS dense_rank FROM employees"],
-["Row number for each employee","Assign a unique sequential row number to each employee ordered by salary descending.","ROW_NUMBER() OVER (ORDER BY salary DESC)","SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num FROM employees"],
-["Rank employees within each department","Rank employees by salary within their own department (highest = rank 1 per dept).","Use PARTITION BY department in window function","SELECT name, department, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank FROM employees"],
-["Running total of salary","Show each employee (ordered by id) with a running cumulative total of salaries.","SUM(salary) OVER (ORDER BY id)","SELECT name, salary, SUM(salary) OVER (ORDER BY id) AS running_total FROM employees"],
-["Running average salary","Show each employee (ordered by id) with a running average of salary up to that point.","AVG(salary) OVER (ORDER BY id)","SELECT name, salary, ROUND(AVG(salary) OVER (ORDER BY id), 0) AS running_avg FROM employees"],
-["Next higher salary (LEAD)","For each employee sorted by salary descending, show the next (lower) salary value using LEAD.","LEAD(salary) OVER (ORDER BY salary DESC)","SELECT name, salary, LEAD(salary) OVER (ORDER BY salary DESC) AS next_salary FROM employees"],
-["Previous lower salary (LAG)","For each employee sorted by salary ascending, show the previous (lower) salary using LAG.","LAG(salary) OVER (ORDER BY salary ASC)","SELECT name, salary, LAG(salary) OVER (ORDER BY salary ASC) AS prev_salary FROM employees"],
-["Salary difference from previous (LAG)","For each employee sorted by salary ascending, show the gap between their salary and the one below.","salary - LAG(salary) OVER (ORDER BY salary)","SELECT name, salary, salary - LAG(salary, 1, salary) OVER (ORDER BY salary) AS gap FROM employees ORDER BY salary"],
-["Salary as percentage of total","Show each employee's salary as a percentage of the total salary bill.","salary * 100.0 / SUM(salary) OVER ()","SELECT name, salary, ROUND(salary * 100.0 / SUM(salary) OVER (), 2) AS pct_of_total FROM employees"],
-
-// 11-20: PARTITION BY + advanced window
-["Top earner in each department (FIRST_VALUE)","Show the name of the top earner in each department for every row in that department.","FIRST_VALUE(name) OVER (PARTITION BY department ORDER BY salary DESC)","SELECT DISTINCT department, FIRST_VALUE(name) OVER (PARTITION BY department ORDER BY salary DESC) AS top_earner FROM employees"],
-["Salary quartiles (NTILE)","Divide employees into 4 salary quartiles. Quartile 1 = lowest salaries, 4 = highest.","NTILE(4) OVER (ORDER BY salary)","SELECT name, salary, NTILE(4) OVER (ORDER BY salary) AS quartile FROM employees"],
-["Find employees in the top salary quartile","Show only employees in the top 25% salary bracket (quartile 4).","Wrap NTILE in a subquery and filter WHERE q = 4","SELECT name, salary FROM (SELECT name, salary, NTILE(4) OVER (ORDER BY salary) AS q FROM employees) WHERE q = 4"],
-["Find employees in the bottom salary quartile","Show only employees in the bottom 25% salary bracket (quartile 1).","Wrap NTILE, filter WHERE q = 1","SELECT name, salary FROM (SELECT name, salary, NTILE(4) OVER (ORDER BY salary) AS q FROM employees) WHERE q = 1"],
-["Difference from department max salary","For each employee show how much below the top earner in their department they are.","MAX(salary) OVER (PARTITION BY department) - salary","SELECT name, department, salary, MAX(salary) OVER (PARTITION BY department) - salary AS gap_to_top FROM employees"],
-["Each employee vs department average","Show each employee's salary alongside the average salary of their department using a window function.","AVG(salary) OVER (PARTITION BY department)","SELECT name, department, salary, ROUND(AVG(salary) OVER (PARTITION BY department), 0) AS dept_avg FROM employees"],
+["Row number for each employee","Assign a unique sequential row number ordered by salary descending.","ROW_NUMBER() OVER (ORDER BY salary DESC)","SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num FROM employees"],
+["Rank employees within each department","Rank employees by salary within their own department (highest = rank 1 per dept).","PARTITION BY department in window function","SELECT name, department, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank FROM employees"],
+["Running total of salary","Show each employee (ordered by id) with a cumulative running total of salaries.","SUM(salary) OVER (ORDER BY id)","SELECT name, salary, SUM(salary) OVER (ORDER BY id) AS running_total FROM employees"],
+["Running average salary","Show each employee (ordered by id) with a running average salary up to that point.","AVG(salary) OVER (ORDER BY id)","SELECT name, salary, ROUND(AVG(salary) OVER (ORDER BY id), 0) AS running_avg FROM employees"],
+["Next higher salary (LEAD)","For each employee sorted by salary descending, show the next salary value using LEAD.","LEAD(salary) OVER (ORDER BY salary DESC)","SELECT name, salary, LEAD(salary) OVER (ORDER BY salary DESC) AS next_salary FROM employees"],
+["Previous lower salary (LAG)","For each employee sorted by salary ascending, show the previous salary using LAG.","LAG(salary) OVER (ORDER BY salary ASC)","SELECT name, salary, LAG(salary) OVER (ORDER BY salary ASC) AS prev_salary FROM employees"],
+["Salary gap from previous (LAG)","For each employee sorted by salary ascending, show the gap from the one below them.","salary - LAG(salary) OVER (ORDER BY salary)","SELECT name, salary, salary - LAG(salary, 1, salary) OVER (ORDER BY salary) AS gap FROM employees ORDER BY salary"],
+["Salary as percentage of total","Show each employee's salary as a % of the total company salary.","salary * 100.0 / SUM(salary) OVER ()","SELECT name, salary, ROUND(salary * 100.0 / SUM(salary) OVER (), 2) AS pct_of_total FROM employees"],
+["Top earner in each department (FIRST_VALUE)","Show the name of the top earner in each department for every row.","FIRST_VALUE(name) OVER (PARTITION BY department ORDER BY salary DESC)","SELECT DISTINCT department, FIRST_VALUE(name) OVER (PARTITION BY department ORDER BY salary DESC) AS top_earner FROM employees"],
+["Salary quartiles (NTILE)","Divide employees into 4 salary quartiles. 1 = lowest, 4 = highest.","NTILE(4) OVER (ORDER BY salary)","SELECT name, salary, NTILE(4) OVER (ORDER BY salary) AS quartile FROM employees"],
+["Employees in the top salary quartile","Show only employees in the top 25% salary bracket (quartile 4).","Wrap NTILE in subquery, filter WHERE q = 4","SELECT name, salary FROM (SELECT name, salary, NTILE(4) OVER (ORDER BY salary) AS q FROM employees) WHERE q = 4"],
+["Employees in the bottom salary quartile","Show only employees in the bottom 25% salary bracket (quartile 1).","Wrap NTILE, filter WHERE q = 1","SELECT name, salary FROM (SELECT name, salary, NTILE(4) OVER (ORDER BY salary) AS q FROM employees) WHERE q = 1"],
+["Gap from department top earner","For each employee show how much below the top earner in their department they are.","MAX(salary) OVER (PARTITION BY department) - salary","SELECT name, department, salary, MAX(salary) OVER (PARTITION BY department) - salary AS gap_to_top FROM employees"],
+["Each employee vs department average","Show each employee's salary alongside the average salary of their department.","AVG(salary) OVER (PARTITION BY department)","SELECT name, department, salary, ROUND(AVG(salary) OVER (PARTITION BY department), 0) AS dept_avg FROM employees"],
 ["Salary percentile rank","Show each employee's salary percentile rank (0.0 to 1.0) across the company.","PERCENT_RANK() OVER (ORDER BY salary)","SELECT name, salary, ROUND(PERCENT_RANK() OVER (ORDER BY salary), 2) AS percentile FROM employees"],
-["Cumulative salary distribution","Show each employee and what fraction of the total workforce earns ≤ their salary.","CUME_DIST() OVER (ORDER BY salary)","SELECT name, salary, ROUND(CUME_DIST() OVER (ORDER BY salary), 2) AS cume_dist FROM employees"],
-["Top 2 earners per department (ROW_NUMBER)","Show the top 2 highest-paid employees in each department.","ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC), filter rn <= 2","SELECT name, department, salary FROM (SELECT name, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rn FROM employees) WHERE rn <= 2"],
-["Running count of employees by hire year","Show each employee with a running count of how many employees had been hired up to that year.","COUNT(*) OVER (ORDER BY hire_year, id)","SELECT name, hire_year, COUNT(*) OVER (ORDER BY hire_year, id) AS cumulative_hired FROM employees"],
-
-// 21-30: CTEs
-["CTE: employees above average salary","Use a CTE to find employees earning above the company average.","WITH avg_sal AS (SELECT AVG(salary) AS avg FROM employees) SELECT ... WHERE salary > avg_sal.avg","WITH avg_sal AS (SELECT AVG(salary) AS avg FROM employees) SELECT e.name, e.salary FROM employees e, avg_sal WHERE e.salary > avg_sal.avg"],
-["CTE: department salary summary","Use a CTE to calculate each department's average and max salary, then join it back to employees.","WITH dept_stats AS (...) SELECT e.name, ds.avg_sal","WITH dept_stats AS (SELECT department, AVG(salary) AS avg_sal, MAX(salary) AS max_sal FROM employees GROUP BY department) SELECT e.name, e.department, e.salary, ROUND(ds.avg_sal,0) AS dept_avg FROM employees e JOIN dept_stats ds ON e.department = ds.department"],
-["CTE: top earner per department","Use a CTE with RANK() to find the single top earner in each department.","WITH ranked AS (SELECT ..., RANK() OVER (...) AS rnk) SELECT WHERE rnk = 1","WITH ranked AS (SELECT name, department, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rnk FROM employees) SELECT name, department, salary FROM ranked WHERE rnk = 1"],
+["Cumulative salary distribution","Show each employee and what fraction of the workforce earns ≤ their salary.","CUME_DIST() OVER (ORDER BY salary)","SELECT name, salary, ROUND(CUME_DIST() OVER (ORDER BY salary), 2) AS cume_dist FROM employees"],
+["Top 2 earners per department","Show the top 2 highest-paid employees in each department.","ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC), filter rn <= 2","SELECT name, department, salary FROM (SELECT name, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rn FROM employees) WHERE rn <= 2"],
+["Running count of employees by hire year","Show each employee with a running count of how many had been hired up to that year.","COUNT(*) OVER (ORDER BY hire_year, id)","SELECT name, hire_year, COUNT(*) OVER (ORDER BY hire_year, id) AS cumulative_hired FROM employees"],
+["CTE: employees above average salary","Use a CTE to find employees earning above the company average.","WITH avg_sal AS (SELECT AVG(salary) AS avg FROM employees) SELECT ... WHERE salary > avg","WITH avg_sal AS (SELECT AVG(salary) AS avg FROM employees) SELECT e.name, e.salary FROM employees e, avg_sal WHERE e.salary > avg_sal.avg"],
+["CTE: department salary summary","Use a CTE for department stats, then join back to employees.","WITH dept_stats AS (...) SELECT e.name, ds.avg_sal","WITH dept_stats AS (SELECT department, AVG(salary) AS avg_sal, MAX(salary) AS max_sal FROM employees GROUP BY department) SELECT e.name, e.department, e.salary, ROUND(ds.avg_sal,0) AS dept_avg FROM employees e JOIN dept_stats ds ON e.department = ds.department"],
+["CTE: top earner per department","Use a CTE with RANK() to find the single top earner in each department.","WITH ranked AS (...RANK()...) SELECT WHERE rnk = 1","WITH ranked AS (SELECT name, department, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rnk FROM employees) SELECT name, department, salary FROM ranked WHERE rnk = 1"],
 ["CTE: rank departments by average salary","Use a CTE to calculate each department's average salary, then rank them.","WITH dept_avg AS (...) SELECT ..., RANK() OVER (ORDER BY avg_sal DESC)","WITH dept_avg AS (SELECT department, AVG(salary) AS avg_sal FROM employees GROUP BY department) SELECT department, ROUND(avg_sal,0) AS avg_sal, RANK() OVER (ORDER BY avg_sal DESC) AS rank FROM dept_avg"],
-["CTE: order summary by product","Use a CTE to summarise orders per product_id, then join with products to show product names.","WITH order_stats AS (SELECT product_id, COUNT(*) AS times, SUM(amount) AS revenue FROM orders GROUP BY product_id)","WITH order_stats AS (SELECT product_id, COUNT(*) AS times, SUM(amount) AS revenue FROM orders GROUP BY product_id) SELECT p.name, os.times, os.revenue FROM products p JOIN order_stats os ON p.id = os.product_id"],
-["CTE: employees who ordered + their order count","Use a CTE to get order counts, then LEFT JOIN with employees to show 0 for those who never ordered.","WITH order_counts AS (...) SELECT e.name, COALESCE(oc.order_count, 0)","WITH order_counts AS (SELECT customer_name, COUNT(*) AS order_count FROM orders GROUP BY customer_name) SELECT e.name, COALESCE(oc.order_count, 0) AS orders FROM employees e LEFT JOIN order_counts oc ON e.name = oc.customer_name"],
-["CTE: above-average salary count per department","Use a CTE to find employees above the company average salary, then count how many per department.","WITH above_avg AS (SELECT * FROM employees WHERE salary > (SELECT AVG ...))","WITH above_avg AS (SELECT * FROM employees WHERE salary > (SELECT AVG(salary) FROM employees)) SELECT department, COUNT(*) AS count FROM above_avg GROUP BY department"],
-["CTE: department contribution to total salary","Use a CTE to find each department's salary as a percentage of the company total.","WITH totals AS (...) SELECT department, SUM(salary)*100.0 / (SELECT SUM ...)","WITH totals AS (SELECT department, SUM(salary) AS dept_total FROM employees GROUP BY department) SELECT department, dept_total, ROUND(dept_total * 100.0 / (SELECT SUM(salary) FROM employees), 1) AS pct FROM totals"],
+["CTE: order summary by product","Use a CTE to summarise orders per product, then join with products table.","WITH order_stats AS (...GROUP BY product_id) JOIN products","WITH order_stats AS (SELECT product_id, COUNT(*) AS times, SUM(amount) AS revenue FROM orders GROUP BY product_id) SELECT p.name, os.times, os.revenue FROM products p JOIN order_stats os ON p.id = os.product_id"],
+["CTE: employees who ordered + their count","Use a CTE to get order counts, then LEFT JOIN with employees (show 0 for no orders).","WITH order_counts AS (...) SELECT e.name, COALESCE(oc.order_count, 0)","WITH order_counts AS (SELECT customer_name, COUNT(*) AS order_count FROM orders GROUP BY customer_name) SELECT e.name, COALESCE(oc.order_count, 0) AS orders FROM employees e LEFT JOIN order_counts oc ON e.name = oc.customer_name"],
+["CTE: above-average employees per department","Use a CTE to find employees above company average, then count per department.","WITH above_avg AS (SELECT * WHERE salary > AVG subquery)","WITH above_avg AS (SELECT * FROM employees WHERE salary > (SELECT AVG(salary) FROM employees)) SELECT department, COUNT(*) AS count FROM above_avg GROUP BY department"],
+["CTE: department salary % of company total","Use a CTE to find each department's total salary as % of company total.","WITH totals AS (...) SELECT department, pct","WITH totals AS (SELECT department, SUM(salary) AS dept_total FROM employees GROUP BY department) SELECT department, dept_total, ROUND(dept_total * 100.0 / (SELECT SUM(salary) FROM employees), 1) AS pct FROM totals"],
 ["Two CTEs: department stats + top earners","Use two CTEs — one for department stats, one for top earners — then join them.","WITH cte1 AS (...), cte2 AS (...) SELECT ...","WITH dept_stats AS (SELECT department, AVG(salary) AS avg_sal FROM employees GROUP BY department), top_earners AS (SELECT name, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rn FROM employees) SELECT te.name, te.department, te.salary, ROUND(ds.avg_sal,0) AS dept_avg FROM top_earners te JOIN dept_stats ds ON te.department = ds.department WHERE te.rn = 1"],
-["CTE: 3-level order enrichment","Use CTEs to build a fully enriched orders view — customer dept, product category, and order amount — in one query.","Chain: order_details CTE joins orders+products, then join with employees","WITH order_details AS (SELECT o.customer_name, p.name AS product, p.category, o.amount, o.status FROM orders o JOIN products p ON o.product_id = p.id) SELECT od.customer_name, e.department, od.product, od.category, od.amount FROM order_details od JOIN employees e ON od.customer_name = e.name"],
-
-// 31-40: Advanced window functions + complex scenarios
-["Moving average of order amounts (ROWS BETWEEN)","Show each order with a 3-row moving average (current row + 1 before + 1 after).","AVG(amount) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)","SELECT customer_name, amount, ROUND(AVG(amount) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING), 0) AS moving_avg FROM orders"],
-["Cumulative orders by date","Show total number of orders placed up to and including each date.","SUM(COUNT(*)) OVER (ORDER BY order_date) — aggregate window","SELECT order_date, COUNT(*) AS daily_orders, SUM(COUNT(*)) OVER (ORDER BY order_date) AS cumulative FROM orders GROUP BY order_date"],
-["Running total of order revenue by date","Show each order with a running cumulative sum of all order amounts sorted by date.","SUM(amount) OVER (ORDER BY order_date, id)","SELECT order_date, customer_name, amount, SUM(amount) OVER (ORDER BY order_date, id) AS running_total FROM orders"],
-["Salary change simulation: each vs next hired","For employees sorted by hire_year, show the salary difference between consecutive hires.","LAG to get previous hire salary, then subtract","SELECT name, hire_year, salary, salary - LAG(salary, 1, salary) OVER (ORDER BY hire_year, id) AS change_from_prev FROM employees ORDER BY hire_year, id"],
-["First and last order per customer (window)","For each order row, show the customer's first and last order date using window functions.","MIN/MAX OVER (PARTITION BY customer_name)","SELECT DISTINCT customer_name, MIN(order_date) OVER (PARTITION BY customer_name) AS first_order, MAX(order_date) OVER (PARTITION BY customer_name) AS last_order FROM orders"],
-["Order rank within each status group","Rank orders by amount within each status group (Delivered/Pending/etc). Highest amount = rank 1.","RANK() OVER (PARTITION BY status ORDER BY amount DESC)","SELECT customer_name, status, amount, RANK() OVER (PARTITION BY status ORDER BY amount DESC) AS rank_in_status FROM orders"],
-["Average amount by status (window)","Show each order with the average amount for its status group alongside.","AVG(amount) OVER (PARTITION BY status)","SELECT customer_name, status, amount, ROUND(AVG(amount) OVER (PARTITION BY status), 0) AS avg_for_status FROM orders"],
-["Salary percentile within department","For each employee, show their salary percentile rank within their own department (0.0 to 1.0).","PERCENT_RANK() OVER (PARTITION BY department ORDER BY salary)","SELECT name, department, salary, ROUND(PERCENT_RANK() OVER (PARTITION BY department ORDER BY salary), 2) AS dept_percentile FROM employees"],
-["Pivot: employee count per dept per city","Show a pivot-style table counting employees in each department (Engineering/Marketing/HR/Finance) grouped by city.","Use CASE WHEN inside SUM() for each department","SELECT city, SUM(CASE WHEN department='Engineering' THEN 1 ELSE 0 END) AS Engineering, SUM(CASE WHEN department='Marketing' THEN 1 ELSE 0 END) AS Marketing, SUM(CASE WHEN department='HR' THEN 1 ELSE 0 END) AS HR, SUM(CASE WHEN department='Finance' THEN 1 ELSE 0 END) AS Finance FROM employees GROUP BY city"],
-["Salary as % of department max (window)","Show each employee's salary as a percentage of the highest salary in their department.","salary * 100.0 / MAX(salary) OVER (PARTITION BY department)","SELECT name, department, salary, ROUND(salary * 100.0 / MAX(salary) OVER (PARTITION BY department), 1) AS pct_of_dept_max FROM employees"],
-
-// 41-50: Final boss queries
-["CTE + window: full department dashboard","Build a complete department dashboard: show top earner, avg salary, headcount, and total salary for each department using CTEs and window functions.","Multiple CTEs or one CTE with all aggregates","WITH dept_summary AS (SELECT department, COUNT(*) AS headcount, ROUND(AVG(salary),0) AS avg_sal, SUM(salary) AS total_sal, MAX(salary) AS max_sal FROM employees GROUP BY department) SELECT department, headcount, avg_sal, total_sal, max_sal, RANK() OVER (ORDER BY avg_sal DESC) AS avg_rank FROM dept_summary"],
-["CTE: manager hierarchy with report counts","Use a CTE to show each manager's name and how many direct reports they have, sorted by most reports.","WITH report_counts AS (...) JOIN employees","WITH report_counts AS (SELECT manager_id, COUNT(*) AS reports FROM employees WHERE manager_id IS NOT NULL GROUP BY manager_id) SELECT e.name AS manager, rc.reports FROM employees e JOIN report_counts rc ON e.id = rc.manager_id ORDER BY rc.reports DESC"],
+["CTE: full order enrichment","Use a CTE to build an enriched orders view — customer dept, product name, amount.","WITH order_details AS (JOIN orders+products) then JOIN employees","WITH order_details AS (SELECT o.customer_name, p.name AS product, p.category, o.amount, o.status FROM orders o JOIN products p ON o.product_id = p.id) SELECT od.customer_name, e.department, od.product, od.category, od.amount FROM order_details od JOIN employees e ON od.customer_name = e.name"],
+["Moving average of order amounts","Show each order with a 3-row moving average (1 before + current + 1 after).","AVG(amount) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)","SELECT customer_name, amount, ROUND(AVG(amount) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING), 0) AS moving_avg FROM orders"],
+["Cumulative orders by date","Show total number of orders placed up to and including each date.","SUM(COUNT(*)) OVER (ORDER BY order_date)","SELECT order_date, COUNT(*) AS daily_orders, SUM(COUNT(*)) OVER (ORDER BY order_date) AS cumulative FROM orders GROUP BY order_date"],
+["Running total of order revenue","Show each order with a running cumulative sum of amounts sorted by date.","SUM(amount) OVER (ORDER BY order_date, id)","SELECT order_date, customer_name, amount, SUM(amount) OVER (ORDER BY order_date, id) AS running_total FROM orders"],
+["Salary gap between consecutive hires","For employees sorted by hire_year, show salary difference from the previous hire.","LAG to get previous hire salary, then subtract","SELECT name, hire_year, salary, salary - LAG(salary, 1, salary) OVER (ORDER BY hire_year, id) AS change_from_prev FROM employees ORDER BY hire_year, id"],
+["First and last order per customer","For each order row, show the customer's first and last order date.","MIN/MAX OVER (PARTITION BY customer_name)","SELECT DISTINCT customer_name, MIN(order_date) OVER (PARTITION BY customer_name) AS first_order, MAX(order_date) OVER (PARTITION BY customer_name) AS last_order FROM orders"],
+["Order rank within each status group","Rank orders by amount within each status group. Highest amount = rank 1.","RANK() OVER (PARTITION BY status ORDER BY amount DESC)","SELECT customer_name, status, amount, RANK() OVER (PARTITION BY status ORDER BY amount DESC) AS rank_in_status FROM orders"],
+["Average amount by status group (window)","Show each order with the average amount for its status group alongside.","AVG(amount) OVER (PARTITION BY status)","SELECT customer_name, status, amount, ROUND(AVG(amount) OVER (PARTITION BY status), 0) AS avg_for_status FROM orders"],
+["Salary percentile within department","Show each employee's salary percentile rank within their own department.","PERCENT_RANK() OVER (PARTITION BY department ORDER BY salary)","SELECT name, department, salary, ROUND(PERCENT_RANK() OVER (PARTITION BY department ORDER BY salary), 2) AS dept_percentile FROM employees"],
+["Pivot: employee count per dept per city","Count employees in each department, grouped by city (pivot style).","SUM(CASE WHEN department='...' THEN 1 ELSE 0 END) for each dept","SELECT city, SUM(CASE WHEN department='Engineering' THEN 1 ELSE 0 END) AS Engineering, SUM(CASE WHEN department='Marketing' THEN 1 ELSE 0 END) AS Marketing, SUM(CASE WHEN department='HR' THEN 1 ELSE 0 END) AS HR, SUM(CASE WHEN department='Finance' THEN 1 ELSE 0 END) AS Finance FROM employees GROUP BY city"],
+["Salary as % of department max","Show each employee's salary as % of the highest salary in their department.","salary * 100.0 / MAX(salary) OVER (PARTITION BY department)","SELECT name, department, salary, ROUND(salary * 100.0 / MAX(salary) OVER (PARTITION BY department), 1) AS pct_of_dept_max FROM employees"],
+["CTE + window: full department dashboard","Build a department dashboard: headcount, avg salary, total salary, and rank by avg salary.","Multiple aggregates in CTE then RANK window","WITH dept_summary AS (SELECT department, COUNT(*) AS headcount, ROUND(AVG(salary),0) AS avg_sal, SUM(salary) AS total_sal, MAX(salary) AS max_sal FROM employees GROUP BY department) SELECT department, headcount, avg_sal, total_sal, max_sal, RANK() OVER (ORDER BY avg_sal DESC) AS avg_rank FROM dept_summary"],
+["CTE: manager report counts","Use a CTE to show each manager's name and how many direct reports they have.","WITH report_counts AS (...GROUP BY manager_id) JOIN employees","WITH report_counts AS (SELECT manager_id, COUNT(*) AS reports FROM employees WHERE manager_id IS NOT NULL GROUP BY manager_id) SELECT e.name AS manager, rc.reports FROM employees e JOIN report_counts rc ON e.id = rc.manager_id ORDER BY rc.reports DESC"],
 ["Window: employees in same hire cohort","For each employee, show how many other employees were hired in the same year.","COUNT(*) OVER (PARTITION BY hire_year)","SELECT name, hire_year, COUNT(*) OVER (PARTITION BY hire_year) AS cohort_size FROM employees ORDER BY hire_year"],
-["CTE + NOT IN: high earners who never ordered","Find employees in the top half of salaries who have never placed an order.","CTE for top half by salary, then NOT IN orders","WITH top_half AS (SELECT name, salary FROM employees WHERE salary >= (SELECT salary FROM employees ORDER BY salary LIMIT 1 OFFSET 7)) SELECT name, salary FROM top_half WHERE name NOT IN (SELECT customer_name FROM orders)"],
-["Window: order amount vs status average","Show each order, its amount, the average amount for its status group, and whether it is 'Above' or 'Below' that average.","AVG OVER (PARTITION BY status) then CASE","SELECT customer_name, status, amount, ROUND(AVG(amount) OVER (PARTITION BY status),0) AS status_avg, CASE WHEN amount > AVG(amount) OVER (PARTITION BY status) THEN 'Above' ELSE 'Below' END AS vs_avg FROM orders"],
-["CTE chain: product revenue ranking","Use a CTE to calculate total revenue per product, then rank products by revenue.","WITH rev AS (...) SELECT name, revenue, RANK() OVER (ORDER BY revenue DESC)","WITH rev AS (SELECT p.name, SUM(o.amount) AS revenue FROM orders o JOIN products p ON o.product_id = p.id GROUP BY p.name) SELECT name, revenue, RANK() OVER (ORDER BY revenue DESC) AS revenue_rank FROM rev"],
-["Window: consecutive salary increases","For employees sorted by salary, show the increase from one to the next and flag those with more than 5000 gap.","LAG + CASE WHEN gap > 5000","SELECT name, salary, salary - LAG(salary,1,salary) OVER (ORDER BY salary) AS increase, CASE WHEN salary - LAG(salary,1,salary) OVER (ORDER BY salary) > 5000 THEN 'Large jump' ELSE 'Small jump' END AS flag FROM employees ORDER BY salary"],
-["CTE: find employees below their city's median","Use a CTE with NTILE to approximate the median salary per city, then find employees below it.","CTE with NTILE(2) OVER (PARTITION BY city ORDER BY salary), filter tile=1","WITH city_tiles AS (SELECT name, city, salary, NTILE(2) OVER (PARTITION BY city ORDER BY salary) AS tile FROM employees) SELECT name, city, salary FROM city_tiles WHERE tile = 1"],
-["Full order enrichment with window rank","Show all orders enriched with product name, customer's department, and the order's rank by amount within that department.","3-table join + RANK window partitioned by department","SELECT o.customer_name, e.department, p.name AS product, o.amount, RANK() OVER (PARTITION BY e.department ORDER BY o.amount DESC) AS dept_order_rank FROM orders o JOIN employees e ON o.customer_name = e.name JOIN products p ON o.product_id = p.id"],
-["Ultimate query: department health report","The final challenge: produce a report showing each department's total salary, headcount, average order spend per employee, and rank by total salary — all in one query.","Multiple JOINs + GROUP BY + RANK window","WITH dept_data AS (SELECT e.department, COUNT(DISTINCT e.id) AS headcount, SUM(e.salary) AS salary_bill FROM employees e GROUP BY e.department), order_data AS (SELECT e.department, ROUND(AVG(o.amount),0) AS avg_order_spend FROM orders o JOIN employees e ON o.customer_name = e.name GROUP BY e.department) SELECT dd.department, dd.headcount, dd.salary_bill, COALESCE(od.avg_order_spend,0) AS avg_order_spend, RANK() OVER (ORDER BY dd.salary_bill DESC) AS salary_rank FROM dept_data dd LEFT JOIN order_data od ON dd.department = od.department"]
+["Window: order vs status average (Above/Below)","Show each order, its amount, and whether it is 'Above' or 'Below' average for its status group.","AVG OVER (PARTITION BY status) then CASE WHEN","SELECT customer_name, status, amount, ROUND(AVG(amount) OVER (PARTITION BY status),0) AS status_avg, CASE WHEN amount > AVG(amount) OVER (PARTITION BY status) THEN 'Above' ELSE 'Below' END AS vs_avg FROM orders"],
+["CTE: product revenue ranking","Use a CTE to calculate total revenue per product, then rank by revenue.","WITH rev AS (...) SELECT name, revenue, RANK() OVER (ORDER BY revenue DESC)","WITH rev AS (SELECT p.name, SUM(o.amount) AS revenue FROM orders o JOIN products p ON o.product_id = p.id GROUP BY p.name) SELECT name, revenue, RANK() OVER (ORDER BY revenue DESC) AS revenue_rank FROM rev"],
+["Window: flag large salary jumps","For employees sorted by salary, flag those with more than 5000 gap from the one below.","LAG + CASE WHEN gap > 5000","SELECT name, salary, salary - LAG(salary,1,salary) OVER (ORDER BY salary) AS increase, CASE WHEN salary - LAG(salary,1,salary) OVER (ORDER BY salary) > 5000 THEN 'Large jump' ELSE 'Small jump' END AS flag FROM employees ORDER BY salary"],
+["CTE: employees below city median","Use NTILE to approximate city median salary, then find employees below it.","NTILE(2) OVER (PARTITION BY city ORDER BY salary), filter tile=1","WITH city_tiles AS (SELECT name, city, salary, NTILE(2) OVER (PARTITION BY city ORDER BY salary) AS tile FROM employees) SELECT name, city, salary FROM city_tiles WHERE tile = 1"],
+["3-table join + window: order rank by dept","Show all orders with product name, customer's department, and rank within that dept.","JOIN orders+employees+products then RANK PARTITION BY department","SELECT o.customer_name, e.department, p.name AS product, o.amount, RANK() OVER (PARTITION BY e.department ORDER BY o.amount DESC) AS dept_order_rank FROM orders o JOIN employees e ON o.customer_name = e.name JOIN products p ON o.product_id = p.id"],
+["CTE: top earner per dept with direct reports","Find the top earner in each department and show how many people report to them.","WITH dept_tops AS (...rn=1) LEFT JOIN report_counts","WITH dept_tops AS (SELECT name, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rn FROM employees), report_counts AS (SELECT manager_id, COUNT(*) AS reports FROM employees WHERE manager_id IS NOT NULL GROUP BY manager_id) SELECT dt.name, dt.department, dt.salary, COALESCE(rc.reports, 0) AS direct_reports FROM dept_tops dt LEFT JOIN employees em ON dt.name = em.name LEFT JOIN report_counts rc ON em.id = rc.manager_id WHERE dt.rn = 1"],
+["Ultimate: department health report","Produce a full report: department total salary, headcount, average order spend, and rank by salary bill.","Multiple JOINs + GROUP BY + RANK window + CTE","WITH dept_data AS (SELECT e.department, COUNT(DISTINCT e.id) AS headcount, SUM(e.salary) AS salary_bill FROM employees e GROUP BY e.department), order_data AS (SELECT e.department, ROUND(AVG(o.amount),0) AS avg_order_spend FROM orders o JOIN employees e ON o.customer_name = e.name GROUP BY e.department) SELECT dd.department, dd.headcount, dd.salary_bill, COALESCE(od.avg_order_spend,0) AS avg_order_spend, RANK() OVER (ORDER BY dd.salary_bill DESC) AS salary_rank FROM dept_data dd LEFT JOIN order_data od ON dd.department = od.department"]
 ]
 };
 
 // ─── STATE ───────────────────────────────────────────────────────
 let db, currentLevel = null, currentIdx = 0;
-const results = {}; // {level: {idx: 'correct'|'wrong'}}
+const results = {};
 
 // ─── SQL ENGINE ──────────────────────────────────────────────────
 function xq(sql) {
   try {
-    const r = db.exec(sql.trim());
+    var r = db.exec(sql.trim());
     return r.length ? {cols: r[0].columns, rows: r[0].values} : {cols:[], rows:[]};
   } catch(e) { return {error: e.message}; }
 }
-
 function norm(r) {
   return r.rows.map(function(row) {
-    return row.map(function(v) { return v === null ? 'NULL' : String(v); }).join('\t');
+    return row.map(function(v){ return v === null ? 'NULL' : String(v); }).join('\t');
   }).sort().join('\n');
 }
-
 function cmp(userSQL, expectedSQL) {
   var u = xq(userSQL);
   if (u.error) return {ok: false, error: u.error};
   var e = xq(expectedSQL);
-  if (e.error) return {ok: false, error: 'System error in expected query'};
+  if (e.error) return {ok: false, error: 'System error'};
   return {ok: norm(u) === norm(e), u: u, e: e};
 }
 
 // ─── RENDER HELPERS ──────────────────────────────────────────────
 function tableHTML(result) {
-  if (!result || result.error) return '<p style="color:#f87171;font-size:.82rem">Error: ' + (result ? result.error : '') + '</p>';
-  if (!result.rows || result.rows.length === 0) return '<p style="color:#64748b;font-size:.82rem">No rows returned.</p>';
+  if (!result || result.error) return '<p style="color:#dc2626;font-size:.82rem">Error: '+(result ? result.error : '')+'</p>';
+  if (!result.rows || result.rows.length === 0) return '<p style="color:#94a3b8;font-size:.82rem">No rows returned.</p>';
   var h = '<div class="result-wrap"><table class="result-table"><thead><tr>';
-  result.cols.forEach(function(c) { h += '<th>' + c + '</th>'; });
+  result.cols.forEach(function(c){ h += '<th>'+c+'</th>'; });
   h += '</tr></thead><tbody>';
   var limit = Math.min(result.rows.length, 15);
   for (var i = 0; i < limit; i++) {
     h += '<tr>';
-    result.rows[i].forEach(function(v) { h += '<td>' + (v === null ? '<em style="color:#475569">NULL</em>' : v) + '</td>'; });
+    result.rows[i].forEach(function(v){ h += '<td>'+(v===null?'<em style="color:#94a3b8">NULL</em>':v)+'</td>'; });
     h += '</tr>';
   }
-  if (result.rows.length > 15) h += '<tr><td colspan="' + result.cols.length + '" style="color:#64748b;font-style:italic">... ' + (result.rows.length - 15) + ' more rows</td></tr>';
+  if (result.rows.length > 15) h += '<tr><td colspan="'+result.cols.length+'" style="color:#94a3b8;font-style:italic">... '+(result.rows.length-15)+' more rows</td></tr>';
   h += '</tbody></table></div>';
   return h;
 }
-
 function score(level) {
-  if (!results[level]) return {correct: 0, total: 0};
+  if (!results[level]) return {correct:0, total:0};
   var ks = Object.keys(results[level]);
-  var c = ks.filter(function(k) { return results[level][k] === 'correct'; }).length;
-  return {correct: c, total: ks.length};
+  return {correct: ks.filter(function(k){ return results[level][k]==='correct'; }).length, total: ks.length};
 }
 
 // ─── HOME ────────────────────────────────────────────────────────
 function renderHome() {
   var levels = [
-    {key:'easy', icon:'🟢', label:'Easy', desc:'SELECT, WHERE, ORDER BY, LIMIT, DISTINCT, basic functions', color:'easy'},
-    {key:'medium', icon:'🟡', label:'Medium', desc:'GROUP BY, HAVING, aggregates, CASE WHEN, string functions', color:'medium'},
-    {key:'intermediate', icon:'🟠', label:'Intermediate', desc:'Subqueries, JOINs (2 & 3 tables), EXISTS, correlated subqueries', color:'intermediate'},
-    {key:'complex', icon:'🟣', label:'Complex', desc:'Window functions, CTEs, PARTITION BY, LAG/LEAD, NTILE', color:'complex'}
+    {key:'easy',icon:'🟢',label:'Easy',desc:'SELECT, WHERE, ORDER BY, LIMIT, DISTINCT, basic aggregates',color:'easy'},
+    {key:'medium',icon:'🟡',label:'Medium',desc:'GROUP BY, HAVING, CASE WHEN, string functions, date filtering',color:'medium'},
+    {key:'intermediate',icon:'🟠',label:'Intermediate',desc:'Subqueries, JOINs (2 & 3 tables), self-join, correlated subqueries',color:'intermediate'},
+    {key:'complex',icon:'🟣',label:'Complex',desc:'Window functions, CTEs, PARTITION BY, LAG/LEAD, NTILE, PERCENT_RANK',color:'complex'}
   ];
-  var html = '<div class="hero">';
-  html += '<h1>SQL Practice for <span>Data Analysts</span></h1>';
-  html += '<p>Write real SQL queries, get instant feedback. 200 questions across 4 difficulty levels. No multiple choice — only actual SQL.</p>';
-  html += '<div class="schema-badge">';
-  html += '<span class="badge"><strong>employees</strong> 15 rows</span>';
-  html += '<span class="badge"><strong>departments</strong> 4 rows</span>';
-  html += '<span class="badge"><strong>products</strong> 10 rows</span>';
-  html += '<span class="badge"><strong>orders</strong> 15 rows</span>';
-  html += '</div></div>';
+
+  var html = '';
+
+  // Hero
+  html += '<div class="hero">';
+  html += '<div class="hero-tag">Free SQL Practice</div>';
+  html += '<h1>Master SQL &amp; <span class="highlight">Get Hired</span><br>as a Data Analyst</h1>';
+  html += '<p class="hero-sub">Write real SQL queries — not multiple choice. Get instant feedback on all 200 questions. The #1 skill interviewers test for Data Analyst roles.</p>';
+  html += '</div>';
+
+
+  // Levels
+  html += '<div class="levels-section">';
+  html += '<h2>🎯 Choose Your Level</h2>';
   html += '<div class="levels">';
   levels.forEach(function(lv) {
     var sc = score(lv.key);
-    html += '<div class="level-card ' + lv.color + '" onclick="openLevel(\'' + lv.key + '\')">';
-    html += '<div class="level-icon">' + lv.icon + '</div>';
-    html += '<h3>' + lv.label + '</h3>';
-    html += '<p>' + lv.desc + '</p>';
-    html += '<div class="level-count">50 questions' + (sc.total > 0 ? ' &nbsp;·&nbsp; ' + sc.correct + '/' + sc.total + ' solved' : '') + '</div>';
+    html += '<div class="level-card '+lv.color+'" onclick="openLevel(\''+lv.key+'\')">';
+    html += '<div class="level-icon">'+lv.icon+'</div>';
+    html += '<h3>'+lv.label+'</h3>';
+    html += '<p>'+lv.desc+'</p>';
+    html += '<div class="level-count">50 questions'+(sc.total>0?' · '+sc.correct+'/'+sc.total+' solved':'')+'</div>';
     html += '</div>';
   });
-  html += '</div>';
+  html += '</div></div>';
+
+  // Bottom CTA
+  html += '<div class="home-cta"><div class="cta-banner">';
+  html += '<h3>💼 SQL skills alone won\'t get you hired — your CV needs to show it!</h3>';
+  html += '<p>Our experts rewrite your CV to highlight your Data Analyst skills, SQL experience, and projects. Trusted by 500+ job seekers.</p>';
+  html += '<button class="cta-btn" onclick="openCTA()">🚀 Get My CV Reviewed – ₹99</button>';
+  html += '</div></div>';
+
   document.getElementById('app').innerHTML = html;
 }
 
@@ -534,174 +589,129 @@ function openLevel(level) {
   renderLevel();
 }
 
+function buildTableTabs(prefix) {
+  prefix = prefix || 'l';
+  var tbls = ['employees','departments','products','orders'];
+  var h = '<div class="tbl-tabs">';
+  tbls.forEach(function(tbl, i) {
+    h += '<button class="tbl-tab'+(i===0?' active':'')+'" onclick="switchTab(this,\''+prefix+'tab-'+tbl+'\')">' + tbl + '</button>';
+  });
+  h += '</div>';
+  tbls.forEach(function(tbl, i) {
+    var res = xq('SELECT * FROM ' + tbl);
+    h += '<div class="tbl-tab-content" id="'+prefix+'tab-'+tbl+'"'+(i===0?'':' style="display:none"')+'>';
+    if (res.error || !res.rows) { h += '<p style="color:#dc2626;padding:10px;font-size:.8rem">Error loading table</p>'; }
+    else {
+      h += '<table class="mini-table"><thead><tr>';
+      res.cols.forEach(function(col){ h += '<th>'+col+'</th>'; });
+      h += '</tr></thead><tbody>';
+      res.rows.forEach(function(row) {
+        h += '<tr>';
+        row.forEach(function(v){ h += '<td>'+(v===null?'<em style="color:#94a3b8">NULL</em>':v)+'</td>'; });
+        h += '</tr>';
+      });
+      h += '</tbody></table>';
+    }
+    h += '</div>';
+  });
+  return h;
+}
+
+function toggleMobileTbl(btn) {
+  btn.classList.toggle('open');
+  var panel = document.getElementById('tbl-mobile');
+  panel.classList.toggle('open');
+}
+
+function isMobile() { return window.innerWidth <= 700; }
+
 function renderLevel() {
   var qs = QUESTIONS[currentLevel];
-  var colors = {easy:'#22c55e', medium:'#f59e0b', intermediate:'#f97316', complex:'#a78bfa'};
+  var colors = {easy:'#22c55e', medium:'#f59e0b', intermediate:'#f97316', complex:'#8b5cf6'};
+  var tagBg  = {easy:'#dcfce7', medium:'#fef9c3', intermediate:'#ffedd5', complex:'#ede9fe'};
+  var tagFg  = {easy:'#15803d', medium:'#b45309', intermediate:'#c2410c', complex:'#6d28d9'};
   var labels = {easy:'Easy', medium:'Medium', intermediate:'Intermediate', complex:'Complex'};
   var sc = score(currentLevel);
   var lvResults = results[currentLevel] || {};
 
-  var dots = '';
-  for (var i = 0; i < qs.length; i++) {
-    var cls = 'q-dot';
-    if (lvResults[i] === 'correct') cls += ' correct';
-    else if (lvResults[i] === 'wrong') cls += ' wrong';
-    if (i === currentIdx) cls += ' current';
-    dots += '<div class="' + cls + '" onclick="goTo(' + i + ')">' + (i+1) + '</div>';
-  }
-
   var q = qs[currentIdx];
-  var pct = Math.round(((currentIdx+1) / qs.length) * 100);
+  var pct = Math.round(((currentIdx+1)/qs.length)*100);
+  var isLast = (currentIdx === qs.length - 1);
+  var clr = colors[currentLevel];
+
   var savedResult = lvResults[currentIdx];
-  var feedbackHTML = '';
-  if (savedResult === 'correct') {
-    feedbackHTML = '<div class="feedback correct" style="display:block">✅ Correct! Your query produces the right result.</div>';
-  } else if (savedResult === 'wrong') {
-    feedbackHTML = '<div class="feedback wrong" style="display:block">❌ Not quite. Check your logic or try the hint. Click "Show Answer" when ready.</div>';
-  }
+  var preFeedback = '';
+  if (savedResult === 'correct') preFeedback = '<div class="feedback correct">✅ Correct! Your query produces the right result.</div>';
+  else if (savedResult === 'wrong') preFeedback = '<div class="feedback wrong">❌ Not quite. Use the hint or click "Show Answer".</div>';
 
-  var ctaEvery = (currentIdx > 0 && (currentIdx + 1) % 15 === 0) ?
-    '<div class="cta-banner"><h3>Solving SQL is a skill — your CV needs to show it! 💼</h3><p>Data Analyst jobs need a strong CV. Get yours rewritten by experts for just ₹99.</p><button class="cta-btn" onclick="openCTA()">Get My CV Reviewed – ₹99</button></div>' : '';
+  var html = '';
 
-  var html = '<div id="question-area" style="display:block">';
-  html += '<div class="q-header">';
+  // ── Top bar ──
+  html += '<div class="q-topbar">';
   html += '<button class="q-back" onclick="renderHome()">← Levels</button>';
-  html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%;background:' + colors[currentLevel] + '"></div></div>';
-  html += '<div class="progress-txt">' + (currentIdx+1) + ' / ' + qs.length + '</div>';
-  html += '<div class="score-display">Score: <span>' + sc.correct + '</span> / ' + sc.total + '</div>';
+  html += '<div class="q-topbar-center">';
+  html += '<button class="q-nav-btn" onclick="goTo('+(currentIdx-1)+')"'+(currentIdx===0?' disabled':'')+'>‹</button>';
+  html += '<span class="q-counter">'+(currentIdx+1)+' / '+qs.length+'</span>';
+  html += '<button class="q-nav-btn" onclick="goTo('+(currentIdx+1)+')"'+(isLast?' disabled':'')+'>›</button>';
   html += '</div>';
-  html += '<div class="q-nav">' + dots + '</div>';
-
-  // Schema toggle
-  html += '<div class="schema-toggle">';
-  html += '<button class="schema-toggle-btn" onclick="toggleSchema(this)">📋 View Table Schema <span>▼</span></button>';
-  html += '<div class="schema-content">' + SCHEMA_HTML + '</div>';
+  html += '<div class="q-progress"><div class="q-progress-fill" style="width:'+pct+'%;background:'+clr+'"></div></div>';
+  html += '<div class="score-pill">✓ '+sc.correct+' / '+qs.length+'</div>';
   html += '</div>';
 
-  html += '<div class="q-card">';
-  html += '<div class="q-num">' + labels[currentLevel] + ' · Question ' + (currentIdx+1) + ' of 50</div>';
-  html += '<div class="q-title">' + q[0] + '</div>';
-  html += '<div class="q-desc">' + q[1] + '</div>';
-  html += '<div class="q-hint"><strong>💡 Hint:</strong> ' + q[2] + '</div>';
-  html += '<div class="editor-label">Write your SQL query</div>';
+  // ── Two-panel layout ──
+  html += '<div class="q-layout">';
+
+  // LEFT panel
+  html += '<div class="q-left">';
+  html += '<div class="q-left-body">';
+  html += '<span class="diff-tag" style="background:'+tagBg[currentLevel]+';color:'+tagFg[currentLevel]+'">'+labels[currentLevel]+'</span>';
+  html += '<div class="q-title">'+q[0]+'</div>';
+  html += '<div class="q-desc">'+q[1]+'</div>';
+  html += '<div class="q-hint"><strong>💡 Hint:</strong> '+q[2]+'</div>';
+  // On mobile: collapsible table section; on desktop: always visible
+  html += '<div class="tbl-section-label" id="tbl-desktop-label">📋 Database Tables</div>';
+  // Desktop table (hidden on mobile via CSS — shown inside .q-left-body directly)
+  html += '<div id="tbl-desktop">' + buildTableTabs() + '</div>';
+  // Mobile collapsible
+  html += '<div class="mobile-tbl-toggle" onclick="toggleMobileTbl(this)" id="tbl-mobile-toggle">📋 View Database Tables <span class="arrow">▼</span></div>';
+  html += '<div class="tbl-collapsible" id="tbl-mobile">' + buildTableTabs('m') + '</div>';
+  html += '</div></div>';
+
+  // RIGHT panel
+  html += '<div class="q-right">';
+  html += '<div class="editor-bar">SQL Editor &nbsp;·&nbsp; write your query below</div>';
   html += '<textarea class="sql-editor" id="sql-input" placeholder="SELECT ..." spellcheck="false"></textarea>';
-  html += '<div class="btn-row">';
+  html += '<div class="btn-bar">';
   html += '<button class="btn btn-run" onclick="runQuery()">▶ Run Query</button>';
   html += '<button class="btn btn-answer" onclick="showAnswer()">Show Answer</button>';
-  if (currentIdx < qs.length - 1) {
+  if (!isLast) {
     html += '<button class="btn btn-next" onclick="nextQ()">Next →</button>';
   } else {
-    html += '<button class="btn btn-next" onclick="showCompletion()">Finish Level 🎉</button>';
+    html += '<button class="btn btn-next" onclick="showCompletion()">Finish 🎉</button>';
   }
   html += '</div>';
-  html += feedbackHTML;
-  html += '<div id="result-area"></div>';
+  html += '<div class="result-area" id="result-area">';
+  if (preFeedback) html += preFeedback;
   html += '</div>';
-  html += ctaEvery;
   html += '</div>';
+
+  html += '</div>'; // .q-layout
 
   document.getElementById('app').innerHTML = html;
-
-  // Restore textarea if revisiting
-  var ta = document.getElementById('sql-input');
-  if (ta && savedResult) {
-    // don't restore answer, just leave blank for re-attempt
-  }
 }
 
-function toggleSchema(btn) {
-  var content = btn.parentElement.querySelector('.schema-content');
-  content.classList.toggle('open');
-  btn.querySelector('span').textContent = content.classList.contains('open') ? '▲' : '▼';
+function switchTab(btn, targetId) {
+  // Scope tab switching to the parent tbl-tabs container only
+  var tabBar = btn.parentElement;
+  tabBar.querySelectorAll('.tbl-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  // Hide all sibling tbl-tab-content panels (next siblings of tabBar's parent)
+  var wrap = tabBar.parentElement;
+  wrap.querySelectorAll('.tbl-tab-content').forEach(function(p){ p.style.display='none'; });
+  document.getElementById(targetId).style.display = 'block';
 }
 
 function runQuery() {
   var userSQL = document.getElementById('sql-input').value.trim();
   if (!userSQL) return;
-  var q = QUESTIONS[currentLevel][currentIdx];
-  var res = cmp(userSQL, q[3]);
-  if (!results[currentLevel]) results[currentLevel] = {};
-
-  var area = document.getElementById('result-area');
-  if (res.error) {
-    area.innerHTML = '<div class="feedback wrong" style="display:block;margin-top:12px">❌ SQL Error: ' + res.error + '</div>';
-    results[currentLevel][currentIdx] = 'wrong';
-  } else if (res.ok) {
-    area.innerHTML = '<div class="feedback correct" style="display:block;margin-top:12px">✅ Correct! Your query produces the expected result.</div>' + tableHTML(res.u);
-    results[currentLevel][currentIdx] = 'correct';
-  } else {
-    area.innerHTML = '<div class="feedback wrong" style="display:block;margin-top:12px">❌ Result does not match. Expected:<br>' + tableHTML(res.e) + '<br>Your output:<br>' + tableHTML(res.u) + '</div>';
-    results[currentLevel][currentIdx] = 'wrong';
-  }
-  updateDot();
-}
-
-function showAnswer() {
-  var q = QUESTIONS[currentLevel][currentIdx];
-  var res = xq(q[3]);
-  var area = document.getElementById('result-area');
-  var ta = document.getElementById('sql-input');
-  if (ta) ta.value = q[3];
-  area.innerHTML = '<div class="feedback info" style="display:block;margin-top:12px"><strong>Answer:</strong> <code style="color:#38bdf8">' + q[3] + '</code><br><br><strong>Expected output:</strong>' + tableHTML(res) + '</div>';
-}
-
-function updateDot() {
-  var dots = document.querySelectorAll('.q-dot');
-  var lvResults = results[currentLevel] || {};
-  for (var i = 0; i < dots.length; i++) {
-    dots[i].className = 'q-dot';
-    if (lvResults[i] === 'correct') dots[i].className += ' correct';
-    else if (lvResults[i] === 'wrong') dots[i].className += ' wrong';
-    if (i === currentIdx) dots[i].className += ' current';
-  }
-  var sc = score(currentLevel);
-  var sd = document.querySelector('.score-display');
-  if (sd) sd.innerHTML = 'Score: <span>' + sc.correct + '</span> / ' + sc.total;
-}
-
-function goTo(idx) {
-  currentIdx = idx;
-  renderLevel();
-}
-
-function nextQ() {
-  currentIdx++;
-  renderLevel();
-}
-
-function showCompletion() {
-  var sc = score(currentLevel);
-  var labels = {easy:'Easy', medium:'Medium', intermediate:'Intermediate', complex:'Complex'};
-  var pct = sc.total > 0 ? Math.round(sc.correct * 100 / sc.total) : 0;
-  var emoji = pct >= 80 ? '🏆' : pct >= 60 ? '🎯' : '💪';
-  var html = '<div style="max-width:920px;margin:0 auto;padding:40px 20px">';
-  html += '<div class="completion-card">';
-  html += '<div class="completion-emoji">' + emoji + '</div>';
-  html += '<h2>' + labels[currentLevel] + ' Level Complete!</h2>';
-  html += '<p>You answered ' + sc.correct + ' out of ' + sc.total + ' attempted questions correctly.</p>';
-  html += '<div class="score-big">' + sc.correct + ' / ' + sc.total + '</div>';
-  html += '<div class="cta-banner" style="margin-bottom:16px"><h3>Ready for a Data Analyst job? 🚀</h3><p>Impress hiring managers with a professionally written CV. Reviewed and rewritten by experts for just ₹99.</p><button class="cta-btn" onclick="openCTA()">Get My CV Reviewed – ₹99</button></div>';
-  html += '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px">';
-  html += '<button class="btn btn-answer" onclick="renderHome()">← Back to Levels</button>';
-  html += '<button class="btn btn-run" onclick="openLevel(\'' + currentLevel + '\')">Retry Level</button>';
-  html += '</div></div></div>';
-  document.getElementById('app').innerHTML = html;
-}
-
-function openCTA() {
-  window.open('https://scoremycv.in', '_blank');
-}
-
-// ─── INIT ────────────────────────────────────────────────────────
-initSqlJs({ locateFile: function(f) { return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/' + f; } })
-  .then(function(SQL) {
-    db = new SQL.Database();
-    db.run(SETUP);
-    renderHome();
-  })
-  .catch(function(e) {
-    document.getElementById('app').innerHTML = '<div style="text-align:center;padding:60px 20px"><p style="color:#f87171">Failed to load SQL engine: ' + e.message + '</p><p style="color:#64748b;font-size:.85rem;margin-top:8px">Please check your internet connection and refresh.</p></div>';
-  });
-</script>
-</body>
-</html>
+  var q

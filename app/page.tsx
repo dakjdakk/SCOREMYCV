@@ -1,165 +1,340 @@
 "use client";
 import { useState, useEffect } from "react";
-import emailjs from "@emailjs/browser";
 
 // Razorpay window type
 declare global {
-  interface Window {
-    Razorpay: any;
-  }
+  interface Window { Razorpay: any; }
 }
-// ── Credentials ───────────────────────────────────────────────────────
-const EJS_SERVICE       = "service_ksveb33";
-const EJS_OWNER_TPL     = "template_o8gfe6o";
-const EJS_CUSTOMER_TPL  = "template_3k1yipp";
-const EJS_PUBLIC_KEY    = "Icq14zi9nWQuOdDBi";
-const CLOUDINARY_CLOUD  = "dqhxptonc";
-const CLOUDINARY_PRESET = "scoremycv_resumes";
+
 const OWNER_EMAIL = "akshaypaip@gmail.com";
+
 // ──────────────────────────────────────────────────────────────────────
 const IT_JOB_ROLES = [
-  "Software Engineer / Developer",
-  "Frontend Developer",
-  "Backend Developer",
-  "Full Stack Developer",
-  "React Developer",
-  "Angular Developer",
-  "Vue.js Developer",
-  "Node.js Developer",
-  "Python Developer",
-  "Java Developer",
-  ".NET Developer",
-  "PHP Developer",
-  "Mobile Developer (Android)",
-  "Mobile Developer (iOS)",
-  "React Native Developer",
-  "Data Analyst",
-  "Data Scientist",
-  "Data Engineer",
-  "Machine Learning Engineer",
-  "AI / Generative AI Engineer",
-  "Computer Vision Engineer",
-  "NLP Engineer",
-  "Business Intelligence Developer",
-  "Power BI Developer",
-  "Tableau Developer",
-  "SQL Developer / Database Developer",
-  "Database Administrator (DBA)",
-  "DevOps Engineer",
-  "Site Reliability Engineer (SRE)",
-  "Cloud Engineer (AWS)",
-  "Cloud Engineer (Azure)",
-  "Cloud Engineer (GCP)",
-  "Platform Engineer",
-  "Kubernetes / Docker Engineer",
-  "QA Engineer / Test Engineer",
-  "Automation Test Engineer",
-  "Performance Test Engineer",
-  "Cybersecurity Analyst",
-  "Information Security Engineer",
-  "Penetration Tester / Ethical Hacker",
-  "Network Engineer",
-  "System Administrator",
-  "IT Support Engineer / Help Desk",
-  "Technical Lead",
-  "Solution Architect",
-  "Enterprise Architect",
-  "Cloud Architect",
-  "Product Manager (Technical)",
-  "Business Analyst",
-  "Scrum Master",
-  "Agile Coach",
-  "IT Project Manager",
-  "Salesforce Developer",
-  "SAP Consultant",
-  "ERP Consultant",
-  "Blockchain Developer",
-  "Embedded Systems Engineer",
-  "Game Developer",
-  "UI/UX Designer",
-  "Technical Writer",
+  "Software Engineer / Developer","Frontend Developer","Backend Developer",
+  "Full Stack Developer","React Developer","Angular Developer","Vue.js Developer",
+  "Node.js Developer","Python Developer","Java Developer",".NET Developer",
+  "PHP Developer","Mobile Developer (Android)","Mobile Developer (iOS)",
+  "React Native Developer","Data Analyst","Data Scientist","Data Engineer",
+  "Machine Learning Engineer","AI / Generative AI Engineer","Computer Vision Engineer",
+  "NLP Engineer","Business Intelligence Developer","Power BI Developer",
+  "Tableau Developer","SQL Developer / Database Developer","Database Administrator (DBA)",
+  "DevOps Engineer","Site Reliability Engineer (SRE)","Cloud Engineer (AWS)",
+  "Cloud Engineer (Azure)","Cloud Engineer (GCP)","Platform Engineer",
+  "Kubernetes / Docker Engineer","QA Engineer / Test Engineer",
+  "Automation Test Engineer","Performance Test Engineer","Cybersecurity Analyst",
+  "Information Security Engineer","Penetration Tester / Ethical Hacker",
+  "Network Engineer","System Administrator","IT Support Engineer / Help Desk",
+  "Technical Lead","Solution Architect","Enterprise Architect","Cloud Architect",
+  "Product Manager (Technical)","Business Analyst","Scrum Master","Agile Coach",
+  "IT Project Manager","Salesforce Developer","SAP Consultant","ERP Consultant",
+  "Blockchain Developer","Embedded Systems Engineer","Game Developer",
+  "UI/UX Designer","Technical Writer",
 ];
+
 const EXPERIENCE_LEVELS = [
-  "Fresher (0 years)",
-  "0 – 2 years",
-  "2 – 5 years",
-  "5 – 8 years",
-  "8 – 10 years",
-  "10 – 15 years",
-  "15+ years",
+  "Fresher (0 years)","0 – 2 years","2 – 5 years","5 – 8 years",
+  "8 – 10 years","10 – 15 years","15+ years",
 ];
+
 function generateOrderId() {
   return "SCR-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
-async function uploadResume(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("upload_preset", CLOUDINARY_PRESET);
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/raw/upload`,
-    { method: "POST", body: fd }
-  );
-  const data = await res.json();
-  return data.secure_url || "";
-}
+
 const features = [
-  { icon: "📊", title: "ATS Score Report", desc: "Get a clear percentage score showing exactly how well your resume matches the job role — with a full breakdown of what's working and what's not." },
-  { icon: "🔑", title: "Missing Keywords", desc: "We identify the exact keywords recruiters are scanning for, so you know precisely what was holding your resume back." },
-  { icon: "✏️", title: "CV Fully Rewritten", desc: "Your resume is professionally rewritten from scratch, tailored to your target job role, and delivered as a polished PDF straight to your inbox." },
-  { icon: "🎁", title: "FREE Bonus Worth ₹499", desc: "Every order includes 100+ Interview Q&A covering Python, SQL, Advanced Excel, and Power BI — the most in-demand skills in today's job market." },
+  { icon: "📊", title: "ATS Score Report", desc: "See exactly how your resume is scoring and where it is failing — with a full breakdown by category." },
+  { icon: "🔑", title: "Missing Keywords Added", desc: "We identify and inject the exact keywords ATS systems scan for, so your resume gets seen." },
+  { icon: "✏️", title: "CV Fully Rewritten by AI", desc: "Every section is rewritten professionally — better language, stronger action verbs, and job-role tailored content." },
+  { icon: "⚡", title: "Instant PDF Download", desc: "No waiting, no email delays. Your rewritten CV downloads automatically the moment payment is confirmed." },
 ];
+
 const steps = [
   { step: "01", title: "Upload Your Resume", desc: "Upload your existing resume in PDF or Word format." },
-  { step: "02", title: "Select Job Role", desc: "Choose your target job role and years of experience from the dropdowns." },
-  { step: "03", title: "Pay ₹99 via UPI", desc: "One-time payment — no subscription, no hidden charges. Pay securely via any UPI app." },
-  { step: "04", title: "Check Your Inbox", desc: "Within 3 hours, your rewritten CV, ATS report, and 100+ Interview Q&A land directly in your email." },
+  { step: "02", title: "Get Free ATS Score", desc: "Instantly see your score, missing keywords, and what's holding your resume back." },
+  { step: "03", title: "Pay ₹18 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
+  { step: "04", title: "Download Instantly", desc: "Your AI-rewritten, ATS-optimised CV downloads automatically — right away." },
 ];
+
 const faqs = [
   {
     q: "What is an ATS score and why does it matter?",
-    a: "ATS stands for Applicant Tracking System — software that companies use to automatically filter resumes before any human ever sees them. If your resume does not match the job role closely enough, it gets rejected instantly. Your ATS score tells you exactly how well your resume is performing, so you know what to fix before applying.",
+    a: "ATS stands for Applicant Tracking System — software companies use to automatically filter resumes before a human ever sees them. If your score is too low, your resume gets rejected instantly. Our free check tells you exactly where you stand.",
   },
   {
-    q: "What do I get for ₹99?",
-    a: "You get four things delivered to your email within 3 hours: (1) A full ATS score report with a detailed breakdown, (2) A list of missing keywords you need to add, (3) Your resume fully rewritten and polished as a ready-to-send PDF, and (4) A FREE bonus guide with 100+ Interview Questions and Answers covering Python, SQL, Advanced Excel, and Power BI — worth ₹499 on its own.",
+    q: "What do I get for ₹18?",
+    a: "Your entire CV is rewritten by AI — professional language, strong action verbs, missing keywords added, and ATS-optimised formatting. The rewritten CV is generated instantly and downloads as a clean PDF the moment payment is confirmed.",
   },
   {
-    q: "Will my CV actually be rewritten — or just given suggestions?",
-    a: "Your CV is fully rewritten — not just reviewed. We rewrite every section to match your target job role, fix the language, improve the structure, and make sure it clears ATS filters. The final rewritten resume is sent as a clean, professional PDF directly to your email, ready to submit.",
+    q: "Will my CV actually be rewritten — or just suggestions?",
+    a: "Fully rewritten. Every section is improved — language, structure, keywords, and formatting — tailored to your target job role. You download the final polished PDF instantly after payment.",
   },
   {
-    q: "What is included in the FREE interview preparation bonus?",
-    a: "Every order comes with a comprehensive guide of 100+ Interview Questions and Answers covering four of the most in-demand skills: Python, SQL, Advanced Excel, and Power BI. These are the exact topics hiring managers ask about in technical rounds — having them prepared in one place gives you a serious advantage walking into any interview.",
-  },
-  {
-    q: "How long does it take to receive everything?",
-    a: "Everything is delivered to your email within 3 hours of payment — the ATS report, your rewritten CV, and the interview preparation bonus guide. All in one email, all as downloadable PDFs.",
+    q: "How long does it take?",
+    a: "Instant. The AI rewrites your CV in seconds after payment. Your PDF downloads automatically — no waiting, no email.",
   },
   {
     q: "Is my data safe?",
-    a: "Yes, completely. Your resume and job role details are used solely to prepare your report and rewritten CV. We do not store, sell, or share your information with any third party.",
+    a: "Yes. Your resume is used only to generate the rewritten CV. We do not store, sell, or share your information with any third party.",
   },
   {
-    q: "Can I use this for any job or industry?",
-    a: "Yes — our service works across all industries including IT, finance, marketing, operations, healthcare, and engineering. Whether you are a fresher or a senior professional, the ATS analysis and CV rewrite are tailored to your specific job role.",
+    q: "Can I use this for any job role or industry?",
+    a: "Yes — it works across all IT and tech roles. You choose your target job role and the AI tailors the rewrite accordingly.",
+  },
+  {
+    q: "What if the download does not start?",
+    a: "If the download doesn't start automatically, check your browser's pop-up blocker and allow downloads from scoremycv.in. You can also reach us at akshaypaip@gmail.com with your payment ID.",
   },
 ];
-// ── Payment Modal ─────────────────────────────────────────────────────
-function PaymentModal({ onClose }: { onClose: () => void }) {
-  const [step, setStep] = useState<1 | 2>(1);  // 1 = details, 2 = confirmed
-  const [file, setFile] = useState<File | null>(null);
+
+// ── ATS Types ─────────────────────────────────────────────────────────
+type ScoreBreakdown = { score: number; max: number; label: string; issues: string[] };
+type ATSResult = {
+  score: number; wordCount: number;
+  breakdown: Record<string, ScoreBreakdown>;
+  topMissingKeywords: string[]; foundKeywords: string[]; allIssues: string[];
+};
+
+// ── Score Gauge ───────────────────────────────────────────────────────
+function ScoreGauge({ score }: { score: number }) {
+  const color = score >= 70 ? "#16a34a" : score >= 50 ? "#d97706" : "#dc2626";
+  const label = score >= 70 ? "Good" : score >= 50 ? "Average" : "Poor";
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-36 h-36 rounded-full flex flex-col items-center justify-center border-8 shadow-lg"
+        style={{ borderColor: color }}>
+        <span className="text-4xl font-extrabold" style={{ color }}>{score}</span>
+        <span className="text-xs font-bold" style={{ color }}>/100</span>
+      </div>
+      <span className="mt-2 text-sm font-bold px-3 py-1 rounded-full"
+        style={{ background: color + "20", color }}>
+        {label} ATS Score
+      </span>
+    </div>
+  );
+}
+
+// ── ATS Checker ───────────────────────────────────────────────────────
+function ATSChecker({ onUpgrade }: {
+  onUpgrade: (data: { file: File; jobRole: string }) => void;
+}) {
+  const [file, setFile]       = useState<File | null>(null);
   const [jobRole, setJobRole] = useState("");
-  const [experience, setExperience] = useState("");
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+  const [result, setResult]   = useState<ATSResult | null>(null);
+
+  const canCheck = !!file && !!jobRole;
+
+  async function handleCheck() {
+    if (!file || !jobRole) return;
+    setError(""); setLoading(true); setResult(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("jobRole", jobRole);
+      const res  = await fetch("/api/ats-score", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to score CV");
+      setResult(data);
+    } catch (e: any) {
+      setError(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const upsellMsg = result
+    ? result.score < 50
+      ? "Your CV will be auto-rejected by most ATS systems. Get it fixed now for just ₹18."
+      : result.score < 70
+      ? "Your CV is below average — most companies will skip it. Get it rewritten for ₹18."
+      : "Good start! A professionally rewritten CV can push your score above 85. Fix it for ₹18."
+    : "";
+
+  return (
+    <section id="free-ats" className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-slate-50 to-blue-50 border-y border-blue-100">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
+            ✅ 100% Free — No Payment Required
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-800 mb-3">
+            Check Your ATS Score Instantly
+          </h2>
+          <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
+            Upload your CV and see exactly why recruiters are ignoring it — in seconds, for free.
+          </p>
+        </div>
+
+        {!result ? (
+          <div className="bg-white rounded-3xl shadow-lg border border-blue-100 p-6 sm:p-8 max-w-lg mx-auto">
+            <label className="block border-2 border-dashed border-blue-200 rounded-2xl p-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition mb-4">
+              <input type="file" accept=".pdf,.doc,.docx" className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)} />
+              {file ? (
+                <p className="text-blue-600 font-semibold text-sm">✅ {file.name}</p>
+              ) : (
+                <>
+                  <p className="text-2xl mb-2">📄</p>
+                  <p className="text-slate-600 font-semibold text-sm">Click to upload your CV</p>
+                  <p className="text-slate-400 text-xs mt-1">PDF, DOC, DOCX</p>
+                </>
+              )}
+            </label>
+
+            <select
+              className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white mb-4"
+              value={jobRole} onChange={(e) => setJobRole(e.target.value)}
+            >
+              <option value="">— Select Your Target Job Role —</option>
+              {IT_JOB_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm mb-4">
+                {error}
+              </div>
+            )}
+
+            <button onClick={handleCheck} disabled={!canCheck || loading}
+              className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base">
+              {loading ? "⏳ Analysing your CV..." : "🔍 Check My ATS Score — Free"}
+            </button>
+            <p className="text-center text-slate-400 text-xs mt-3">
+              No sign-up needed · Results in seconds · 100% free
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Score + upsell */}
+            <div className="bg-white rounded-3xl shadow-lg border border-blue-100 p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <ScoreGauge score={result.score} />
+                <div className="flex-1 text-center sm:text-left">
+                  <h3 className="text-xl font-extrabold text-slate-800 mb-2">
+                    Your ATS Score: {result.score}/100
+                  </h3>
+                  <p className="text-slate-500 text-sm mb-4">{upsellMsg}</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => file && onUpgrade({ file, jobRole })}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm">
+                      🚀 Fix My CV for ₹18 — Instant Download
+                    </button>
+                    <button
+                      onClick={() => { setResult(null); setFile(null); setJobRole(""); }}
+                      className="border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold px-6 py-3 rounded-2xl transition text-sm">
+                      Check Another CV
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Breakdown */}
+            <div className="bg-white rounded-3xl shadow-lg border border-blue-100 p-6 sm:p-8">
+              <h4 className="font-extrabold text-slate-800 mb-5 text-lg">Score Breakdown</h4>
+              <div className="space-y-4">
+                {Object.values(result.breakdown).map((b) => (
+                  <div key={b.label}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-semibold text-slate-700">{b.label}</span>
+                      <span className="text-sm font-bold text-slate-800">{b.score}/{b.max}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2.5">
+                      <div className="h-2.5 rounded-full transition-all" style={{
+                        width: `${(b.score / b.max) * 100}%`,
+                        background: b.score / b.max >= 0.7 ? "#16a34a" : b.score / b.max >= 0.4 ? "#d97706" : "#dc2626",
+                      }} />
+                    </div>
+                    {b.issues.length > 0 && (
+                      <ul className="mt-2 space-y-1">
+                        {b.issues.slice(0, 3).map((issue, i) => (
+                          <li key={i} className="text-xs text-red-600 flex items-start gap-1">
+                            <span className="mt-0.5">⚠</span> {issue}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Missing keywords */}
+            {result.topMissingKeywords.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-lg border border-red-100 p-6 sm:p-8">
+                <h4 className="font-extrabold text-slate-800 mb-2 text-lg">
+                  ❌ Missing Keywords ({result.topMissingKeywords.length})
+                </h4>
+                <p className="text-slate-500 text-sm mb-4">
+                  ATS systems are scanning for these — your CV is missing them.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {result.topMissingKeywords.map((kw) => (
+                    <span key={kw} className="bg-red-50 text-red-700 border border-red-200 text-xs font-semibold px-3 py-1 rounded-full">
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Found keywords */}
+            {result.foundKeywords.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-lg border border-green-100 p-6 sm:p-8">
+                <h4 className="font-extrabold text-slate-800 mb-2 text-lg">
+                  ✅ Keywords Found ({result.foundKeywords.length})
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {result.foundKeywords.map((kw) => (
+                    <span key={kw} className="bg-green-50 text-green-700 border border-green-200 text-xs font-semibold px-3 py-1 rounded-full">
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Final CTA */}
+            <div className="bg-blue-600 rounded-3xl p-6 sm:p-8 text-center text-white">
+              <h4 className="text-xl font-extrabold mb-2">Want all of this fixed automatically?</h4>
+              <p className="text-blue-200 text-sm mb-6">
+                For just ₹18 our AI rewrites your entire CV — adds missing keywords, fixes action verbs, improves every line — and you download the polished PDF instantly.
+              </p>
+              <button
+                onClick={() => file && onUpgrade({ file, jobRole })}
+                className="bg-white text-blue-700 font-bold px-8 py-4 rounded-2xl hover:bg-blue-50 transition text-base shadow-lg">
+                🚀 Get My CV Rewritten for ₹18 — Instant Download
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ── Payment Modal ─────────────────────────────────────────────────────
+function PaymentModal({
+  preFile, preJobRole, onClose,
+}: {
+  preFile?: File;
+  preJobRole?: string;
+  onClose: () => void;
+}) {
+  const [step, setStep]           = useState<1 | 2>(1);
+  const [file, setFile]           = useState<File | null>(preFile || null);
+  const [jobRole, setJobRole]     = useState(preJobRole || "");
+  const [experience, setExperience] = useState("");
+  const [loading, setLoading]     = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
-  const [error, setError] = useState("");
-  const [orderId] = useState(generateOrderId);
+  const [error, setError]         = useState("");
+  const [orderId]                 = useState(generateOrderId);
   const [paymentId, setPaymentId] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
 
-  const canProceed = file && jobRole && experience && email.includes("@");
+  const canProceed = !!file && !!jobRole && !!experience;
 
-  // Load Razorpay checkout script once
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -169,21 +344,16 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
   }, []);
 
   async function handlePay() {
-    if (!file || !canProceed) return;
-    setError("");
-    setLoading(true);
+    if (!canProceed) return;
+    setError(""); setLoading(true);
 
     try {
-      // 1. Upload resume to Cloudinary
-      setLoadingMsg("⏳ Uploading resume...");
-      const resumeUrl = await uploadResume(file);
-
-      // 2. Create Razorpay order on our backend
+      // 1. Create Razorpay order
       setLoadingMsg("⏳ Creating order...");
-      const orderRes = await fetch("/api/create-order", {
+      const orderRes  = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 9900, currency: "INR", receipt: orderId }),
+        body: JSON.stringify({ amount: 1800, currency: "INR", receipt: orderId }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
@@ -191,64 +361,70 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
       setLoading(false);
       setLoadingMsg("");
 
-      // 3. Open Razorpay checkout popup
+      // 2. Open Razorpay checkout
       const rzp = new window.Razorpay({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "ScoreMyCV",
-        description: "CV Rewriting + ATS Report + 100+ Interview Q&A",
-        order_id: orderData.order_id,
-        prefill: { email },
-        theme: { color: "#2563eb" },
-        modal: {
-          ondismiss: () => {
-            // User closed popup — do nothing, stay on step 1
-          },
-        },
+        key:         process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount:      orderData.amount,
+        currency:    orderData.currency,
+        name:        "ScoreMyCV",
+        description: "AI CV Rewrite — Instant Download",
+        order_id:    orderData.order_id,
+        theme:       { color: "#2563eb" },
         handler: async (response: {
           razorpay_payment_id: string;
           razorpay_order_id: string;
           razorpay_signature: string;
         }) => {
           setLoading(true);
-          setLoadingMsg("⏳ Verifying payment...");
 
-          // 4. Verify payment signature on backend
+          // 3. Verify payment
+          setLoadingMsg("⏳ Verifying payment...");
           const verifyRes = await fetch("/api/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
+              razorpay_order_id:   response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
+              razorpay_signature:  response.razorpay_signature,
             }),
           });
           if (!verifyRes.ok) {
             setLoading(false);
-            setError("Payment verification failed. Please contact support with your payment ID: " + response.razorpay_payment_id);
+            setError("Payment verification failed. Contact us with payment ID: " + response.razorpay_payment_id);
             return;
           }
 
           setPaymentId(response.razorpay_payment_id);
 
-          // 5. Send confirmation emails
-          setLoadingMsg("⏳ Sending confirmation...");
-          try {
-            await emailjs.send(EJS_SERVICE, EJS_OWNER_TPL, {
-              to_email: OWNER_EMAIL,
-              order_id: orderId,
-              customer_email: email,
-              job_description: `Job Role: ${jobRole} | Experience: ${experience}`,
-              resume_url: resumeUrl,
-            }, EJS_PUBLIC_KEY);
-            await emailjs.send(EJS_SERVICE, EJS_CUSTOMER_TPL, {
-              to_email: email,
-              order_id: orderId,
-            }, EJS_PUBLIC_KEY);
-          } catch (_) {
-            // Email failure is non-critical — order is confirmed
+          // 4. Rewrite CV with AI
+          setLoadingMsg("🤖 Rewriting your CV with AI...");
+          const fd = new FormData();
+          fd.append("file",       file!);
+          fd.append("jobRole",    jobRole);
+          fd.append("experience", experience);
+
+          const rewriteRes = await fetch("/api/rewrite-cv", { method: "POST", body: fd });
+
+          if (!rewriteRes.ok) {
+            const err = await rewriteRes.json().catch(() => ({}));
+            setLoading(false);
+            setError((err as any).error || "AI rewrite failed. Please email us at " + OWNER_EMAIL + " with your payment ID: " + response.razorpay_payment_id);
+            return;
           }
+
+          // 5. Trigger download
+          setLoadingMsg("⬇️ Preparing your download...");
+          const blob = await rewriteRes.blob();
+          const url  = URL.createObjectURL(blob);
+          setDownloadUrl(url);
+
+          // Auto-trigger download
+          const a = document.createElement("a");
+          a.href     = url;
+          a.download = "rewritten-cv.pdf";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
 
           setLoading(false);
           setLoadingMsg("");
@@ -256,8 +432,8 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
         },
       });
 
-      rzp.on("payment.failed", (response: any) => {
-        setError("Payment failed: " + (response.error?.description || "Please try again."));
+      rzp.on("payment.failed", (r: any) => {
+        setError("Payment failed: " + (r.error?.description || "Please try again."));
       });
 
       rzp.open();
@@ -282,7 +458,6 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
             </div>
             <button onClick={onClose} className="text-white/80 hover:text-white text-3xl leading-none">×</button>
           </div>
-          {/* Step indicators */}
           <div className="flex items-center gap-2">
             {[1, 2].map((s) => (
               <div key={s} className="flex items-center gap-2">
@@ -291,106 +466,96 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
               </div>
             ))}
             <span className="text-white/80 text-xs ml-2">
-              {step === 1 ? "Your Details" : "Order Confirmed!"}
+              {step === 1 ? "Your Details" : "Download Ready!"}
             </span>
           </div>
         </div>
 
         <div className="p-5 sm:p-6">
 
-          {/* ── STEP 1: Details + Pay ── */}
+          {/* ── STEP 1 ── */}
           {step === 1 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-extrabold text-slate-800">Upload Your Resume & Details</h3>
+              <h3 className="text-lg font-extrabold text-slate-800">Upload Your Resume</h3>
 
-              {/* File upload */}
               <label className="block border-2 border-dashed border-blue-200 rounded-2xl p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
-                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <input type="file" accept=".pdf,.doc,.docx" className="hidden"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)} />
                 {file
                   ? <p className="text-blue-600 font-semibold text-sm">✅ {file.name}</p>
                   : <><p className="text-slate-500 text-sm">📎 Click to upload your resume</p><p className="text-slate-400 text-xs mt-1">PDF, DOC, DOCX</p></>
                 }
               </label>
 
-              {/* Job Role */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Target Job Role</label>
                 <select
                   className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white cursor-pointer"
-                  value={jobRole}
-                  onChange={(e) => setJobRole(e.target.value)}
+                  value={jobRole} onChange={(e) => setJobRole(e.target.value)}
                 >
                   <option value="">— Select Job Role —</option>
-                  {IT_JOB_ROLES.map((role) => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
+                  {IT_JOB_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
 
-              {/* Experience */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Years of Experience</label>
                 <select
                   className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white cursor-pointer"
-                  value={experience}
-                  onChange={(e) => setExperience(e.target.value)}
+                  value={experience} onChange={(e) => setExperience(e.target.value)}
                 >
                   <option value="">— Select Experience —</option>
-                  {EXPERIENCE_LEVELS.map((level) => (
-                    <option key={level} value={level}>{level}</option>
-                  ))}
+                  {EXPERIENCE_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
 
-              {/* Email */}
-              <input
-                type="email"
-                className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Your email address (we'll send your CV here)"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              {/* What you get */}
               <div className="bg-blue-50 rounded-2xl p-4 space-y-1.5">
-                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">What you'll receive within 3 hours</p>
-                {["✅ ATS Score Report", "✅ Fully Rewritten CV (PDF)", "✅ 100+ Interview Q&A", "🎁 Python, SQL, Excel & Power BI Guide (FREE)"].map((i) => (
-                  <p key={i} className="text-xs text-slate-600">{i}</p>
-                ))}
+                <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">What you get</p>
+                {[
+                  "✅ CV fully rewritten by AI for your job role",
+                  "✅ Missing keywords added automatically",
+                  "✅ Strong action verbs and better language",
+                  "⚡ Instant PDF download — no waiting",
+                ].map((i) => <p key={i} className="text-xs text-slate-600">{i}</p>)}
               </div>
 
-              {/* Error message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm">
                   {error}
                 </div>
               )}
 
-              {/* Pay button */}
               <button
                 onClick={handlePay}
                 disabled={!canProceed || loading}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
               >
-                {loading ? loadingMsg : "🔒 Pay ₹99 Securely →"}
+                {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
               </button>
               <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
             </div>
           )}
 
-          {/* ── STEP 2: Confirmed ── */}
+          {/* ── STEP 2 ── */}
           {step === 2 && (
             <div className="text-center space-y-4">
               <div className="text-5xl">🎉</div>
-              <h3 className="text-2xl font-extrabold text-slate-800">Order Confirmed!</h3>
+              <h3 className="text-2xl font-extrabold text-slate-800">Your CV is Ready!</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Thank you! Your rewritten CV, ATS report, and free interview guide will be delivered to
+                Your AI-rewritten CV has been downloaded to your device. Check your Downloads folder.
               </p>
-              <div className="bg-blue-50 rounded-2xl px-4 py-3">
-                <p className="font-bold text-blue-700 text-sm break-all">{email}</p>
-              </div>
-              <p className="text-slate-500 text-sm">within <strong>3 hours</strong>.</p>
-              <div className="bg-slate-50 rounded-2xl px-4 py-3 space-y-2">
+
+              {downloadUrl && (
+                <a
+                  href={downloadUrl}
+                  download="rewritten-cv.pdf"
+                  className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm"
+                >
+                  ⬇️ Download Again
+                </a>
+              )}
+
+              <div className="bg-slate-50 rounded-2xl px-4 py-3 space-y-2 text-left">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400 text-xs">Order ID</span>
                   <span className="font-bold text-slate-700 text-sm">{orderId}</span>
@@ -398,11 +563,17 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                 {paymentId && (
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 text-xs">Payment ID</span>
-                    <span className="font-bold text-slate-700 text-xs">{paymentId}</span>
+                    <span className="font-bold text-slate-700 text-xs break-all">{paymentId}</span>
                   </div>
                 )}
               </div>
-              <button onClick={onClose} className="w-full border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold py-3 rounded-2xl transition text-sm">
+
+              <p className="text-slate-400 text-xs">
+                Issues? Email us at <a href={`mailto:${OWNER_EMAIL}`} className="text-blue-600 underline">{OWNER_EMAIL}</a>
+              </p>
+
+              <button onClick={onClose}
+                className="w-full border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold py-3 rounded-2xl transition text-sm">
                 Close
               </button>
             </div>
@@ -418,43 +589,32 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
 function Navbar({ onUpload }: { onUpload: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navLinks = [
-    { href: "#features", label: "What You Get" },
+    { href: "#features",     label: "What You Get" },
     { href: "#how-it-works", label: "How It Works" },
-    { href: "#pricing", label: "Pricing" },
-    { href: "#faq", label: "FAQ" },
+    { href: "#pricing",      label: "Pricing" },
+    { href: "#faq",          label: "FAQ" },
   ];
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        {/* Logo */}
         <div className="flex items-center gap-2">
           <span className="text-2xl">📄</span>
           <span className="font-bold text-blue-700 text-lg">ScoreMyCV</span>
         </div>
-
-        {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
           {navLinks.map((l) => (
             <a key={l.href} href={l.href} className="hover:text-blue-600 transition">{l.label}</a>
           ))}
         </div>
-
-        {/* Right side */}
         <div className="flex items-center gap-2">
-          {/* SQL Practice CTA — full text on md+, short on mobile */}
-          <a
-            href="/sql-practice"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-full transition text-sm whitespace-nowrap"
-          >
+          <a href="/sql-practice"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-full transition text-sm whitespace-nowrap">
             <span className="hidden sm:inline">⚡ Practice SQL · Get Hired</span>
             <span className="sm:hidden">⚡ SQL Practice</span>
           </a>
-
-          {/* Hamburger — mobile only */}
           <button
             className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-slate-100 transition"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
+            onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu"
           >
             <span className={`block w-5 h-0.5 bg-slate-600 transition-all ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
             <span className={`block w-5 h-0.5 bg-slate-600 transition-all ${menuOpen ? "opacity-0" : ""}`} />
@@ -462,26 +622,19 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
           </button>
         </div>
       </div>
-
-      {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-blue-100 px-4 py-3 flex flex-col gap-1 shadow-lg">
           {navLinks.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
+            <a key={l.href} href={l.href}
               className="text-slate-700 hover:text-blue-600 font-medium text-sm py-2.5 px-2 rounded-lg hover:bg-blue-50 transition"
-              onClick={() => setMenuOpen(false)}
-            >
+              onClick={() => setMenuOpen(false)}>
               {l.label}
             </a>
           ))}
           <div className="border-t border-slate-100 mt-1 pt-2">
-            <button
-              onClick={() => { setMenuOpen(false); onUpload(); }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition text-sm"
-            >
-              📄 Get My CV Reviewed – ₹99
+            <button onClick={() => { setMenuOpen(false); onUpload(); }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition text-sm">
+              📄 Fix My CV for ₹18
             </button>
           </div>
         </div>
@@ -490,6 +643,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
   );
 }
 
+// ── Hero ──────────────────────────────────────────────────────────────
 function Hero({ onUpload }: { onUpload: () => void }) {
   return (
     <section className="relative pt-24 sm:pt-32 pb-20 sm:pb-24 px-4 sm:px-6 bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 overflow-hidden">
@@ -498,19 +652,20 @@ function Hero({ onUpload }: { onUpload: () => void }) {
       <div className="relative max-w-4xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full mb-6">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
-          CV Rewritten & Delivered to Your Inbox • 3 Hours • ₹99 Only
+          Free ATS Check · AI CV Rewrite · Instant Download · ₹18 Only
         </div>
         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
           Stop Getting Rejected.{" "}
-          <span className="text-blue-200">Get Your CV Rewritten & Interview-Ready.</span>
+          <span className="text-blue-200">Get Your CV Rewritten & ATS-Optimised.</span>
         </h1>
         <p className="text-base sm:text-xl text-blue-100 max-w-2xl mx-auto mb-4 leading-relaxed">
-          Upload your resume. Select your target job role. We rewrite your CV professionally and send it straight to your email — along with a <strong>FREE bonus of 100+ Interview Q&A</strong> on Python, SQL, Advanced Excel & Power BI.
+          Upload your CV for a <strong>free ATS score</strong>. Then for just <strong>₹18</strong>, our AI rewrites your entire CV with the right keywords — and you download the polished PDF instantly.
         </p>
-        <p className="text-blue-200 text-sm mb-8 sm:mb-10">Everything delivered to your inbox within 3 hours. No fluff, just results.</p>
+        <p className="text-blue-200 text-sm mb-8 sm:mb-10">No email delays. No waiting. Download in seconds.</p>
         <div className="flex justify-center">
-          <button onClick={onUpload} className="flex items-center justify-center gap-2 bg-white text-blue-700 font-bold px-8 sm:px-10 py-4 rounded-2xl shadow-lg hover:bg-blue-50 transition text-base sm:text-lg w-full sm:w-auto max-w-xs">
-            📄 Upload My Resume
+          <button onClick={onUpload}
+            className="flex items-center justify-center gap-2 bg-white text-blue-700 font-bold px-8 sm:px-10 py-4 rounded-2xl shadow-lg hover:bg-blue-50 transition text-base sm:text-lg w-full sm:w-auto max-w-xs">
+            📄 Check My CV — Free
           </button>
         </div>
         <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-blue-100 text-sm">
@@ -518,51 +673,28 @@ function Hero({ onUpload }: { onUpload: () => void }) {
           <span className="hidden sm:block text-blue-400">|</span>
           <div>✅ 78% got more interview calls</div>
           <span className="hidden sm:block text-blue-400">|</span>
-          <div>⚡ Rewritten CV within 3 hours</div>
+          <div>⚡ AI rewrite — download instantly</div>
           <span className="hidden sm:block text-blue-400">|</span>
-          <div>🎁 FREE 100+ Interview Q&A included</div>
+          <div>💸 Just ₹18 — no subscription</div>
         </div>
       </div>
     </section>
   );
 }
-function Bonus() {
-  return (
-    <section className="py-12 sm:py-14 px-4 sm:px-6 bg-yellow-50 border-y border-yellow-200">
-      <div className="max-w-4xl mx-auto text-center">
-        <div className="inline-block bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">🎁 Free Bonus Included with Every Order</div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-3">100+ Interview Questions & Answers — Worth ₹499, Yours Free</h2>
-        <p className="text-slate-600 max-w-2xl mx-auto mb-6 text-sm sm:text-base">Every order comes with a comprehensive interview preparation guide covering the four most in-demand technical skills.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {[
-            { icon: "💻", label: "Python", desc: "100+ Q&A" },
-            { icon: "🗄️", label: "SQL", desc: "100+ Q&A" },
-            { icon: "📊", label: "Advanced Excel", desc: "100+ Q&A" },
-            { icon: "📈", label: "Power BI", desc: "100+ Q&A" },
-          ].map((b) => (
-            <div key={b.label} className="bg-white rounded-2xl p-4 border border-yellow-200 shadow-sm">
-              <div className="text-3xl mb-2">{b.icon}</div>
-              <div className="font-bold text-slate-800 text-sm sm:text-base">{b.label}</div>
-              <div className="text-xs text-blue-600 font-semibold">{b.desc}</div>
-            </div>
-          ))}
-        </div>
-        <p className="text-slate-500 text-sm mt-6">Delivered as a PDF directly to your email alongside your rewritten CV.</p>
-      </div>
-    </section>
-  );
-}
+
+// ── Features ──────────────────────────────────────────────────────────
 function Features() {
   return (
     <section id="features" className="py-16 sm:py-20 px-4 sm:px-6 bg-white">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
           <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">What You Get</p>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-800">Everything Delivered to Your Inbox within 3 Hours</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-800">Everything in One Click</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {features.map((f) => (
-            <div key={f.title} className="group p-5 sm:p-6 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-blue-600 hover:border-blue-600 transition-all duration-300 hover:shadow-xl">
+            <div key={f.title}
+              className="group p-5 sm:p-6 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-blue-600 hover:border-blue-600 transition-all duration-300 hover:shadow-xl">
               <div className="text-4xl mb-4">{f.icon}</div>
               <h3 className="text-base sm:text-lg font-bold text-slate-800 group-hover:text-white mb-2">{f.title}</h3>
               <p className="text-slate-500 group-hover:text-blue-100 text-sm leading-relaxed">{f.desc}</p>
@@ -573,13 +705,15 @@ function Features() {
     </section>
   );
 }
+
+// ── How It Works ──────────────────────────────────────────────────────
 function HowItWorks() {
   return (
     <section id="how-it-works" className="py-16 sm:py-20 px-4 sm:px-6 bg-blue-50">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
           <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">Simple Process</p>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-800">4 Steps. 3 Hours. Rewritten CV in Your Inbox.</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-800">4 Steps. Rewritten CV in Seconds.</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {steps.map((s) => (
@@ -594,6 +728,8 @@ function HowItWorks() {
     </section>
   );
 }
+
+// ── Pricing ───────────────────────────────────────────────────────────
 function Pricing({ onUpload }: { onUpload: () => void }) {
   return (
     <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6 bg-white">
@@ -603,35 +739,34 @@ function Pricing({ onUpload }: { onUpload: () => void }) {
         <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-7 sm:p-10 shadow-2xl text-white overflow-hidden">
           <div className="inline-block bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full mb-6 uppercase tracking-wide">Best Value</div>
           <div className="flex items-baseline justify-center gap-2 mb-2">
-            <span className="text-5xl sm:text-6xl font-extrabold">₹99</span>
+            <span className="text-5xl sm:text-6xl font-extrabold">₹18</span>
             <span className="text-blue-200 text-lg">one-time</span>
           </div>
-          <p className="text-blue-200 text-sm mb-8">No subscription. Pay once, get everything delivered within 3 hours.</p>
+          <p className="text-blue-200 text-sm mb-8">No subscription. Pay once, download instantly.</p>
           <ul className="space-y-3 text-left mb-10">
             {[
               "✅  Full ATS Score with detailed breakdown",
-              "✅  List of missing keywords to add",
-              "✅  Your CV fully rewritten as a professional PDF",
-              "✅  Rewritten CV sent directly to your email",
-              "✅  100+ tailored interview questions & answers",
-              "✅  Works for any job / any industry",
-              "🎁  FREE: Python, SQL, Advanced Excel & Power BI Q&A (worth ₹499)",
+              "✅  Missing keywords identified and added",
+              "✅  Your CV fully rewritten by AI",
+              "✅  Strong action verbs throughout",
+              "✅  Tailored to your exact job role",
+              "⚡  Instant PDF download — no waiting",
             ].map((item) => (
               <li key={item} className="text-sm text-blue-50">{item}</li>
             ))}
           </ul>
-          <div className="bg-yellow-400/20 border border-yellow-400/40 rounded-xl p-2 mb-6 text-yellow-100 text-xs text-center">
-            🎁 Free bonus worth ₹499 included
-          </div>
-          <button onClick={onUpload} className="w-full bg-white text-blue-700 font-bold py-4 rounded-2xl hover:bg-blue-50 transition text-lg shadow-lg">
+          <button onClick={onUpload}
+            className="w-full bg-white text-blue-700 font-bold py-4 rounded-2xl hover:bg-blue-50 transition text-lg shadow-lg">
             Get My Rewritten CV
           </button>
-          <p className="text-blue-300 text-xs mt-4">🔒 Click above · Pay ₹99 · Get your rewritten CV within 3 hours</p>
+          <p className="text-blue-300 text-xs mt-4">🔒 Pay ₹18 · Download instantly · No subscription</p>
         </div>
       </div>
     </section>
   );
 }
+
+// ── FAQ ───────────────────────────────────────────────────────────────
 function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
   return (
@@ -644,12 +779,16 @@ function FAQ() {
         <div className="space-y-3">
           {faqs.map((faq, i) => (
             <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <button className="w-full text-left flex items-center justify-between p-4 sm:p-6 font-semibold text-slate-800 hover:text-blue-600 transition" onClick={() => setOpen(open === i ? null : i)}>
+              <button
+                className="w-full text-left flex items-center justify-between p-4 sm:p-6 font-semibold text-slate-800 hover:text-blue-600 transition"
+                onClick={() => setOpen(open === i ? null : i)}>
                 <span className="pr-4 text-sm sm:text-base">{faq.q}</span>
                 <span className="text-blue-500 text-xl flex-shrink-0">{open === i ? "−" : "+"}</span>
               </button>
               {open === i && (
-                <div className="px-4 sm:px-6 pb-4 sm:pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-4">{faq.a}</div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-5 text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-4">
+                  {faq.a}
+                </div>
               )}
             </div>
           ))}
@@ -658,6 +797,8 @@ function FAQ() {
     </section>
   );
 }
+
+// ── Footer ────────────────────────────────────────────────────────────
 function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 py-10 sm:py-12 px-4 sm:px-6">
@@ -666,7 +807,7 @@ function Footer() {
           <span className="text-2xl">📄</span>
           <span className="font-bold text-white text-lg">ScoreMyCV</span>
         </div>
-        <p className="text-sm">© {new Date().getFullYear()} ScoreMyCV · Your rewritten CV, delivered within 3 hours</p>
+        <p className="text-sm">© {new Date().getFullYear()} ScoreMyCV · AI-powered CV rewrite, instantly</p>
         <div className="flex gap-6 text-sm">
           <a href="#" className="hover:text-white transition">Privacy</a>
           <a href="#" className="hover:text-white transition">Terms</a>
@@ -676,19 +817,34 @@ function Footer() {
     </footer>
   );
 }
+
+// ── Home ──────────────────────────────────────────────────────────────
 export default function Home() {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal]     = useState(false);
+  const [upgradeData, setUpgradeData] = useState<{ file?: File; jobRole?: string } | null>(null);
+
+  function openModal(data?: { file?: File; jobRole?: string }) {
+    setUpgradeData(data || null);
+    setShowModal(true);
+  }
+
   return (
     <main className="min-h-screen bg-white">
-      <Navbar onUpload={() => setShowModal(true)} />
-      <Hero onUpload={() => setShowModal(true)} />
-      <Bonus />
+      <Navbar onUpload={() => openModal()} />
+      <Hero   onUpload={() => openModal()} />
+      <ATSChecker onUpgrade={(data) => openModal(data)} />
       <Features />
       <HowItWorks />
-      <Pricing onUpload={() => setShowModal(true)} />
+      <Pricing onUpload={() => openModal()} />
       <FAQ />
       <Footer />
-      {showModal && <PaymentModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <PaymentModal
+          preFile={upgradeData?.file}
+          preJobRole={upgradeData?.jobRole}
+          onClose={() => { setShowModal(false); setUpgradeData(null); }}
+        />
+      )}
     </main>
   );
 }

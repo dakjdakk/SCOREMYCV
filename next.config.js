@@ -8,5 +8,12 @@ const nextConfig = {
       },
     ];
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), "canvas"];
+    }
+    return config;
+  },
+  serverExternalPackages: ["mammoth", "pdf-parse"],
 };
 module.exports = nextConfig;

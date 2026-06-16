@@ -135,7 +135,7 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
+      const pdfParse = (await import("pdf-parse")).default;
       const data = await pdfParse(buffer);
       text = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {

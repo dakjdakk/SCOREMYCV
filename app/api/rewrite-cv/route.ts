@@ -218,7 +218,7 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
+      const pdfParse = (await import("pdf-parse")).default;
       text = (await pdfParse(buffer)).text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");

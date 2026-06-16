@@ -299,7 +299,7 @@ REWRITTEN CV:`;
     // ── Build PDF ──────────────────────────────────────────────────
     const pdfBytes = await buildPDF(rewritten);
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

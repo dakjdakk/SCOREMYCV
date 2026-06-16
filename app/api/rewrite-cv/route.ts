@@ -219,7 +219,8 @@ export async function POST(request: Request) {
 
     if (fileName.endsWith(".pdf")) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pdfParse = require("pdf-parse");
+      const pdfMod = require("pdf-parse");
+      const pdfParse = typeof pdfMod === "function" ? pdfMod : pdfMod.default;
       text = (await pdfParse(buffer)).text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");

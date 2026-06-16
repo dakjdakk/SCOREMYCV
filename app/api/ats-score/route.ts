@@ -106,7 +106,8 @@ export async function POST(request: Request) {
 
     if (fileName.endsWith(".pdf")) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pdfParse = require("pdf-parse");
+      const pdfMod = require("pdf-parse");
+      const pdfParse = typeof pdfMod === "function" ? pdfMod : pdfMod.default;
       const data = await pdfParse(buffer);
       text = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
@@ -124,6 +125,6 @@ export async function POST(request: Request) {
     return NextResponse.json(scoreResume(text, jobRole));
   } catch (err: any) {
     console.error("ATS score error:", err);
-    return NextResponse.json({ error: "Failed to process file" }, { status: 500 });
+    return NextResponse.json({ error: `Failed to process file: ${err?.message || err}` }, { status: 500 });
   }
 }

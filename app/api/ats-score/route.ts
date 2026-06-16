@@ -42,8 +42,8 @@ function scoreResume(text: string, jobRole: string) {
   const breakdown: Record<string, { score: number; max: number; label: string; issues: string[] }> = {};
 
   // 1. Contact Info (10 pts)
-  const hasEmail   = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text);
-  const hasPhone   = /(\+91|0)?[\s\-]?[6-9]\d{9}|\+?[\d\s\-()]{10,}/.test(text);
+  const hasEmail    = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text);
+  const hasPhone    = /(\+91|0)?[\s\-]?[6-9]\d{9}|\+?[\d\s\-()]{10,}/.test(text);
   const hasLinkedIn = /linkedin\.com|linkedin/i.test(text);
   const contactScore = (hasEmail ? 5 : 0) + (hasPhone ? 3 : 0) + (hasLinkedIn ? 2 : 0);
   const contactIssues: string[] = [];
@@ -53,13 +53,11 @@ function scoreResume(text: string, jobRole: string) {
   breakdown.contact = { score: contactScore, max: 10, label: "Contact Information", issues: contactIssues };
 
   // 2. Sections (25 pts)
-  const sectionsFound: string[] = [];
   const sectionsMissing: string[] = [];
   const sectionPoints: Record<string, number> = { experience: 8, education: 5, skills: 7, summary: 5 };
   let sectionScore = 0;
   for (const [key, pattern] of Object.entries(SECTION_PATTERNS)) {
     if (pattern.test(text)) {
-      sectionsFound.push(key);
       sectionScore += sectionPoints[key] || 0;
     } else if (sectionPoints[key]) {
       sectionsMissing.push(key);
@@ -88,35 +86,23 @@ function scoreResume(text: string, jobRole: string) {
   }
   const verbScore = Math.min(Math.round((verbCount / 8) * 20), 20);
   const verbIssues: string[] = [];
-  if (verbCount < 4) verbIssues.push(`Only ${verbCount} strong action verbs found — aim for 8+`);
-  if (verbCount < 2) verbIssues.push("Most bullet points lack action verbs — add words like 'Analyzed', 'Built', 'Improved'");
+  if (verbCount < 4) verbIssues.push(`Only ${verbCount} strong action verbs found -- aim for 8+`);
+  if (verbCount < 2) verbIssues.push("Most bullet points lack action verbs -- add words like Analyzed, Built, Improved");
   breakdown.verbs = { score: verbScore, max: 20, label: "Action Verbs", issues: verbIssues };
 
   // 5. Quantification (15 pts)
-  const quantLines = lines.filter(l => /\d+%|\d+\s*(lakh|crore|k|million|users|clients|projects|days|hours|years|months|\$|₹|rs\.?)|\b\d{2,}\b/i.test(l));
+  const quantLines = lines.filter(l => /\d+%|\d+\s*(lakh|crore|k|million|users|clients|projects|days|hours|years|months|\$|rs\.?)|\b\d{2,}\b/i.test(l));
   const quantScore = Math.min(Math.round((quantLines.length / 5) * 15), 15);
   const quantIssues: string[] = [];
-  if (quantLines.length < 3) quantIssues.push(`Only ${quantLines.length} bullet points have numbers/metrics — add more (e.g. "Improved performance by 30%")`);
+  if (quantLines.length < 3) quantIssues.push(`Only ${quantLines.length} bullet points have numbers -- add more (e.g. Improved performance by 30%)`);
   breakdown.quantification = { score: quantScore, max: 15, label: "Quantified Achievements", issues: quantIssues };
 
-  // Total score
   const total = Object.values(breakdown).reduce((sum, b) => sum + b.score, 0);
-
-  // Top missing keywords (for display)
   const topMissingKeywords = missing.slice(0, 10);
-
-  // Overall issues summary
   const allIssues: string[] = [];
   for (const b of Object.values(breakdown)) allIssues.push(...b.issues);
 
-  return {
-    score: total,
-    wordCount,
-    breakdown,
-    topMissingKeywords,
-    foundKeywords: found,
-    allIssues: allIssues.slice(0, 10),
-  };
+  return { score: total, wordCount, breakdown, topMissingKeywords, foundKeywords: found, allIssues: allIssues.slice(0, 10) };
 }
 
 // ── Route handler ─────────────────────────────────────────────────────
@@ -126,11 +112,9 @@ export async function POST(request: Request) {
     const file     = formData.get("file") as File | null;
     const jobRole  = (formData.get("jobRole") as string) || "";
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
+    if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer   = Buffer.from(await file.arrayBuffer());
     const fileName = file.name.toLowerCase();
     let text = "";
 

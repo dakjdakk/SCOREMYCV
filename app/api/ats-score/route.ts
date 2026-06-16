@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfParse = require("pdf-parse");
 
 // ── Role keywords map ─────────────────────────────────────────────────
 const ROLE_KEYWORDS: Record<string, string[]> = {
@@ -107,6 +105,8 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const pdfParse = require("pdf-parse");
       const data = await pdfParse(buffer);
       text = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {

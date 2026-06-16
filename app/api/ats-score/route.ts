@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdfParse = require("pdf-parse");
 
 // ── Role keywords map ─────────────────────────────────────────────────
 const ROLE_KEYWORDS: Record<string, string[]> = {
@@ -18,12 +20,10 @@ const ROLE_KEYWORDS: Record<string, string[]> = {
 
 const DEFAULT_KEYWORDS = ["communication","analytical","problem solving","teamwork","leadership","excel","sql","python","data","reporting","analysis","management","project","agile","documentation"];
 
-// ── Action verbs ──────────────────────────────────────────────────────
 const ACTION_VERBS = [
   "achieved","analyzed","automated","built","calculated","collaborated","configured","created","decreased","delivered","deployed","designed","developed","documented","drove","engineered","established","evaluated","executed","generated","implemented","improved","increased","integrated","launched","led","maintained","managed","migrated","monitored","optimized","organized","partnered","performed","planned","presented","produced","reduced","reported","researched","resolved","reviewed","scaled","secured","simplified","solved","spearheaded","streamlined","supported","tested","trained","transformed","utilized","validated","visualized",
 ];
 
-// ── Section detection ─────────────────────────────────────────────────
 const SECTION_PATTERNS = {
   experience: /\b(experience|work experience|employment|career|professional background|work history)\b/i,
   education:  /\b(education|academic|qualification|degree|university|college|school)\b/i,
@@ -33,15 +33,12 @@ const SECTION_PATTERNS = {
   achievements:/\b(achievements|accomplishments|awards|honors|recognition)\b/i,
 };
 
-// ── Scoring ───────────────────────────────────────────────────────────
 function scoreResume(text: string, jobRole: string) {
   const lower = text.toLowerCase();
   const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
   const wordCount = text.split(/\s+/).filter(Boolean).length;
-
   const breakdown: Record<string, { score: number; max: number; label: string; issues: string[] }> = {};
 
-  // 1. Contact Info (10 pts)
   const hasEmail    = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text);
   const hasPhone    = /(\+91|0)?[\s\-]?[6-9]\d{9}|\+?[\d\s\-()]{10,}/.test(text);
   const hasLinkedIn = /linkedin\.com|linkedin/i.test(text);
@@ -52,21 +49,16 @@ function scoreResume(text: string, jobRole: string) {
   if (!hasLinkedIn) contactIssues.push("LinkedIn profile not mentioned");
   breakdown.contact = { score: contactScore, max: 10, label: "Contact Information", issues: contactIssues };
 
-  // 2. Sections (25 pts)
   const sectionsMissing: string[] = [];
   const sectionPoints: Record<string, number> = { experience: 8, education: 5, skills: 7, summary: 5 };
   let sectionScore = 0;
   for (const [key, pattern] of Object.entries(SECTION_PATTERNS)) {
-    if (pattern.test(text)) {
-      sectionScore += sectionPoints[key] || 0;
-    } else if (sectionPoints[key]) {
-      sectionsMissing.push(key);
-    }
+    if (pattern.test(text)) { sectionScore += sectionPoints[key] || 0; }
+    else if (sectionPoints[key]) { sectionsMissing.push(key); }
   }
   const sectionIssues = sectionsMissing.map(s => `Missing "${s.charAt(0).toUpperCase() + s.slice(1)}" section`);
   breakdown.sections = { score: Math.min(sectionScore, 25), max: 25, label: "Resume Sections", issues: sectionIssues };
 
-  // 3. Keywords (30 pts)
   const keywords = ROLE_KEYWORDS[jobRole] || DEFAULT_KEYWORDS;
   const found: string[] = [];
   const missing: string[] = [];
@@ -78,7 +70,6 @@ function scoreResume(text: string, jobRole: string) {
   const keywordIssues = missing.slice(0, 8).map(k => `Missing keyword: "${k}"`);
   breakdown.keywords = { score: keywordScore, max: 30, label: "Role-Specific Keywords", issues: keywordIssues };
 
-  // 4. Action Verbs (20 pts)
   let verbCount = 0;
   for (const line of lines) {
     const firstWord = line.split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, "");
@@ -90,7 +81,6 @@ function scoreResume(text: string, jobRole: string) {
   if (verbCount < 2) verbIssues.push("Most bullet points lack action verbs -- add words like Analyzed, Built, Improved");
   breakdown.verbs = { score: verbScore, max: 20, label: "Action Verbs", issues: verbIssues };
 
-  // 5. Quantification (15 pts)
   const quantLines = lines.filter(l => /\d+%|\d+\s*(lakh|crore|k|million|users|clients|projects|days|hours|years|months|\$|rs\.?)|\b\d{2,}\b/i.test(l));
   const quantScore = Math.min(Math.round((quantLines.length / 5) * 15), 15);
   const quantIssues: string[] = [];
@@ -98,14 +88,12 @@ function scoreResume(text: string, jobRole: string) {
   breakdown.quantification = { score: quantScore, max: 15, label: "Quantified Achievements", issues: quantIssues };
 
   const total = Object.values(breakdown).reduce((sum, b) => sum + b.score, 0);
-  const topMissingKeywords = missing.slice(0, 10);
   const allIssues: string[] = [];
   for (const b of Object.values(breakdown)) allIssues.push(...b.issues);
 
-  return { score: total, wordCount, breakdown, topMissingKeywords, foundKeywords: found, allIssues: allIssues.slice(0, 10) };
+  return { score: total, wordCount, breakdown, topMissingKeywords: missing.slice(0, 10), foundKeywords: found, allIssues: allIssues.slice(0, 10) };
 }
 
-// ── Route handler ─────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -119,7 +107,6 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      const pdfParse = (await import("pdf-parse")).default;
       const data = await pdfParse(buffer);
       text = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
@@ -134,9 +121,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not extract text from file. Make sure the CV is not a scanned image." }, { status: 422 });
     }
 
-    const result = scoreResume(text, jobRole);
-    return NextResponse.json(result);
-
+    return NextResponse.json(scoreResume(text, jobRole));
   } catch (err: any) {
     console.error("ATS score error:", err);
     return NextResponse.json({ error: "Failed to process file" }, { status: 500 });

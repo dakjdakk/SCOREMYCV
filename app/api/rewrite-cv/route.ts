@@ -17,10 +17,11 @@ const LINE_C  = rgb(0.85, 0.85, 0.85);
 function san(t: string): string {
   return t
     .replace(/\*\*/g, "")
+    .replace(/\*/g, "")
     .replace(/[–—‒]/g, "-")
     .replace(/[‘’ʼ]/g, "'")
     .replace(/[“”]/g, '"')
-    .replace(/[•‣▪●]/g, "*")
+    .replace(/[•‣▪●]/g, "")
     .replace(/…/g, "...")
     .replace(/[^\x00-\xFF]/g, "")
     .trim();
@@ -183,19 +184,21 @@ async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
     if (!sec.lines.length) continue;
 
     sectionHeader(sec.header);
-    const isEduSection = /EDUCATION|ACADEMIC/i.test(sec.header);
+    const isEduSection     = /EDUCATION|ACADEMIC/i.test(sec.header);
+    const isProjectSection = /PROJECTS?|CERTIFICATIONS?|ACHIEVEMENTS?|ACCOMPLISHMENTS?/i.test(sec.header);
 
     for (const raw of sec.lines) {
-      if (!raw.trim()) { y -= 3; continue; }
-      const line = san(raw);
+      const rawTrimmed = raw.trim();
+      if (!rawTrimmed) { y -= 3; continue; }
+      const isBullet = /^[-*•‣▪●]/.test(rawTrimmed);
+      const line = san(rawTrimmed);
       if (!line) continue;
 
-      const isBullet = /^[-*••]/.test(line);
-      // Bold sub-headers (job title | company | date) but NOT in Education section
+      // Bold sub-headers: job/project titles, consistently across all project-type sections
       const isSubHdr =
         !isBullet &&
         !isEduSection &&
-        (line.includes("|") || /\b(20\d{2}|19\d{2})\b/.test(line)) &&
+        (isProjectSection || line.includes("|") || /\b(20\d{2}|19\d{2})\b/.test(line)) &&
         line.length < 120;
 
       if (isSubHdr) {
@@ -276,7 +279,7 @@ RULES (strictly follow):
 4. Add quantification where plausible from context (do not invent specific numbers).
 5. Insert relevant ATS keywords naturally for ${jobRole}.
 6. Keep it concise and professional.
-7. If a date is unknown or missing, omit it entirely — never write "Not specified".
+7. If ANY field is unknown or missing (company name, date, location, etc.) — omit it and its pipe separator entirely. NEVER write "Not specified", "N/A", "Unknown", or any placeholder. Example: if company is unknown write "Data Analyst Intern | Jun 2024 - Dec 2024"; if dates are also unknown write just "Data Analyst Intern".
 8. Preserve the ENTIRE contact line exactly as it appears in original — do not drop any item (LinkedIn, GitHub, Tableau, Portfolio, or any other link/label). Copy every element verbatim.
 9. Include ALL sections present in the original — do not drop any section.
 10. Use the EXACT same section header names as the original CV. Do not rename sections (e.g. if original says "Leadership & Extracurriculars", keep that — do not rename it "Personal Skills" or merge it with another section).
@@ -289,7 +292,7 @@ OUTPUT FORMAT — use these exact section headers (no extra labels, no "ATS Opti
 SUMMARY
 [2-3 sentence professional summary tailored to ${jobRole}]
 EXPERIENCE
-[Job Title | Company Name | Month Year - Month Year (omit dates if unknown)]
+[Job Title | Company Name | Month Year - Month Year] — omit any field that is unknown, never write "Not specified"
 - bullet point starting with action verb
 - bullet point starting with action verb
 SKILLS
@@ -344,13 +347,32 @@ REWRITTEN CV:`;
       return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
     }
 
+    // ── Post-process: strip "Not specified" placeholders Gemini sometimes outputs
+    const cleanRewritten = rewritten
+      .split("\n")
+      .map(line => {
+        // Remove "| Not specified" or "Not specified |" or standalone "Not specified"
+        return line
+          .replace(/\|\s*Not specified\s*\|\s*Not specified\s*-\s*Not specified/gi, "")
+          .replace(/\|\s*Not specified\s*-\s*Not specified/gi, "")
+          .replace(/\|\s*Not specified/gi, "")
+          .replace(/Not specified\s*\|/gi, "")
+          .replace(/Not specified\s*-\s*Not specified/gi, "")
+          .replace(/Not specified/gi, "")
+          .replace(/\|\s*\|/g, "|")   // collapse double pipes left by removal
+          .replace(/\|\s*$/g, "")     // trailing pipe
+          .replace(/^\s*\|\s*/g, "")  // leading pipe
+          .trimEnd();
+      })
+      .join("\n");
+
     // ── Build PDF ──────────────────────────────────────────────────
-    const cvNameRaw = rewritten.split("\n").find(l => l.trim())?.trim() || "CV";
+    const cvNameRaw = cleanRewritten.split("\n").find(l => l.trim())?.trim() || "CV";
     const cvNameSlug = cvNameRaw.replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
     const roleSlug = jobRole.split("/")[0].trim().replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
     const downloadFilename = `${cvNameSlug}-${roleSlug}-CV.pdf`;
 
-    const pdfBytes = await buildPDF(rewritten);
+    const pdfBytes = await buildPDF(cleanRewritten);
 
     // ── Send email with PDF attachment ─────────────────────────────
     if (userEmail && process.env.RESEND_API_KEY) {
@@ -361,12 +383,12 @@ REWRITTEN CV:`;
           to: userEmail,
           subject: "Your Rewritten CV is Ready — ScoreMyCV",
           html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
-            <h2 style="color:#1d4ed8">Your ATS-Optimised CV is Ready! 🎉</h2>
+            <h2 style="color:#1d4ed8">Your ATS-Optimised CV is Ready!</h2>
             <p>Hi there,</p>
             <p>Your rewritten CV for <strong>${jobRole}</strong> is attached to this email as a PDF.</p>
             <p>Open the attachment and save it to your device. Good luck with your job search!</p>
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
-            <p style="color:#6b7280;font-size:13px">ScoreMyCV · scoremycv.in</p>
+            <p style="color:#6b7280;font-size:13px">ScoreMyCV - scoremycv.in</p>
           </div>`,
           attachments: [{
             filename: "rewritten-cv.pdf",
@@ -375,7 +397,6 @@ REWRITTEN CV:`;
         });
       } catch (emailErr) {
         console.error("Email send failed:", emailErr);
-        // Don't fail the request if email fails — PDF still downloads
       }
     }
 
@@ -390,7 +411,8 @@ REWRITTEN CV:`;
 
   } catch (err: any) {
     console.error("rewrite-cv error:", err);
-    return NextResponse.json(      { error: "Something went wrong. Please try again." },
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

@@ -14,6 +14,8 @@ const nextConfig = {
     }
     return config;
   },
-  serverExternalPackages: ["mammoth", "pdf-parse"],
+  experimental: {
+    serverComponentsExternalPackages: ["mammoth", "pdf-parse", "resend"],
+  },
 };
 module.exports = nextConfig;

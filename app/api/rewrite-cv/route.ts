@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { Resend } from "resend";
 
 export const maxDuration = 60;
 
@@ -15,6 +16,7 @@ const LINE_C  = rgb(0.85, 0.85, 0.85);
 // ── Sanitise text for StandardFonts (Latin-1 only) ───────────────────
 function san(t: string): string {
   return t
+    .replace(/\*\*/g, "")
     .replace(/[–—‒]/g, "-")
     .replace(/[‘’ʼ]/g, "'")
     .replace(/[“”]/g, '"')
@@ -80,7 +82,7 @@ async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
 
   function sectionHeader(title: string) {
     y -= 10;
-    ensure(22);
+    ensure(52); // header (22) + at least one content line (30) — prevents orphan headers
     cur().drawRectangle({ x: ML, y: y - 3, width: CW, height: 18, color: BG_BLUE });
     cur().drawText(san(title).toUpperCase(), {
       x: ML + 5, y, font: bold, size: 9, color: BLUE,
@@ -104,7 +106,7 @@ async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
   let nameStr     = "";
   let contactStr  = "";
 
-  const SECTION_RE = /^(CONTACT( INFORMATION| INFO)?|SUMMARY|PROFESSIONAL SUMMARY|CAREER OBJECTIVE|OBJECTIVE|EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT|SKILLS|TECHNICAL SKILLS|CORE COMPETENCIES|EDUCATION|ACADEMIC|PROJECTS?|CERTIFICATIONS?|ACHIEVEMENTS?|ACCOMPLISHMENTS?|LANGUAGES?|INTERESTS?|REFERENCES?|PROFILE|ABOUT)$/i;
+  const SECTION_RE = /^(CONTACT( INFORMATION| INFO)?|SUMMARY|PROFESSIONAL SUMMARY|CAREER OBJECTIVE|OBJECTIVE|EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT|INTERNSHIP.*|SKILLS|TECHNICAL SKILLS|KEY SKILLS|CORE COMPETENCIES|PERSONAL SKILLS|SOFT SKILLS|EDUCATION|ACADEMIC|KEY PROJECTS?|PROJECTS?|CERTIFICATIONS?|ACHIEVEMENTS?|ACCOMPLISHMENTS?|LANGUAGES?|INTERESTS?|REFERENCES?|PROFILE|ABOUT|LEADERSHIP.*|EXTRACURRICULAR.*|AWARDS?|VOLUNTEER.*|ACTIVITIES|HOBBIES?)$/i;
 
   const sections: { header: string; lines: string[] }[] = [];
   let cur_section: { header: string; lines: string[] } | null = null;
@@ -147,24 +149,41 @@ async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
 
   // ── Page 1 header bar ─────────────────────────────────────────────
   newPage();
-  cur().drawRectangle({ x: 0, y: H - 88, width: W, height: 88, color: BLUE });
+
+  const contactSan = contactStr ? san(contactStr) : "";
+  const contactParts = contactSan ? contactSan.split(" | ") : [];
+  // Check if full contact fits on one line
+  const contactNeedsWrap = contactSan && reg.widthOfTextAtSize(contactSan, 8.5) > CW;
+  const headerH = contactNeedsWrap ? 102 : 88;
+
+  cur().drawRectangle({ x: 0, y: H - headerH, width: W, height: headerH, color: BLUE });
 
   const displayName = san(nameStr || "Candidate");
   const nameSize    = displayName.length > 28 ? 20 : 24;
-  cur().drawText(displayName, { x: ML, y: H - 42, font: bold, size: nameSize, color: WHITE });
+  cur().drawText(displayName, { x: ML, y: H - (contactNeedsWrap ? 38 : 42), font: bold, size: nameSize, color: WHITE });
 
-  if (contactStr) {
-    cur().drawText(san(contactStr).slice(0, 90), { x: ML, y: H - 64, font: reg, size: 8.5, color: rgb(0.85, 0.9, 1) });
+  if (contactSan) {
+    const contactColor = rgb(0.85, 0.9, 1);
+    if (!contactNeedsWrap) {
+      cur().drawText(contactSan, { x: ML, y: H - 64, font: reg, size: 8.5, color: contactColor });
+    } else {
+      // Split roughly in half at a "|" boundary
+      const mid = Math.ceil(contactParts.length / 2);
+      const line1 = contactParts.slice(0, mid).join(" | ");
+      const line2 = contactParts.slice(mid).join(" | ");
+      cur().drawText(line1, { x: ML, y: H - 62, font: reg, size: 8, color: contactColor });
+      if (line2) cur().drawText(line2, { x: ML, y: H - 76, font: reg, size: 8, color: contactColor });
+    }
   }
-  cur().drawText("ATS-Optimised Resume", { x: ML, y: H - 80, font: reg, size: 7.5, color: rgb(0.7, 0.8, 1) });
 
-  y = H - 105;
+  y = H - headerH - 14;
 
   // ── Sections ──────────────────────────────────────────────────────
   for (const sec of sections) {
     if (!sec.lines.length) continue;
 
     sectionHeader(sec.header);
+    const isEduSection = /EDUCATION|ACADEMIC/i.test(sec.header);
 
     for (const raw of sec.lines) {
       if (!raw.trim()) { y -= 3; continue; }
@@ -172,8 +191,10 @@ async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
       if (!line) continue;
 
       const isBullet = /^[-*••]/.test(line);
+      // Bold sub-headers (job title | company | date) but NOT in Education section
       const isSubHdr =
         !isBullet &&
+        !isEduSection &&
         (line.includes("|") || /\b(20\d{2}|19\d{2})\b/.test(line)) &&
         line.length < 120;
 
@@ -209,6 +230,10 @@ export async function POST(request: Request) {
     const file      = formData.get("file") as File | null;
     const jobRole   = (formData.get("jobRole")   as string) || "Software Engineer";
     const experience= (formData.get("experience")as string) || "0-2 years";
+    const userEmail = (formData.get("email")     as string) || "";
+    const userPhone = (formData.get("phone")     as string) || "";
+    const userLinkedin = (formData.get("linkedin") as string) || "";
+    const userGithub   = (formData.get("github")   as string) || "";
 
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
@@ -218,9 +243,9 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
+      // Use lib path to bypass pdf-parse's test runner (avoids ENOENT on ./test/data/)
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pdfMod = require("pdf-parse");
-      const pdfParse = typeof pdfMod === "function" ? pdfMod : pdfMod.default;
+      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
       text = (await pdfParse(buffer)).text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
@@ -233,7 +258,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not extract text. Make sure it's not a scanned image." }, { status: 422 });
     }
 
-    const cvText = text.trim().slice(0, 4000);
+    const cvText = text.trim().slice(0, 8000);
+
+    // ── Build contact override block ───────────────────────────────
+    const contactItems = [userEmail, userPhone, userLinkedin, userGithub].filter(Boolean);
+    const contactOverrideBlock = contactItems.length
+      ? `\nCONTACT LINE INSTRUCTION — CRITICAL:\nSingle-word labels in the original CV like "LinkedIn", "GITHUB", "Contact", "Gmail", "Portfolio" are hyperlink placeholders — NOT real values. Ignore them completely.\nThe contact line (line 2 of your output) must contain EXACTLY these items separated by " | ":\n${contactItems.join(" | ")}\nYou may also append the city/location from the original CV if it appears as real text.\nDo NOT include "LinkedIn", "GITHUB", "Portfolio", "Contact", or "Gmail" as standalone labels — only real URLs or real values.\n`
+      : "";
 
     // ── Gemini prompt ──────────────────────────────────────────────
     const prompt = `You are an expert ATS resume writer. Rewrite the CV below for a "${jobRole}" role with ${experience} of experience.
@@ -245,25 +276,36 @@ RULES (strictly follow):
 4. Add quantification where plausible from context (do not invent specific numbers).
 5. Insert relevant ATS keywords naturally for ${jobRole}.
 6. Keep it concise and professional.
+7. If a date is unknown or missing, omit it entirely — never write "Not specified".
+8. Preserve the ENTIRE contact line exactly as it appears in original — do not drop any item (LinkedIn, GitHub, Tableau, Portfolio, or any other link/label). Copy every element verbatim.
+9. Include ALL sections present in the original — do not drop any section.
+10. Use the EXACT same section header names as the original CV. Do not rename sections (e.g. if original says "Leadership & Extracurriculars", keep that — do not rename it "Personal Skills" or merge it with another section).
+11. Preserve ALL academic scores, percentages, GPAs, and grades exactly as they appear in the original (e.g. 90.33%, 92.64%, 8.5 CGPA). Never drop them.
+12. If the name appears with spaces between individual letters (e.g. "K U M A R I  M A N U"), remove the spaces and write it as a normal name (e.g. "KUMARI MANU").
 
-OUTPUT FORMAT — use these exact section headers:
+OUTPUT FORMAT — use these exact section headers (no extra labels, no "ATS Optimised Resume"):
 [Full Name on line 1]
-[email | phone | LinkedIn on line 2]
+[Copy line 2 of original CV exactly — email | phone | location | all profile links (LinkedIn, GitHub, Tableau, Portfolio, etc.)]
 SUMMARY
-[2-3 sentence professional summary]
+[2-3 sentence professional summary tailored to ${jobRole}]
 EXPERIENCE
-[Job Title | Company Name | Month Year - Month Year]
-- bullet
-- bullet
+[Job Title | Company Name | Month Year - Month Year (omit dates if unknown)]
+- bullet point starting with action verb
+- bullet point starting with action verb
 SKILLS
-[skill1, skill2, skill3 ...]
+[List all technical skills grouped naturally, comma separated]
 EDUCATION
 [Degree | University | Year]
 PROJECTS
 [only if present in original]
 CERTIFICATIONS
 [only if present in original]
+LANGUAGES
+[only if present in original — list languages]
+PERSONAL SKILLS
+[only if present in original — soft skills like communication, problem solving etc]
 
+${contactOverrideBlock}
 ORIGINAL CV:
 ${cvText}
 
@@ -273,44 +315,83 @@ REWRITTEN CV:`;
     if (!geminiKey) return NextResponse.json({ error: "API key not configured" }, { status: 500 });
 
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.25, maxOutputTokens: 2048 },
+          generationConfig: { temperature: 0.25, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } },
         }),
       }
     );
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
-      console.error("Gemini API error:", errText);
-      return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 502 });
+      console.error("Gemini API error:", geminiRes.status, errText);
+      const userMsg = geminiRes.status === 429
+        ? "Our servers are busy right now. Please try again in a minute."
+        : "CV rewrite failed. Please try again in a moment.";
+      return NextResponse.json({ error: userMsg }, { status: 502 });
     }
 
     const geminiData = await geminiRes.json();
-    const rewritten  = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    // Gemini 2.5 Flash returns thinking tokens in parts — find the actual text part
+    const parts = geminiData?.candidates?.[0]?.content?.parts ?? [];
+    const rewritten = parts.find((p: any) => !p.thought && p.text)?.text ?? parts[0]?.text ?? "";
 
     if (!rewritten) {
       return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
     }
 
     // ── Build PDF ──────────────────────────────────────────────────
+    const cvNameRaw = rewritten.split("\n").find(l => l.trim())?.trim() || "CV";
+    const cvNameSlug = cvNameRaw.replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
+    const roleSlug = jobRole.split("/")[0].trim().replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
+    const downloadFilename = `${cvNameSlug}-${roleSlug}-CV.pdf`;
+
     const pdfBytes = await buildPDF(rewritten);
+
+    // ── Send email with PDF attachment ─────────────────────────────
+    if (userEmail && process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: "ScoreMyCV <noreply@scoremycv.in>",
+          to: userEmail,
+          subject: "Your Rewritten CV is Ready — ScoreMyCV",
+          html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+            <h2 style="color:#1d4ed8">Your ATS-Optimised CV is Ready! 🎉</h2>
+            <p>Hi there,</p>
+            <p>Your rewritten CV for <strong>${jobRole}</strong> is attached to this email as a PDF.</p>
+            <p>Open the attachment and save it to your device. Good luck with your job search!</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
+            <p style="color:#6b7280;font-size:13px">ScoreMyCV · scoremycv.in</p>
+          </div>`,
+          attachments: [{
+            filename: "rewritten-cv.pdf",
+            content: Buffer.from(pdfBytes).toString("base64"),
+          }],
+        });
+      } catch (emailErr) {
+        console.error("Email send failed:", emailErr);
+        // Don't fail the request if email fails — PDF still downloads
+      }
+    }
 
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="rewritten-cv.pdf"`,
+        "Content-Disposition": `attachment; filename="${downloadFilename}"`,
         "Cache-Control": "no-store",
       },
     });
 
   } catch (err: any) {
     console.error("rewrite-cv error:", err);
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    return NextResponse.json(      { error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

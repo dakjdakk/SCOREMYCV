@@ -264,7 +264,12 @@ export async function POST(request: Request) {
     const cvText = text.trim().slice(0, 8000);
 
     // ── Build contact override block ───────────────────────────────
-    const contactItems = [userEmail, userPhone, userLinkedin, userGithub].filter(Boolean);
+    const contactItems = [
+      userEmail,
+      userPhone,
+      userLinkedin ? `LinkedIn: ${userLinkedin}` : "",
+      userGithub   ? `GitHub: ${userGithub}`     : "",
+    ].filter(Boolean);
     const contactOverrideBlock = contactItems.length
       ? `\nCONTACT LINE INSTRUCTION — CRITICAL:\nSingle-word labels in the original CV like "LinkedIn", "GITHUB", "Contact", "Gmail", "Portfolio" are hyperlink placeholders — NOT real values. Ignore them completely.\nThe contact line (line 2 of your output) must contain EXACTLY these items separated by " | ":\n${contactItems.join(" | ")}\nYou may also append the city/location from the original CV if it appears as real text.\nDo NOT include "LinkedIn", "GITHUB", "Portfolio", "Contact", or "Gmail" as standalone labels — only real URLs or real values.\n`
       : "";

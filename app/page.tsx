@@ -745,6 +745,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
     { href: "#how-it-works", label: "How It Works" },
     { href: "#free-ats",     label: "Check ATS Score" },
     { href: "#faq",          label: "FAQ" },
+    { href: "/blog/how-to-check-ats-score", label: "Blog" },
   ];
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">

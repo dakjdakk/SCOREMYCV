@@ -374,7 +374,7 @@ function PaymentModal({
       const orderRes  = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 100, currency: "INR", receipt: orderId }),
+        body: JSON.stringify({ amount: 1800, currency: "INR", receipt: orderId }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
@@ -581,7 +581,7 @@ function PaymentModal({
                     disabled={loading || !email || !phone}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹1 & Download CV →"}
+                    {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -678,7 +678,7 @@ function PaymentModal({
                     disabled={!canProceed || loading || !email || !phone}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹1 & Download CV →"}
+                    {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>

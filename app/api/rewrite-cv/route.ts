@@ -185,7 +185,7 @@ async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
 
     sectionHeader(sec.header);
     const isEduSection     = /EDUCATION|ACADEMIC/i.test(sec.header);
-    const isProjectSection = /PROJECTS?|CERTIFICATIONS?|ACHIEVEMENTS?|ACCOMPLISHMENTS?/i.test(sec.header);
+    const isProjectSection = /KEY PROJECTS?|PROJECTS?/i.test(sec.header);
 
     for (const raw of sec.lines) {
       const rawTrimmed = raw.trim();
@@ -267,8 +267,8 @@ export async function POST(request: Request) {
     const contactItems = [
       userEmail,
       userPhone,
-      userLinkedin ? `LinkedIn: ${userLinkedin}` : "",
-      userGithub   ? `GitHub: ${userGithub}`     : "",
+      userLinkedin ? `LinkedIn: ${userLinkedin.replace(/^https?:\/\//, "")}` : "",
+      userGithub   ? `GitHub: ${userGithub.replace(/^https?:\/\//, "")}`     : "",
     ].filter(Boolean);
     const contactOverrideBlock = contactItems.length
       ? `\nCONTACT LINE INSTRUCTION — CRITICAL:\nSingle-word labels in the original CV like "LinkedIn", "GITHUB", "Contact", "Gmail", "Portfolio" are hyperlink placeholders — NOT real values. Ignore them completely.\nThe contact line (line 2 of your output) must contain EXACTLY these items separated by " | ":\n${contactItems.join(" | ")}\nYou may also append the city/location from the original CV if it appears as real text.\nDo NOT include "LinkedIn", "GITHUB", "Portfolio", "Contact", or "Gmail" as standalone labels — only real URLs or real values.\n`

@@ -1,0 +1,30 @@
+<svg width='1200' height='630' xmlns='http://www.w3.org/2000/svg'>
+  <defs>
+    <linearGradient id='bg' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' style='stop-color:#1d4ed8;stop-opacity:1' />
+      <stop offset='100%' style='stop-color:#1e40af;stop-opacity:1' />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width='1200' height='630' fill='url(#bg)'/>
+  <!-- Decorative circles -->
+  <circle cx='1100' cy='80' r='200' fill='#3b82f6' opacity='0.3'/>
+  <circle cx='100' cy='550' r='150' fill='#1e3a8a' opacity='0.4'/>
+  <!-- White card -->
+  <rect x='80' y='80' width='700' height='470' rx='32' fill='white' opacity='0.08'/>
+  <!-- Icon -->
+  <text x='120' y='210' font-size='80' font-family='Arial'>📄</text>
+  <!-- Brand -->
+  <text x='120' y='290' font-size='52' font-weight='900' font-family='Arial, sans-serif' fill='white'>ScoreMyCV</text>
+  <!-- Headline -->
+  <text x='120' y='365' font-size='38' font-weight='700' font-family='Arial, sans-serif' fill='#bfdbfe'>Free ATS Score Check</text>
+  <text x='120' y='415' font-size='38' font-weight='700' font-family='Arial, sans-serif' fill='#bfdbfe'>+ Full CV Rewrite for ₹18</text>
+  <!-- Badge -->
+  <rect x='120' y='455' width='340' height='54' rx='27' fill='#22c55e'/>
+  <text x='290' y='490' font-size='22' font-weight='700' font-family='Arial, sans-serif' fill='white' text-anchor='middle'>✅ 100% Free Score Check</text>
+  <!-- Right side stats -->
+  <text x='880' y='260' font-size='100' font-weight='900' font-family='Arial, sans-serif' fill='white' text-anchor='middle'>₹18</text>
+  <text x='880' y='310' font-size='24' font-family='Arial, sans-serif' fill='#93c5fd' text-anchor='middle'>Full CV Rewrite</text>
+  <text x='880' y='360' font-size='24' font-family='Arial, sans-serif' fill='#93c5fd' text-anchor='middle'>Instant PDF Download</text>
+  <text x='880' y='430' font-size='22' font-family='Arial, sans-serif' fill='#bfdbfe' text-anchor='middle'>scoremycv.in</text>
+</svg>

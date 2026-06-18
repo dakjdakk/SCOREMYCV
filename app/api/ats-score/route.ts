@@ -105,9 +105,9 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
+      // Use lib path to bypass pdf-parse's test runner (avoids ENOENT on ./test/data/)
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pdfMod = require("pdf-parse");
-      const pdfParse = typeof pdfMod === "function" ? pdfMod : pdfMod.default;
+      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
       const data = await pdfParse(buffer);
       text = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
@@ -120,6 +120,23 @@ export async function POST(request: Request) {
 
     if (!text || text.trim().length < 50) {
       return NextResponse.json({ error: "Could not extract text from file. Make sure the CV is not a scanned image." }, { status: 422 });
+    }
+
+    // ── CV detection ──────────────────────────────────────────────────
+    const lower = text.toLowerCase();
+    const wordCount = text.split(/\s+/).filter(Boolean).length;
+
+    const hasContact =
+      /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text) ||
+      /(\+91|0)?[\s\-]?[6-9]\d{9}|\+?[\d\s\-()]{10,}/.test(text);
+
+    const hasCVSection =
+      /\b(experience|education|skills|work history|employment|projects|certifications?|summary|objective|profile|achievements?|qualifications?)\b/.test(lower);
+
+    if (wordCount < 80 || (!hasContact && !hasCVSection)) {
+      return NextResponse.json({
+        error: "This doesn't look like a CV. Please upload your resume and try again.",
+      }, { status: 422 });
     }
 
     return NextResponse.json(scoreResume(text, jobRole));

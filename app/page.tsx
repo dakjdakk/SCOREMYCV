@@ -6,7 +6,7 @@ declare global {
   interface Window { Razorpay: any; }
 }
 
-const OWNER_EMAIL = "akshaypaip@gmail.com";
+const OWNER_EMAIL = "scoremycv.in@gmail.com";
 
 // ──────────────────────────────────────────────────────────────────────
 const IT_JOB_ROLES = [
@@ -81,7 +81,7 @@ const faqs = [
   },
   {
     q: "What if the download does not start?",
-    a: "If the download doesn't start automatically, check your browser's pop-up blocker and allow downloads from scoremycv.in. You can also reach us at akshaypaip@gmail.com with your payment ID.",
+    a: "If the download doesn't start automatically, check your browser's pop-up blocker and allow downloads from scoremycv.in. You can also reach us at scoremycv.in@gmail.com with your payment ID.",
   },
 ];
 

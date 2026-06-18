@@ -15,7 +15,7 @@ const CLOUDINARY_PRESET = "scoremycv_resumes";
 const UPI_ID      = "akshaypaip@okhdfcbank";
 const UPI_NAME    = "ScoreMyCV";
 const AMOUNT      = "99";
-const OWNER_EMAIL = "akshaypaip@gmail.com";
+const OWNER_EMAIL = "scoremycv.in@gmail.com";
 // ──────────────────────────────────────────────────────────────────────
 
 const IT_JOB_ROLES = [

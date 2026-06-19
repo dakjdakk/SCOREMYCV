@@ -35,7 +35,7 @@ export async function storageUpload(
         "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
         "x-upsert": "true",
       },
-      body: data,
+      body: new Uint8Array(data) as BodyInit,
     });
     if (!res.ok) {
       console.error("Storage upload failed:", await res.text());

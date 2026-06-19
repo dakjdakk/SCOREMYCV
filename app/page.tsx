@@ -420,13 +420,15 @@ function PaymentModal({
           // 4. Rewrite CV with AI
           setLoadingMsg("⏳ Rewriting your CV...");
           const fd = new FormData();
-          fd.append("file",       file!);
-          fd.append("jobRole",    jobRole);
-          fd.append("experience", expOverride || experience || "Not specified");
-          fd.append("email",      email);
-          fd.append("phone",      phone);
-          fd.append("linkedin",   linkedin);
-          fd.append("github",     github);
+          fd.append("file",        file!);
+          fd.append("jobRole",     jobRole);
+          fd.append("experience",  expOverride || experience || "Not specified");
+          fd.append("email",       email);
+          fd.append("phone",       phone);
+          fd.append("linkedin",    linkedin);
+          fd.append("github",      github);
+          fd.append("scoreBefore", result ? String(result.score) : "0");
+          fd.append("paymentId",   response.razorpay_payment_id);
 
           const rewriteRes = await fetch("/api/rewrite-cv", { method: "POST", body: fd });
 

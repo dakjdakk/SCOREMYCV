@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { dbInsert } from "@/lib/supabase";
 
 // ── Role keywords map ─────────────────────────────────────────────────
 const ROLE_KEYWORDS: Record<string, string[]> = {
@@ -139,7 +140,12 @@ export async function POST(request: Request) {
       }, { status: 422 });
     }
 
-    return NextResponse.json(scoreResume(text, jobRole));
+    const result = scoreResume(text, jobRole);
+
+    // Fire and forget — track ATS check (never blocks the response)
+    dbInsert("ats_checks", { job_role: jobRole, score: result.score }).catch(() => {});
+
+    return NextResponse.json(result);
   } catch (err: any) {
     console.error("ATS score error:", err);
     return NextResponse.json({ error: `Failed to process file: ${err?.message || err}` }, { status: 500 });

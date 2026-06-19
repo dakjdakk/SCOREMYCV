@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { Resend } from "resend";
+import { dbInsert, storageUpload } from "@/lib/supabase";
 
 export const maxDuration = 60;
 
@@ -237,6 +238,8 @@ export async function POST(request: Request) {
     const userPhone = (formData.get("phone")     as string) || "";
     const userLinkedin = (formData.get("linkedin") as string) || "";
     const userGithub   = (formData.get("github")   as string) || "";
+    const scoreBefore  = parseInt((formData.get("scoreBefore") as string) || "0", 10);
+    const paymentId    = (formData.get("paymentId") as string) || "";
 
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
@@ -378,6 +381,44 @@ REWRITTEN CV:`;
     const downloadFilename = `${cvNameSlug}-${roleSlug}-CV.pdf`;
 
     const pdfBytes = await buildPDF(cleanRewritten);
+
+    // ── Save to Supabase (fire and forget) ────────────────────────
+    (async () => {
+      try {
+        const ts = Date.now();
+        const slug = paymentId || ts.toString();
+
+        // Upload original PDF
+        const originalPdfUrl = await storageUpload(
+          "cv-pdfs",
+          `originals/${ts}-${slug}.pdf`,
+          buffer,
+          "application/pdf"
+        );
+
+        // Upload rewritten PDF
+        const rewrittenPdfUrl = await storageUpload(
+          "cv-pdfs",
+          `rewrites/${ts}-${slug}.pdf`,
+          Buffer.from(pdfBytes),
+          "application/pdf"
+        );
+
+        // Insert record
+        await dbInsert("cv_rewrites", {
+          job_role: jobRole,
+          score_before: scoreBefore || null,
+          email: userEmail || null,
+          payment_id: paymentId || null,
+          original_cv_text: cvText,
+          rewritten_cv_text: cleanRewritten,
+          original_pdf_url: originalPdfUrl,
+          rewritten_pdf_url: rewrittenPdfUrl,
+        });
+      } catch (e) {
+        console.error("Supabase save error:", e);
+      }
+    })();
 
     // ── Send email with PDF attachment ─────────────────────────────
     if (userEmail && process.env.RESEND_API_KEY) {

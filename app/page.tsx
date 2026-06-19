@@ -114,7 +114,7 @@ function ScoreGauge({ score }: { score: number }) {
 
 // ── Hero + ATS Checker (combined above-the-fold section) ─────────────
 function HeroSection({ onUpgrade }: {
-  onUpgrade: (data: { file: File; jobRole: string }) => void;
+  onUpgrade: (data: { file: File; jobRole: string; score?: number }) => void;
 }) {
   const [file, setFile]       = useState<File | null>(null);
   const [jobRole, setJobRole] = useState("");
@@ -167,7 +167,7 @@ function HeroSection({ onUpgrade }: {
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-1">Your ATS Score: {result.score}/100</h2>
               <p className="text-slate-500 text-sm mb-4">{upsellMsg}</p>
               <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-                <button onClick={() => file && onUpgrade({ file, jobRole })}
+                <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
                   className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm">
                   🚀 Fix My CV for ₹18 — Instant Download
                 </button>
@@ -237,7 +237,7 @@ function HeroSection({ onUpgrade }: {
         <div className="bg-blue-600 rounded-3xl p-6 sm:p-8 text-center text-white">
           <h4 className="text-xl font-extrabold mb-2">Want all of this fixed?</h4>
           <p className="text-blue-200 text-sm mb-5">For just ₹18 your entire CV gets rewritten — missing keywords added, action verbs fixed, every line improved — download the polished PDF instantly.</p>
-          <button onClick={() => file && onUpgrade({ file, jobRole })}
+          <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
             className="bg-white text-blue-700 font-bold px-8 py-3.5 rounded-2xl hover:bg-blue-50 transition text-sm shadow-lg">
             🚀 Get My CV Rewritten for ₹18 — Instant Download
           </button>
@@ -331,10 +331,11 @@ function HeroSection({ onUpgrade }: {
 
 // ── Payment Modal ─────────────────────────────────────────────────────
 function PaymentModal({
-  preFile, preJobRole, onClose,
+  preFile, preJobRole, preScore, onClose,
 }: {
   preFile?: File;
   preJobRole?: string;
+  preScore?: number;
   onClose: () => void;
 }) {
   const [step, setStep]           = useState<1 | 2>(1);
@@ -427,7 +428,7 @@ function PaymentModal({
           fd.append("phone",       phone);
           fd.append("linkedin",    linkedin);
           fd.append("github",      github);
-          fd.append("scoreBefore", result ? String(result.score) : "0");
+          fd.append("scoreBefore", String(preScore || 0));
           fd.append("paymentId",   response.razorpay_payment_id);
 
           const rewriteRes = await fetch("/api/rewrite-cv", { method: "POST", body: fd });
@@ -902,9 +903,9 @@ function Footer() {
 // ── Home ──────────────────────────────────────────────────────────────
 export default function Home() {
   const [showModal, setShowModal]     = useState(false);
-  const [upgradeData, setUpgradeData] = useState<{ file?: File; jobRole?: string } | null>(null);
+  const [upgradeData, setUpgradeData] = useState<{ file?: File; jobRole?: string; score?: number } | null>(null);
 
-  function openModal(data?: { file?: File; jobRole?: string }) {
+  function openModal(data?: { file?: File; jobRole?: string; score?: number }) {
     setUpgradeData(data || null);
     setShowModal(true);
   }
@@ -921,6 +922,7 @@ export default function Home() {
         <PaymentModal
           preFile={upgradeData?.file}
           preJobRole={upgradeData?.jobRole}
+          preScore={upgradeData?.score}
           onClose={() => { setShowModal(false); setUpgradeData(null); }}
         />
       )}

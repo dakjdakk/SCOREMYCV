@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { dbInsert } from "@/lib/supabase";
 
 // ── Role keywords map ─────────────────────────────────────────────────
@@ -142,8 +143,8 @@ export async function POST(request: Request) {
 
     const result = scoreResume(text, jobRole);
 
-    // Fire and forget — track ATS check (never blocks the response)
-    dbInsert("ats_checks", { job_role: jobRole, score: result.score }).catch(() => {});
+    // Track ATS check — waitUntil keeps the function alive until insert completes
+    waitUntil(dbInsert("ats_checks", { job_role: jobRole, score: result.score }));
 
     return NextResponse.json(result);
   } catch (err: any) {

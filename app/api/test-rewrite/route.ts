@@ -5,12 +5,13 @@ import { StandardFonts } from "pdf-lib";
 export const maxDuration = 60;
 
 // ── Palette (matches reference: light sidebar, dark text, blue accents) ──
-const SIDEBG  = rgb(0.91, 0.92, 0.95);  // light blue-gray sidebar
+const SIDEBG  = rgb(0.88, 0.90, 0.94);  // FIX5: slightly darker/more blue-gray sidebar
 const WHITE   = rgb(1, 1, 1);
 const DARK    = rgb(0.08, 0.08, 0.10);  // near-black for name + sub-headers
 const MID     = rgb(0.22, 0.22, 0.25);  // body text
 const BLUE    = rgb(0.09, 0.30, 0.68);  // section header spaced text + line
 const NAVY    = rgb(0.08, 0.15, 0.38);  // bullet outer / badge bg
+const SKILLHDR= rgb(0.06, 0.18, 0.50);  // FIX7: darker navy for skill category labels
 const GREYLN  = rgb(0.72, 0.72, 0.75);  // thin dividers
 const LIGHTGR = rgb(0.52, 0.52, 0.55);  // watermark / footer
 
@@ -90,8 +91,8 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
   const STW  = SB - SX - 12;// sidebar usable text width
   const MX   = SB + 18;     // main column X
   const MW   = PW - MX - 16;// main column width
-  const NAMEH= 72;           // name strip height at top
-  const TY   = PH - NAMEH - 14; // top Y for columns
+  const NAMEH= 78;           // FIX1: taller name strip for cleaner contact lines
+  const TY   = PH - NAMEH - 16; // top Y for columns
   const BOT  = 30;
 
   const pages: PDFPage[] = [];
@@ -157,49 +158,50 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
   }
 
   // ── Left sidebar section header ──────────────────────────────────────
-  // Spaced letters in blue + blue underline (matches reference)
   function leftHdr(title: string) {
-    lY -= 12;
+    lY -= 16; // FIX3: more breathing room above header
     chkL(20);
     const sp = spaced(title);
     curP().drawText(sp, { x: SX, y: lY, font: bold, size: 7, color: BLUE });
-    lY -= 4;
+    lY -= 5;
     curP().drawLine({ start: { x: SX, y: lY }, end: { x: SB - 12, y: lY }, thickness: 0.9, color: BLUE });
-    lY -= 9;
+    lY -= 10; // FIX3: more space below line
   }
 
   // ── Right main column section header ────────────────────────────────
-  // Spaced letters in blue + blue underline (matches reference)
   function rightHdr(title: string) {
-    rY -= 14;
+    rY -= 18; // FIX3: more breathing room above header
     chkR(24);
     const sp = spaced(title);
     curP().drawText(sp, { x: MX, y: rY, font: bold, size: 9, color: BLUE });
-    rY -= 4;
+    rY -= 5;
     curP().drawLine({ start: { x: MX, y: rY }, end: { x: PW - 16, y: rY }, thickness: 1, color: BLUE });
-    rY -= 10;
+    rY -= 12; // FIX3: more space below line
   }
 
-  // ── Two-ring bullet for right column (matches reference style) ───────
+  // ── Two-ring bullet for right column ─────────────────────────────────
+  // FIX4: larger bullets to match reference
   function bulletR() {
     chkR(13);
-    curP().drawCircle({ x: MX + 6, y: rY + 4, size: 4.2, color: NAVY });
-    curP().drawCircle({ x: MX + 6, y: rY + 4, size: 2.0, color: WHITE });
+    curP().drawCircle({ x: MX + 7, y: rY + 4.5, size: 5.5, color: NAVY });
+    curP().drawCircle({ x: MX + 7, y: rY + 4.5, size: 3.0, color: WHITE });
   }
 
-  // ── Two-ring bullet for left sidebar ────────────────────────────────
+  // ── Two-ring bullet for left sidebar ─────────────────────────────────
+  // FIX4: larger bullets
   function bulletL() {
     chkL(11);
-    curP().drawCircle({ x: SX + 5, y: lY + 3.5, size: 3.5, color: NAVY });
-    curP().drawCircle({ x: SX + 5, y: lY + 3.5, size: 1.7, color: WHITE });
+    curP().drawCircle({ x: SX + 5, y: lY + 3.5, size: 4.5, color: NAVY });
+    curP().drawCircle({ x: SX + 5, y: lY + 3.5, size: 2.5, color: WHITE });
   }
 
-  // ── Contact badge (small navy rect + white icon text) ────────────────
+  // ── Contact badge: rounded pill shape (FIX2) ─────────────────────────
   function contactBadge(iconChar: string) {
     chkL(12);
-    curP().drawRectangle({ x: SX, y: lY - 1, width: 12, height: 10, color: NAVY });
-    const ox = iconChar.length === 2 ? SX + 0.8 : SX + 3.5;
-    curP().drawText(iconChar, { x: ox, y: lY + 1, font: bold, size: 5, color: WHITE });
+    // Rounded rectangle (pill) using borderRadius
+    curP().drawRectangle({ x: SX, y: lY - 1, width: 13, height: 11, color: NAVY, borderRadius: 3 });
+    const ox = iconChar.length === 2 ? SX + 0.5 : SX + 3.8;
+    curP().drawText(iconChar, { x: ox, y: lY + 1.5, font: bold, size: 5.5, color: WHITE });
   }
 
   // ══════════════════════════════════════════════════════════════════════
@@ -215,37 +217,31 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
   // Name — large, bold, dark, aligned to main column
   const nameSz = name.length > 28 ? 19 : name.length > 22 ? 22 : 25;
   curP().drawText(san(name).toUpperCase(), {
-    x: MX, y: PH - 34, font: bold, size: nameSz, color: DARK,
+    x: MX, y: PH - 32, font: bold, size: nameSz, color: DARK,
   });
 
-  // Contact items under name (small, gray)
-  const contactStr = contactParts
-    .map(p => san(p).replace(/^(LinkedIn|GitHub)\s*:\s*/i, (m, label) => `${label}: `))
-    .join("  |  ");
-  // Fit or wrap contact line
-  if (reg.widthOfTextAtSize(contactStr, 7.5) <= MW) {
-    curP().drawText(contactStr, { x: MX, y: PH - 52, font: reg, size: 7.5, color: MID });
-  } else {
-    const mid = Math.ceil(contactParts.length / 2);
-    const l1 = contactParts.slice(0, mid).map(p => san(p)).join("  |  ");
-    const l2 = contactParts.slice(mid).map(p => san(p)).join("  |  ");
-    curP().drawText(l1, { x: MX, y: PH - 51, font: reg, size: 7.5, color: MID });
-    curP().drawText(l2, { x: MX, y: PH - 63, font: reg, size: 7.5, color: MID });
-  }
+  // FIX1: Smart contact line — split email+phone on line1, linkedin+github on line2
+  const emailPhone  = contactParts.filter(p => p.includes("@") || /\d{7,}/.test(p));
+  const socialLinks = contactParts.filter(p => !p.includes("@") && !/\d{7,}/.test(p));
+  const line1 = emailPhone.map(p => san(p)).join("  |  ");
+  const line2 = socialLinks.map(p => san(p)).join("  |  ");
 
-  // Blue underline below name strip
-  curP().drawLine({
-    start: { x: MX, y: PH - NAMEH + 3 },
-    end:   { x: PW - 16, y: PH - NAMEH + 3 },
-    thickness: 1.5, color: BLUE,
-  });
+  if (line1) curP().drawText(line1, { x: MX, y: PH - 50, font: reg, size: 8, color: MID });
+  if (line2) curP().drawText(line2, { x: MX, y: PH - 62, font: reg, size: 8, color: MID });
 
-  // Watermark bottom-right of name strip
+  // FIX6: Watermark — neatly at far right, vertically centered in name strip
   const brand = "ATS-Optimised by scoremycv.in";
   curP().drawText(brand, {
     x: PW - reg.widthOfTextAtSize(brand, 6.5) - 12,
-    y: PH - NAMEH + 9,
+    y: PH - 68,
     font: ital, size: 6.5, color: LIGHTGR,
+  });
+
+  // Blue underline below name strip
+  curP().drawLine({
+    start: { x: MX, y: PH - NAMEH + 4 },
+    end:   { x: PW - 16, y: PH - NAMEH + 4 },
+    thickness: 1.5, color: BLUE,
   });
 
   lY = TY; rY = TY;
@@ -299,7 +295,7 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
       } else if (isBullet) {
         const txt = l.replace(/^[-*]\s*/, "");
         bulletR();
-        wrapRight(txt, reg, 9, MID, 17, 1.38);
+        wrapRight(txt, reg, 9, MID, 20, 1.38); // FIX4: more indent to clear larger bullet
       } else {
         wrapRight(l, reg, 9, MID, 0, 1.38);
       }
@@ -324,14 +320,14 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
       if (isSkills) {
         const colonIdx = l.indexOf(":");
         if (colonIdx > 0 && colonIdx < 35) {
-          lY -= 2;
-          wrapLeft(l.slice(0, colonIdx).toUpperCase(), bold, 7, NAVY, 0, 1.2);
+          lY -= 3;
+          wrapLeft(l.slice(0, colonIdx).toUpperCase(), bold, 7, SKILLHDR, 0, 1.2); // FIX7
           const skills = l.slice(colonIdx + 1).trim();
           if (skills) wrapLeft(skills, reg, 7, MID, 4, 1.25);
-          lY -= 2;
+          lY -= 3;
         } else {
           bulletL();
-          wrapLeft(l.replace(/^[-*]\s*/, ""), reg, 7, MID, 12, 1.25);
+          wrapLeft(l.replace(/^[-*]\s*/, ""), reg, 7, MID, 14, 1.25);
         }
       } else if (isList) {
         bulletL();

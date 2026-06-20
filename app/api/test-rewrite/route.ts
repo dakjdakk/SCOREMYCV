@@ -199,7 +199,7 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
   function contactBadge(iconChar: string) {
     chkL(12);
     // Rounded rectangle (pill) using borderRadius
-    curP().drawRectangle({ x: SX, y: lY - 1, width: 13, height: 11, color: NAVY, borderRadius: 3 });
+    curP().drawRectangle({ x: SX, y: lY - 1, width: 13, height: 11, color: NAVY });
     const ox = iconChar.length === 2 ? SX + 0.5 : SX + 3.8;
     curP().drawText(iconChar, { x: ox, y: lY + 1.5, font: bold, size: 5.5, color: WHITE });
   }

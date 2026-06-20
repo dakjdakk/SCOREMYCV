@@ -4,18 +4,17 @@ import { StandardFonts } from "pdf-lib";
 
 export const maxDuration = 60;
 
-// ── Palette ────────────────────────────────────────────────────────────────
-const NAVY   = rgb(0.06, 0.18, 0.43);
-const BLUE   = rgb(0.09, 0.37, 0.85);
-const GOLD   = rgb(0.83, 0.69, 0.22);
-const WHITE  = rgb(1, 1, 1);
-const DARK   = rgb(0.10, 0.10, 0.10);
-const MID    = rgb(0.30, 0.30, 0.30);
-const LIGHT  = rgb(0.52, 0.52, 0.52);
-const BGBLUE = rgb(0.93, 0.96, 1.00);
-const SIDEBG = rgb(0.09, 0.22, 0.48);
-const GREY   = rgb(0.85, 0.85, 0.85);
+// ── Palette (matches reference: light sidebar, dark text, blue accents) ──
+const SIDEBG  = rgb(0.91, 0.92, 0.95);  // light blue-gray sidebar
+const WHITE   = rgb(1, 1, 1);
+const DARK    = rgb(0.08, 0.08, 0.10);  // near-black for name + sub-headers
+const MID     = rgb(0.22, 0.22, 0.25);  // body text
+const BLUE    = rgb(0.09, 0.30, 0.68);  // section header spaced text + line
+const NAVY    = rgb(0.08, 0.15, 0.38);  // bullet outer / badge bg
+const GREYLN  = rgb(0.72, 0.72, 0.75);  // thin dividers
+const LIGHTGR = rgb(0.52, 0.52, 0.55);  // watermark / footer
 
+// ── Sanitise text ────────────────────────────────────────────────────────
 function san(t: string): string {
   return t
     .replace(/\*\*/g, "").replace(/\*/g, "")
@@ -27,15 +26,22 @@ function san(t: string): string {
     .trim();
 }
 
-function contactType(s: string): string {
+// ── Spaced letters: "SUMMARY" → "S U M M A R Y" ────────────────────────
+function spaced(s: string): string {
+  return s.toUpperCase().split("").join(" ").replace(/\s{3}/g, "   ");
+}
+
+// ── Contact type detection ───────────────────────────────────────────────
+function contactType(s: string): "email" | "phone" | "linkedin" | "github" | "other" {
   const l = s.toLowerCase();
-  if (s.includes("@"))           return "email";
-  if (l.includes("linkedin"))    return "linkedin";
-  if (l.includes("github"))      return "github";
+  if (s.includes("@"))        return "email";
+  if (l.includes("linkedin")) return "linkedin";
+  if (l.includes("github"))   return "github";
   if (/\+?[\d\s\-()]{7,}/.test(s.trim())) return "phone";
   return "other";
 }
 
+// ── Parse CV text into structured sections ───────────────────────────────
 function parseCV(text: string) {
   const lines = text.split("\n");
   const name  = san(lines.find(l => l.trim()) || "");
@@ -70,22 +76,23 @@ function parseCV(text: string) {
   return { name, contactParts, sections };
 }
 
-// ── PDF builder ────────────────────────────────────────────────────────────
+// ── Build PDF matching reference design ─────────────────────────────────
 async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
-  const doc   = await PDFDocument.create();
-  const reg   = await doc.embedFont(StandardFonts.Helvetica);
-  const bold  = await doc.embedFont(StandardFonts.HelveticaBold);
-  const ital  = await doc.embedFont(StandardFonts.HelveticaOblique);
+  const doc  = await PDFDocument.create();
+  const reg  = await doc.embedFont(StandardFonts.Helvetica);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const ital = await doc.embedFont(StandardFonts.HelveticaOblique);
 
-  const PW = 612, PH = 792;
-  const SB  = 178;           // sidebar width
-  const SX  = 13;            // sidebar text X
-  const STW = SB - SX - 10; // sidebar usable text width
-  const MX  = SB + 18;      // main column X
-  const MW  = PW - MX - 16; // main column width
-  const HDR = 82;            // header height
-  const TY  = PH - HDR - 16;
-  const BOT = 34;
+  const PW   = 612;
+  const PH   = 792;
+  const SB   = 188;          // sidebar width
+  const SX   = 14;           // sidebar text start X
+  const STW  = SB - SX - 12;// sidebar usable text width
+  const MX   = SB + 18;     // main column X
+  const MW   = PW - MX - 16;// main column width
+  const NAMEH= 72;           // name strip height at top
+  const TY   = PH - NAMEH - 14; // top Y for columns
+  const BOT  = 30;
 
   const pages: PDFPage[] = [];
   let lY = TY, rY = TY;
@@ -93,28 +100,44 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
   function addPage(): PDFPage {
     const p = doc.addPage([PW, PH]);
     pages.push(p);
-    p.drawRectangle({ x: 0, y: 0, width: SB,  height: PH, color: NAVY });
-    p.drawRectangle({ x: SB, y: 0, width: 1.5, height: PH, color: GOLD });
+    // White background
+    p.drawRectangle({ x: 0, y: 0, width: PW, height: PH, color: WHITE });
+    // Sidebar
+    p.drawRectangle({ x: 0, y: 0, width: SB, height: PH, color: SIDEBG });
+    // Thin vertical separator
+    p.drawLine({ start: { x: SB, y: 0 }, end: { x: SB, y: PH }, thickness: 0.8, color: GREYLN });
     return p;
   }
-  const cur = () => pages[pages.length - 1];
-  const chkL = (h: number) => { if (lY - h < BOT) { addPage(); lY = TY; rY = TY; } };
-  const chkR = (h: number) => { if (rY - h < BOT) { addPage(); lY = TY; rY = TY; } };
 
-  function wrapLeft(text: string, font: PDFFont, size: number, color: ReturnType<typeof rgb>, indent = 0, lh = 1.33) {
+  const curP = () => pages[pages.length - 1];
+
+  const chkL = (h: number) => {
+    if (lY - h < BOT) { addPage(); lY = TY; rY = TY; }
+  };
+  const chkR = (h: number) => {
+    if (rY - h < BOT) { addPage(); lY = TY; rY = TY; }
+  };
+
+  // ── Wrap text: left sidebar ──────────────────────────────────────────
+  function wrapLeft(text: string, font: PDFFont, size: number, color: ReturnType<typeof rgb>, indent = 0, lh = 1.35) {
     const mw = STW - indent;
     let line = "";
     for (const w of san(text).split(/\s+/).filter(Boolean)) {
       const t = line ? `${line} ${w}` : w;
       if (font.widthOfTextAtSize(t, size) > mw && line) {
         chkL(size * lh);
-        cur().drawText(line, { x: SX + indent, y: lY, font, size, color });
+        curP().drawText(line, { x: SX + indent, y: lY, font, size, color });
         lY -= size * lh; line = w;
       } else line = t;
     }
-    if (line) { chkL(size * lh); cur().drawText(line, { x: SX + indent, y: lY, font, size, color }); lY -= size * lh; }
+    if (line) {
+      chkL(size * lh);
+      curP().drawText(line, { x: SX + indent, y: lY, font, size, color });
+      lY -= size * lh;
+    }
   }
 
+  // ── Wrap text: right main column ────────────────────────────────────
   function wrapRight(text: string, font: PDFFont, size: number, color: ReturnType<typeof rgb>, indent = 0, lh = 1.38) {
     const mw = MW - indent;
     let line = "";
@@ -122,81 +145,130 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
       const t = line ? `${line} ${w}` : w;
       if (font.widthOfTextAtSize(t, size) > mw && line) {
         chkR(size * lh);
-        cur().drawText(line, { x: MX + indent, y: rY, font, size, color });
+        curP().drawText(line, { x: MX + indent, y: rY, font, size, color });
         rY -= size * lh; line = w;
       } else line = t;
     }
-    if (line) { chkR(size * lh); cur().drawText(line, { x: MX + indent, y: rY, font, size, color }); rY -= size * lh; }
+    if (line) {
+      chkR(size * lh);
+      curP().drawText(line, { x: MX + indent, y: rY, font, size, color });
+      rY -= size * lh;
+    }
   }
 
+  // ── Left sidebar section header ──────────────────────────────────────
+  // Spaced letters in blue + blue underline (matches reference)
   function leftHdr(title: string) {
-    lY -= 10; chkL(20);
-    cur().drawRectangle({ x: SX - 2, y: lY - 3, width: SB - SX + 2, height: 15, color: SIDEBG });
-    cur().drawText(san(title), { x: SX + 2, y: lY, font: bold, size: 7.5, color: GOLD });
-    lY -= 17;
-    cur().drawRectangle({ x: SX, y: lY + 5, width: STW, height: 0.5, color: GOLD });
+    lY -= 12;
+    chkL(20);
+    const sp = spaced(title);
+    curP().drawText(sp, { x: SX, y: lY, font: bold, size: 7, color: BLUE });
     lY -= 4;
+    curP().drawLine({ start: { x: SX, y: lY }, end: { x: SB - 12, y: lY }, thickness: 0.9, color: BLUE });
+    lY -= 9;
   }
 
+  // ── Right main column section header ────────────────────────────────
+  // Spaced letters in blue + blue underline (matches reference)
   function rightHdr(title: string) {
-    rY -= 12; chkR(24);
-    cur().drawRectangle({ x: MX - 2, y: rY - 4, width: MW + 4, height: 18, color: BGBLUE });
-    cur().drawText(san(title).toUpperCase(), { x: MX + 3, y: rY, font: bold, size: 9, color: BLUE });
-    rY -= 22;
+    rY -= 14;
+    chkR(24);
+    const sp = spaced(title);
+    curP().drawText(sp, { x: MX, y: rY, font: bold, size: 9, color: BLUE });
+    rY -= 4;
+    curP().drawLine({ start: { x: MX, y: rY }, end: { x: PW - 16, y: rY }, thickness: 1, color: BLUE });
+    rY -= 10;
   }
 
-  // ── Contact icon: gold circle + label char ─────────────────────────────
-  function contactIcon(iconChar: string) {
-    chkL(14);
-    cur().drawCircle({ x: SX + 5, y: lY + 3, size: 5, color: GOLD });
-    const cx = iconChar.length === 2 ? SX + 1.5 : SX + 3;
-    cur().drawText(iconChar, { x: cx, y: lY + 0.5, font: bold, size: 5, color: NAVY });
+  // ── Two-ring bullet for right column (matches reference style) ───────
+  function bulletR() {
+    chkR(13);
+    curP().drawCircle({ x: MX + 6, y: rY + 4, size: 4.2, color: NAVY });
+    curP().drawCircle({ x: MX + 6, y: rY + 4, size: 2.0, color: WHITE });
   }
 
-  // ── First page + header ────────────────────────────────────────────────
+  // ── Two-ring bullet for left sidebar ────────────────────────────────
+  function bulletL() {
+    chkL(11);
+    curP().drawCircle({ x: SX + 5, y: lY + 3.5, size: 3.5, color: NAVY });
+    curP().drawCircle({ x: SX + 5, y: lY + 3.5, size: 1.7, color: WHITE });
+  }
+
+  // ── Contact badge (small navy rect + white icon text) ────────────────
+  function contactBadge(iconChar: string) {
+    chkL(12);
+    curP().drawRectangle({ x: SX, y: lY - 1, width: 12, height: 10, color: NAVY });
+    const ox = iconChar.length === 2 ? SX + 0.8 : SX + 3.5;
+    curP().drawText(iconChar, { x: ox, y: lY + 1, font: bold, size: 5, color: WHITE });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // PAGE 1
+  // ══════════════════════════════════════════════════════════════════════
   addPage();
-  cur().drawRectangle({ x: 0, y: PH - HDR, width: PW, height: HDR, color: NAVY });
-  cur().drawRectangle({ x: 0, y: PH - HDR - 2, width: PW, height: 2, color: GOLD });
 
   const { name, contactParts, sections } = parseCV(rewrittenText);
 
-  const nameSz = name.length > 28 ? 20 : name.length > 22 ? 22 : 24;
-  cur().drawText(san(name).toUpperCase(), { x: 16, y: PH - 36, font: bold, size: nameSz, color: WHITE });
+  // ── Name strip at top (white background, spans full width) ───────────
+  curP().drawRectangle({ x: 0, y: PH - NAMEH, width: PW, height: NAMEH, color: WHITE });
 
-  const contactFull = contactParts.join("  |  ");
-  const cy = PH - 58;
-  if (reg.widthOfTextAtSize(contactFull, 8) <= PW - 32) {
-    cur().drawText(contactFull, { x: 16, y: cy, font: reg, size: 8, color: rgb(0.80, 0.87, 1) });
+  // Name — large, bold, dark, aligned to main column
+  const nameSz = name.length > 28 ? 19 : name.length > 22 ? 22 : 25;
+  curP().drawText(san(name).toUpperCase(), {
+    x: MX, y: PH - 34, font: bold, size: nameSz, color: DARK,
+  });
+
+  // Contact items under name (small, gray)
+  const contactStr = contactParts
+    .map(p => san(p).replace(/^(LinkedIn|GitHub)\s*:\s*/i, (m, label) => `${label}: `))
+    .join("  |  ");
+  // Fit or wrap contact line
+  if (reg.widthOfTextAtSize(contactStr, 7.5) <= MW) {
+    curP().drawText(contactStr, { x: MX, y: PH - 52, font: reg, size: 7.5, color: MID });
   } else {
     const mid = Math.ceil(contactParts.length / 2);
-    cur().drawText(contactParts.slice(0, mid).join("  |  "), { x: 16, y: cy,      font: reg, size: 7.5, color: rgb(0.80, 0.87, 1) });
-    cur().drawText(contactParts.slice(mid).join("  |  "),    { x: 16, y: cy - 12, font: reg, size: 7.5, color: rgb(0.80, 0.87, 1) });
+    const l1 = contactParts.slice(0, mid).map(p => san(p)).join("  |  ");
+    const l2 = contactParts.slice(mid).map(p => san(p)).join("  |  ");
+    curP().drawText(l1, { x: MX, y: PH - 51, font: reg, size: 7.5, color: MID });
+    curP().drawText(l2, { x: MX, y: PH - 63, font: reg, size: 7.5, color: MID });
   }
 
+  // Blue underline below name strip
+  curP().drawLine({
+    start: { x: MX, y: PH - NAMEH + 3 },
+    end:   { x: PW - 16, y: PH - NAMEH + 3 },
+    thickness: 1.5, color: BLUE,
+  });
+
+  // Watermark bottom-right of name strip
   const brand = "ATS-Optimised by scoremycv.in";
-  cur().drawText(brand, { x: PW - reg.widthOfTextAtSize(brand, 6.5) - 12, y: PH - 74, font: ital, size: 6.5, color: rgb(0.5, 0.6, 0.8) });
+  curP().drawText(brand, {
+    x: PW - reg.widthOfTextAtSize(brand, 6.5) - 12,
+    y: PH - NAMEH + 9,
+    font: ital, size: 6.5, color: LIGHTGR,
+  });
 
   lY = TY; rY = TY;
 
-  // ── Sidebar: CONTACT with icons ────────────────────────────────────────
+  // ── SIDEBAR: CONTACT ─────────────────────────────────────────────────
   if (contactParts.length) {
     leftHdr("CONTACT");
     for (const part of contactParts) {
       const type = contactType(part);
       const icon =
-        type === "email"    ? "@" :
-        type === "phone"    ? "P" :
-        type === "linkedin" ? "in":
-        type === "github"   ? "gh": "i";
-      contactIcon(icon);
+        type === "email"    ? "@"  :
+        type === "phone"    ? "P"  :
+        type === "linkedin" ? "in" :
+        type === "github"   ? "gh" : "i";
+      contactBadge(icon);
       const display = san(part).replace(/^(LinkedIn|GitHub)\s*:\s*/i, "");
-      wrapLeft(display, reg, 7, WHITE, 14, 1.3);
+      wrapLeft(display, reg, 7, MID, 16, 1.3);
       lY -= 3;
     }
   }
 
-  // ── Sort sections ──────────────────────────────────────────────────────
-  const LEFT_KEYS  = ["SKILL","EDUCATION","ACADEMIC","CERTIF","LANGUAGE","PERSONAL SKILL","COMPETENC","AWARD","ACHIEVEMENT","VOLUNTEER"];
+  // ── Sort sections: left vs right column ──────────────────────────────
+  const LEFT_KEYS  = ["SKILL","EDUCATION","ACADEMIC","CERTIF","LANGUAGE","COMPETENC","AWARD","ACHIEVEMENT","PERSONAL SKILL","VOLUNTEER"];
   const RIGHT_KEYS = ["SUMMARY","PROFESSIONAL SUMMARY","CAREER OBJECTIVE","OBJECTIVE","PROFILE","EXPERIENCE","WORK EXPERIENCE","EMPLOYMENT","PROJECT","INTERNSHIP"];
 
   const leftSecs  = sections.filter(s => LEFT_KEYS.some(k  => s.title.includes(k)));
@@ -206,96 +278,96 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
     !RIGHT_KEYS.some(k => s.title.includes(k))
   );
 
-  // ── RIGHT column ────────────────────────────────────────────────────────
+  // ── RIGHT column ─────────────────────────────────────────────────────
   for (const sec of [...rightSecs, ...otherSecs]) {
     rightHdr(sec.title);
+
     for (const raw of sec.lines) {
-      const l = san(raw);
+      const rawTrimmed = raw.trim();
+      if (!rawTrimmed) { rY -= 3; continue; }
+      const isBullet = /^[-*•‣▪●]/.test(rawTrimmed);
+      const l = san(rawTrimmed);
       if (!l) continue;
-      const isBullet = /^[-*]/.test(l);
+
       const isSubHdr = !isBullet && l.length < 120 &&
         (l.includes("|") || /\b(20\d{2}|19\d{2})\b/.test(l) ||
          /^(dec|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov)/i.test(l));
 
       if (isSubHdr) {
-        rY -= 4;
+        rY -= 5;
         wrapRight(l, bold, 9.5, DARK, 0, 1.45);
       } else if (isBullet) {
         const txt = l.replace(/^[-*]\s*/, "");
-        chkR(12);
-        // Blue filled circle bullet (same as production visual)
-        cur().drawCircle({ x: MX + 7, y: rY + 4, size: 2.8, color: BLUE });
-        wrapRight(txt, reg, 9, MID, 18, 1.38);
+        bulletR();
+        wrapRight(txt, reg, 9, MID, 17, 1.38);
       } else {
-        wrapRight(l, reg, 9, DARK, 0, 1.38);
+        wrapRight(l, reg, 9, MID, 0, 1.38);
       }
     }
-    rY -= 4;
+    rY -= 6;
     chkR(6);
-    cur().drawLine({ start: { x: MX, y: rY + 3 }, end: { x: PW - 16, y: rY + 3 }, thickness: 0.4, color: GREY });
-    rY -= 8;
+    curP().drawLine({ start: { x: MX, y: rY + 3 }, end: { x: PW - 16, y: rY + 3 }, thickness: 0.3, color: GREYLN });
+    rY -= 6;
   }
 
-  // ── LEFT column ─────────────────────────────────────────────────────────
+  // ── LEFT column ───────────────────────────────────────────────────────
   for (const sec of leftSecs) {
     leftHdr(sec.title);
+
     const isSkills = ["SKILL","COMPETENC"].some(k => sec.title.includes(k));
     const isList   = ["CERTIF","LANGUAGE","AWARD","ACHIEVEMENT"].some(k => sec.title.includes(k));
 
     for (const raw of sec.lines) {
-      const l = san(raw);
+      const l = san(raw.trim());
       if (!l) continue;
 
       if (isSkills) {
         const colonIdx = l.indexOf(":");
         if (colonIdx > 0 && colonIdx < 35) {
           lY -= 2;
-          wrapLeft(l.slice(0, colonIdx).toUpperCase(), bold, 7, GOLD, 0, 1.2);
+          wrapLeft(l.slice(0, colonIdx).toUpperCase(), bold, 7, NAVY, 0, 1.2);
           const skills = l.slice(colonIdx + 1).trim();
-          if (skills) wrapLeft(skills, reg, 7, WHITE, 4, 1.25);
-          lY -= 1;
+          if (skills) wrapLeft(skills, reg, 7, MID, 4, 1.25);
+          lY -= 2;
         } else {
-          const txt = l.replace(/^[-*]\s*/, "");
-          chkL(10);
-          cur().drawText("-", { x: SX, y: lY, font: bold, size: 7, color: GOLD });
-          wrapLeft(txt, reg, 7, WHITE, 8, 1.25);
+          bulletL();
+          wrapLeft(l.replace(/^[-*]\s*/, ""), reg, 7, MID, 12, 1.25);
         }
       } else if (isList) {
-        const txt = l.replace(/^[-*]\s*/, "");
-        chkL(12);
-        cur().drawCircle({ x: SX + 4, y: lY + 3, size: 2.5, color: GOLD });
-        wrapLeft(txt, reg, 7.5, WHITE, 10, 1.3);
+        bulletL();
+        wrapLeft(l.replace(/^[-*]\s*/, ""), reg, 7.5, MID, 12, 1.3);
+        lY -= 1;
       } else {
-        // Education: bold the degree/institution line
-        const txt     = l.replace(/^[-*]\s*/, "");
+        // Education
+        const txt = l.replace(/^[-*]\s*/, "");
         const isBoldL = l.includes("|") || /\b(20\d{2}|19\d{2})\b/.test(l);
-        wrapLeft(txt, isBoldL ? bold : reg, 7.5, WHITE, 0, 1.3);
+        wrapLeft(txt, isBoldL ? bold : reg, 7.5, isBoldL ? DARK : MID, 0, 1.32);
       }
     }
     lY -= 6;
   }
 
-  // ── Footer ─────────────────────────────────────────────────────────────
+  // ── Footer on every page ─────────────────────────────────────────────
   for (let i = 0; i < pages.length; i++) {
     pages[i].drawText(`Page ${i + 1} of ${pages.length}  |  scoremycv.in`, {
-      x: MX, y: 16, font: ital, size: 6.5, color: LIGHT,
+      x: MX, y: 14, font: ital, size: 6.5, color: LIGHTGR,
     });
   }
 
   return doc.save();
 }
 
-// ── Route handler ──────────────────────────────────────────────────────────
+// ── Route handler ─────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
     const fd = await request.formData();
-    const file         = fd.get("file")       as File | null;
-    const jobRole      = (fd.get("jobRole")   as string) || "Software Engineer";
-    const experience   = (fd.get("experience")as string) || "0-2 years";
-    const userEmail    = (fd.get("email")     as string) || "";
-    const userPhone    = (fd.get("phone")     as string) || "";
-    const userLinkedin = (fd.get("linkedin")  as string) || "";
-    const userGithub   = (fd.get("github")    as string) || "";
+    const file         = fd.get("file")        as File | null;
+    const jobRole      = (fd.get("jobRole")    as string) || "Software Engineer";
+    const experience   = (fd.get("experience") as string) || "0-2 years";
+    const userEmail    = (fd.get("email")      as string) || "";
+    const userPhone    = (fd.get("phone")      as string) || "";
+    const userLinkedin = (fd.get("linkedin")   as string) || "";
+    const userGithub   = (fd.get("github")     as string) || "";
 
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
@@ -416,7 +488,7 @@ REWRITTEN CV:`;
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${cvName}-${roleSlug}-v2.pdf"`,
+        "Content-Disposition": `attachment; filename="${cvName}-${roleSlug}-ATS.pdf"`,
         "Cache-Control": "no-store",
       },
     });

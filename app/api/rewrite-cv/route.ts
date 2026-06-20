@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { Resend } from "resend";
 import { dbInsert, storageUpload } from "@/lib/supabase";
@@ -382,13 +383,12 @@ REWRITTEN CV:`;
 
     const pdfBytes = await buildPDF(cleanRewritten);
 
-    // ── Save to Supabase (fire and forget) ────────────────────────
-    (async () => {
+    // ── Save to Supabase (waitUntil keeps function alive after response) ──
+    waitUntil((async () => {
       try {
         const ts = Date.now();
         const slug = paymentId || ts.toString();
 
-        // Upload original PDF
         const originalPdfUrl = await storageUpload(
           "cv-pdfs",
           `originals/${ts}-${slug}.pdf`,
@@ -396,7 +396,6 @@ REWRITTEN CV:`;
           "application/pdf"
         );
 
-        // Upload rewritten PDF
         const rewrittenPdfUrl = await storageUpload(
           "cv-pdfs",
           `rewrites/${ts}-${slug}.pdf`,
@@ -404,7 +403,6 @@ REWRITTEN CV:`;
           "application/pdf"
         );
 
-        // Insert record
         await dbInsert("cv_rewrites", {
           job_role: jobRole,
           score_before: scoreBefore || null,
@@ -418,7 +416,7 @@ REWRITTEN CV:`;
       } catch (e) {
         console.error("Supabase save error:", e);
       }
-    })();
+    })());
 
     // ── Send email with PDF attachment ─────────────────────────────
     if (userEmail && process.env.RESEND_API_KEY) {

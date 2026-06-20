@@ -136,7 +136,7 @@ async function buildTwoColPDF(rewrittenText: string): Promise<Uint8Array> {
   function leftSectionHeader(title: string) {
     lY -= 8;
     ensureLeft(22);
-    cur().drawRectangle({ x: LEFT_X, y: lY - 2, width: LEFT_W - LEFT_X - 8, height: 16, color: rgb(1,1,1,0.12) });
+    cur().drawRectangle({ x: LEFT_X, y: lY - 2, width: LEFT_W - LEFT_X - 8, height: 16, color: rgb(0.15, 0.30, 0.58) });
     cur().drawText(san(title).toUpperCase(), { x: LEFT_X + 4, y: lY, font: bold, size: 8, color: GOLD });
     lY -= 18;
     cur().drawRectangle({ x: LEFT_X, y: lY + 4, width: LEFT_W - LEFT_X - 8, height: 0.5, color: GOLD });

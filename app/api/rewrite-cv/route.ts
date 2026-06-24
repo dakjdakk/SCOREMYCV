@@ -1,232 +1,11 @@
 import { NextResponse } from "next/server";
 import { waitUntil } from "@vercel/functions";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { Resend } from "resend";
 import { dbInsert, storageUpload } from "@/lib/supabase";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 export const maxDuration = 60;
-
-// ── Colours ───────────────────────────────────────────────────────────
-const BLUE    = rgb(0.09, 0.37, 0.85);
-const DARK    = rgb(0.12, 0.12, 0.12);
-const MID     = rgb(0.35, 0.35, 0.35);
-const LIGHT   = rgb(0.55, 0.55, 0.55);
-const WHITE   = rgb(1, 1, 1);
-const BG_BLUE = rgb(0.93, 0.96, 1);
-const LINE_C  = rgb(0.85, 0.85, 0.85);
-
-// ── Sanitise text for StandardFonts (Latin-1 only) ───────────────────
-function san(t: string): string {
-  return t
-    .replace(/\*\*/g, "")
-    .replace(/\*/g, "")
-    .replace(/[–—‒]/g, "-")
-    .replace(/[‘’ʼ]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/[•‣▪●]/g, "")
-    .replace(/…/g, "...")
-    .replace(/[^\x00-\xFF]/g, "")
-    .trim();
-}
-
-// ── PDF generator ─────────────────────────────────────────────────────
-async function buildPDF(rewrittenText: string): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.create();
-  const reg  = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-  const W = 612, H = 792, ML = 50, MR = 50;
-  const CW = W - ML - MR;
-
-  const pageList: ReturnType<typeof pdfDoc.addPage>[] = [];
-  let pi = 0;
-  let y  = 0;
-
-  function cur() { return pageList[pi]; }
-
-  function newPage() {
-    pageList.push(pdfDoc.addPage([W, H]));
-    pi = pageList.length - 1;
-    y  = H - 50;
-  }
-
-  function ensure(need: number) {
-    if (y - need < 50) newPage();
-  }
-
-  function wrapText(
-    text: string,
-    font: typeof reg,
-    size: number,
-    color: ReturnType<typeof rgb>,
-    indent = 0,
-    lh = 1.4
-  ) {
-    const maxW = CW - indent;
-    const words = text.split(" ").filter(Boolean);
-    let line = "";
-    for (const w of words) {
-      const test = line ? `${line} ${w}` : w;
-      if (font.widthOfTextAtSize(test, size) > maxW && line) {
-        ensure(size * lh);
-        cur().drawText(line, { x: ML + indent, y, font, size, color });
-        y -= size * lh;
-        line = w;
-      } else {
-        line = test;
-      }
-    }
-    if (line) {
-      ensure(size * lh);
-      cur().drawText(line, { x: ML + indent, y, font, size, color });
-      y -= size * lh;
-    }
-  }
-
-  function sectionHeader(title: string) {
-    y -= 10;
-    ensure(52); // header (22) + at least one content line (30) — prevents orphan headers
-    cur().drawRectangle({ x: ML, y: y - 3, width: CW, height: 18, color: BG_BLUE });
-    cur().drawText(san(title).toUpperCase(), {
-      x: ML + 5, y, font: bold, size: 9, color: BLUE,
-    });
-    y -= 20;
-  }
-
-  function divider() {
-    ensure(8);
-    cur().drawLine({
-      start: { x: ML, y: y + 4 },
-      end:   { x: W - MR, y: y + 4 },
-      thickness: 0.4,
-      color: LINE_C,
-    });
-    y -= 8;
-  }
-
-  // ── Parse the Gemini output ───────────────────────────────────────
-  const rawLines  = rewrittenText.split("\n");
-  let nameStr     = "";
-  let contactStr  = "";
-
-  const SECTION_RE = /^(CONTACT( INFORMATION| INFO)?|SUMMARY|PROFESSIONAL SUMMARY|CAREER OBJECTIVE|OBJECTIVE|EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT|INTERNSHIP.*|SKILLS|TECHNICAL SKILLS|KEY SKILLS|CORE COMPETENCIES|PERSONAL SKILLS|SOFT SKILLS|EDUCATION|ACADEMIC|KEY PROJECTS?|PROJECTS?|CERTIFICATIONS?|ACHIEVEMENTS?|ACCOMPLISHMENTS?|LANGUAGES?|INTERESTS?|REFERENCES?|PROFILE|ABOUT|LEADERSHIP.*|EXTRACURRICULAR.*|AWARDS?|VOLUNTEER.*|ACTIVITIES|HOBBIES?)$/i;
-
-  const sections: { header: string; lines: string[] }[] = [];
-  let cur_section: { header: string; lines: string[] } | null = null;
-  let headerParsed = false;
-
-  for (const raw of rawLines) {
-    const line = raw.trim();
-    if (!line) continue;
-
-    // First non-section line = name
-    if (!nameStr && !SECTION_RE.test(line)) {
-      if (line.length < 70 && !line.includes("@") && !line.match(/^\d/) && !line.startsWith("-")) {
-        nameStr = line;
-        continue;
-      }
-    }
-
-    // Second distinct line = contact (has @ or | or phone digits)
-    if (nameStr && !contactStr && !SECTION_RE.test(line)) {
-      if (line.includes("@") || line.includes("|") || /\+?\d[\d\s\-]{8,}/.test(line)) {
-        contactStr = line;
-        headerParsed = true;
-        continue;
-      }
-      if (!headerParsed && line.length < 80) {
-        contactStr = line;
-        headerParsed = true;
-        continue;
-      }
-    }
-
-    if (SECTION_RE.test(line) && line.split(" ").length <= 4) {
-      if (cur_section) sections.push(cur_section);
-      cur_section = { header: line, lines: [] };
-    } else {
-      if (cur_section) cur_section.lines.push(line);
-    }
-  }
-  if (cur_section) sections.push(cur_section);
-
-  // ── Page 1 header bar ─────────────────────────────────────────────
-  newPage();
-
-  const contactSan = contactStr ? san(contactStr) : "";
-  const contactParts = contactSan ? contactSan.split(" | ") : [];
-  // Check if full contact fits on one line
-  const contactNeedsWrap = contactSan && reg.widthOfTextAtSize(contactSan, 8.5) > CW;
-  const headerH = contactNeedsWrap ? 102 : 88;
-
-  cur().drawRectangle({ x: 0, y: H - headerH, width: W, height: headerH, color: BLUE });
-
-  const displayName = san(nameStr || "Candidate");
-  const nameSize    = displayName.length > 28 ? 20 : 24;
-  cur().drawText(displayName, { x: ML, y: H - (contactNeedsWrap ? 38 : 42), font: bold, size: nameSize, color: WHITE });
-
-  if (contactSan) {
-    const contactColor = rgb(0.85, 0.9, 1);
-    if (!contactNeedsWrap) {
-      cur().drawText(contactSan, { x: ML, y: H - 64, font: reg, size: 8.5, color: contactColor });
-    } else {
-      // Split roughly in half at a "|" boundary
-      const mid = Math.ceil(contactParts.length / 2);
-      const line1 = contactParts.slice(0, mid).join(" | ");
-      const line2 = contactParts.slice(mid).join(" | ");
-      cur().drawText(line1, { x: ML, y: H - 62, font: reg, size: 8, color: contactColor });
-      if (line2) cur().drawText(line2, { x: ML, y: H - 76, font: reg, size: 8, color: contactColor });
-    }
-  }
-
-  y = H - headerH - 14;
-
-  // ── Sections ──────────────────────────────────────────────────────
-  for (const sec of sections) {
-    if (!sec.lines.length) continue;
-
-    sectionHeader(sec.header);
-    const isEduSection     = /EDUCATION|ACADEMIC/i.test(sec.header);
-    const isProjectSection = /KEY PROJECTS?|PROJECTS?/i.test(sec.header);
-
-    for (const raw of sec.lines) {
-      const rawTrimmed = raw.trim();
-      if (!rawTrimmed) { y -= 3; continue; }
-      const isBullet = /^[-*•‣▪●]/.test(rawTrimmed);
-      const line = san(rawTrimmed);
-      if (!line) continue;
-
-      // Bold sub-headers: job/project titles, consistently across all project-type sections
-      const isSubHdr =
-        !isBullet &&
-        !isEduSection &&
-        (isProjectSection || line.includes("|") || /\b(20\d{2}|19\d{2})\b/.test(line)) &&
-        line.length < 120;
-
-      if (isSubHdr) {
-        y -= 4;
-        wrapText(line, bold, 9.5, DARK, 0, 1.45);
-      } else if (isBullet) {
-        const txt = line.replace(/^[-*••]\s*/, "");
-        ensure(12);
-        cur().drawText("•", { x: ML + 6, y, font: bold, size: 9, color: BLUE });
-        wrapText(txt, reg, 9, MID, 18, 1.38);
-      } else {
-        wrapText(line, reg, 9, DARK, 0, 1.38);
-      }
-    }
-    divider();
-  }
-
-  // Footer on each page
-  for (let i = 0; i < pageList.length; i++) {
-    pageList[i].drawText(`Page ${i + 1} of ${pageList.length}  |  scoremycv.in`, {
-      x: ML, y: 26, font: reg, size: 7, color: LIGHT,
-    });
-  }
-
-  return pdfDoc.save();
-}
 
 // ── Route handler ─────────────────────────────────────────────────────
 export async function POST(request: Request) {
@@ -236,7 +15,6 @@ export async function POST(request: Request) {
     const jobRole   = (formData.get("jobRole")   as string) || "Software Engineer";
     const experience= (formData.get("experience")as string) || "0-2 years";
     const userEmail = (formData.get("email")     as string) || "";
-    const userPhone = (formData.get("phone")     as string) || "";
     const userLinkedin = (formData.get("linkedin") as string) || "";
     const userGithub   = (formData.get("github")   as string) || "";
     const scoreBefore  = parseInt((formData.get("scoreBefore") as string) || "0", 10);
@@ -250,8 +28,6 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      // Use lib path to bypass pdf-parse's test runner (avoids ENOENT on ./test/data/)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const pdfParse = require("pdf-parse/lib/pdf-parse.js");
       text = (await pdfParse(buffer)).text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
@@ -267,61 +43,335 @@ export async function POST(request: Request) {
 
     const cvText = text.trim().slice(0, 8000);
 
-    // ── Build contact override block ───────────────────────────────
-    const contactItems = [
-      userEmail,
-      userPhone,
-      userLinkedin ? `LinkedIn: ${userLinkedin.replace(/^https?:\/\//, "")}` : "",
-      userGithub   ? `GitHub: ${userGithub.replace(/^https?:\/\//, "")}`     : "",
-    ].filter(Boolean);
-    const contactOverrideBlock = contactItems.length
-      ? `\nCONTACT LINE INSTRUCTION — CRITICAL:\nSingle-word labels in the original CV like "LinkedIn", "GITHUB", "Contact", "Gmail", "Portfolio" are hyperlink placeholders — NOT real values. Ignore them completely.\nThe contact line (line 2 of your output) must contain EXACTLY these items separated by " | ":\n${contactItems.join(" | ")}\nYou may also append the city/location from the original CV if it appears as real text.\nDo NOT include "LinkedIn", "GITHUB", "Portfolio", "Contact", or "Gmail" as standalone labels — only real URLs or real values.\n`
-      : "";
+    // ── Validate document looks like a CV ─────────────────────────
+    const hasEmail = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(cvText);
+    const hasPhone = /(\+?\d[\d\s\-().]{7,}\d)/.test(cvText);
+    if (!hasEmail || !hasPhone)
+      return NextResponse.json(
+        { error: "This doesn't look like a valid CV. Please upload a resume that contains your email address and phone number." },
+        { status: 422 },
+      );
 
-    // ── Gemini prompt ──────────────────────────────────────────────
-    const prompt = `You are an expert ATS resume writer. Rewrite the CV below for a "${jobRole}" role with ${experience} of experience.
+    // ── Contact overrides ──────────────────────────────────────────
+    const contactSection = [
+      userLinkedin ? `LinkedIn: ${userLinkedin}` : "",
+      userGithub   ? `GitHub: ${userGithub}`     : "",
+    ].filter(Boolean).join("\n");
 
-RULES (strictly follow):
-1. Never invent companies, degrees, dates, or roles that are not in the original CV.
-2. Preserve every real fact — only improve wording, structure, and keywords.
-3. Start every bullet with a strong action verb (e.g. Developed, Analysed, Implemented).
-4. Add quantification where plausible from context (do not invent specific numbers).
-5. Insert relevant ATS keywords naturally for ${jobRole}.
-6. Keep it concise and professional.
-7. If ANY field is unknown or missing (company name, date, location, etc.) — omit it and its pipe separator entirely. NEVER write "Not specified", "N/A", "Unknown", or any placeholder. Example: if company is unknown write "Data Analyst Intern | Jun 2024 - Dec 2024"; if dates are also unknown write just "Data Analyst Intern".
-8. Preserve the ENTIRE contact line exactly as it appears in original — do not drop any item (LinkedIn, GitHub, Tableau, Portfolio, or any other link/label). Copy every element verbatim.
-9. Include ALL sections present in the original — do not drop any section.
-10. Use the EXACT same section header names as the original CV. Do not rename sections (e.g. if original says "Leadership & Extracurriculars", keep that — do not rename it "Personal Skills" or merge it with another section).
-11. Preserve ALL academic scores, percentages, GPAs, and grades exactly as they appear in the original (e.g. 90.33%, 92.64%, 8.5 CGPA). Never drop them.
-12. If the name appears with spaces between individual letters (e.g. "K U M A R I  M A N U"), remove the spaces and write it as a normal name (e.g. "KUMARI MANU").
+    // ── Gemini prompt (HTML template) ──────────────────────────────
+    const prompt = `You are a senior resume template rendering engine.
+Your task is to transform any uploaded resume into ONE fixed resume design.
+Target job role: ${jobRole}
+Experience level: ${experience}
+${contactSection ? `\nUSE THESE EXACT CONTACT DETAILS (override whatever is in the CV):\n${contactSection}\n` : ""}
+This is a template replication task. Only candidate content changes. Everything else is fixed.
+Never redesign. Never improvise. Never create alternative layouts.
 
-OUTPUT FORMAT — use these exact section headers (no extra labels, no "ATS Optimised Resume"):
-[Full Name on line 1]
-[Copy line 2 of original CV exactly — email | phone | location | all profile links (LinkedIn, GitHub, Tableau, Portfolio, etc.)]
-SUMMARY
-[2-3 sentence professional summary tailored to ${jobRole}]
-EXPERIENCE
-[Job Title | Company Name | Month Year - Month Year] — omit any field that is unknown, never write "Not specified"
-- bullet point starting with action verb
-- bullet point starting with action verb
-SKILLS
-[List all technical skills grouped naturally, comma separated]
-EDUCATION
-[Degree | University | Year]
-PROJECTS
-[only if present in original]
-CERTIFICATIONS
-[only if present in original]
-LANGUAGES
-[only if present in original — list languages]
-PERSONAL SKILLS
-[only if present in original — soft skills like communication, problem solving etc]
+================================================
+PAGE STRUCTURE
+================================================
+A4 Portrait. Width: 794px.
+Do NOT set height or min-height on .page — EVER. Do not set height: 297mm, height: 100vh, or any fixed page height.
+White background on html, body, and .page — NEVER use gray or colored backgrounds.
+Fixed outer padding: Top: 40px, Bottom: 40px, Left: 32px, Right: 32px
+Use box-sizing: border-box on all elements.
 
-${contactOverrideBlock}
-ORIGINAL CV:
-${cvText}
+CRITICAL: All resume content (header + body + skills + education + projects) must be inside ONE single .page div.
+Do NOT create multiple .page divs. Do NOT create a separate page div for the header.
+The HTML body must contain ONLY ONE .page div.
 
-REWRITTEN CV:`;
+EXACT HTML SKELETON — follow this structure precisely:
+<div class="page">
+  <!-- HEADER (full width) -->
+  <div class="header">
+    <h1>CANDIDATE NAME</h1>
+    <div class="job-title">Job Title</div>
+    <div class="contact">Phone | Email | LinkedIn | GitHub | Location</div>
+  </div>
+  <!-- TWO-COLUMN BODY -->
+  <div class="body">
+    <div class="left">
+      <!-- Summary -->
+      <!-- Experience -->
+      <!-- Education -->
+      <!-- Projects (if present) -->
+    </div>
+    <div class="right">
+      <!-- Skills -->
+      <!-- Tools & Technologies -->
+      <!-- Certifications (if present) -->
+      <!-- Languages (if present) -->
+    </div>
+  </div>
+</div>
+
+ABSOLUTELY FORBIDDEN:
+* page-break-after: always — on ANY element, including the header div
+* break-after: page — on ANY element
+* height: 297mm or any fixed page height
+* min-height on .page
+* Multiple .page divs
+* Any explicit forced page breaks in HTML or CSS
+
+================================================
+HEADER
+================================================
+- Candidate Name: Bold, Uppercase, Black, font-size 26px, centered
+- Job Title: Blue accent (#2563EB), font-size 13px, centered, directly under name
+- Contact Row: Single centered line, font-size 10px, color #555
+  Format: Phone | Email | LinkedIn | GitHub | Location
+  Use actual values from CV. Omit any field not present. Do NOT write placeholder text.
+- ABSOLUTELY NO horizontal divider line below the contact info. Do NOT generate any hr, border, or divider element after the contact line.
+
+================================================
+MAIN LAYOUT
+================================================
+Two Column Layout inside .body div:
+Left Column (.left): 68% width
+Right Column (.right): 32% width
+CSS: .body { display: flex; align-items: flex-start; gap: 24px; margin-top: 8px; }
+.left { flex: 0 0 68%; min-width: 0; }
+.right { flex: 0 0 calc(32% - 24px); min-width: 0; border-left: 1px solid #e5e7eb; padding-left: 16px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+Do NOT set background-color on .right.
+TEXT ALIGNMENT: Left column paragraphs/bullets use text-align: justify. Right column uses text-align: left. Header uses text-align: center.
+
+================================================
+LEFT COLUMN ORDER (inside .body .left)
+================================================
+1. SUMMARY — paragraph text flush left, NO extra padding or margin-left
+2. EXPERIENCE
+3. EDUCATION
+4. PROJECTS (only if present in CV)
+
+All four sections go inside .left div. Do NOT create a separate .full-width div.
+
+================================================
+RIGHT COLUMN ORDER
+================================================
+1. SKILLS
+2. TOOLS & TECHNOLOGIES
+3. CERTIFICATIONS (if present)
+4. LANGUAGES (if present)
+
+================================================
+SECTION STYLE
+================================================
+- Uppercase, Bold, Black (#111), font-size 11px, letter-spacing: 0.5px
+- Horizontal divider directly underneath: border-top: 1.5px solid #111, margin-bottom: 8px
+- margin-top: 14px on each section
+- Section titles are BLACK, not blue.
+
+================================================
+EXPERIENCE FORMAT
+================================================
+Wrap each job in <div class="exp-block">:
+- Line 1: Job Title alone — bold 11px #111. NEVER combine company and title on same line.
+- Line 2: Company Name alone — 10.5px #2563EB
+- Line 3: Dates — italic 10px #666 (dates only, no location). Use the EXACT dates from the CV. NEVER write "MM/YYYY" as a placeholder. If dates are not found, omit this line entirely.
+- 3-4 bullet points, font-size 10.5px, text-align: justify
+- Technologies: italic 10px #555
+Include all experience entries.
+
+================================================
+EDUCATION FORMAT
+================================================
+Wrap each entry in <div class="edu-block">:
+- Degree — bold 11px #111
+- Institution — 10.5px #2563EB
+- Year — italic 10px #666
+Include all education entries.
+
+================================================
+PROJECTS FORMAT
+================================================
+Wrap each project in <div class="proj-block">:
+- Project Title — bold 11px #111
+- Tech Stack — italic 10px #555
+- 2-3 bullet points, font-size 10.5px, text-align: justify
+Include all projects if present.
+
+================================================
+SKILLS FORMAT
+================================================
+Right column only. Group skills by category:
+- Category title: bold 10.5px, color #2563EB (blue)
+- Skills below: 10px #333, text-align: left
+Use only categories relevant to the CV.
+
+================================================
+CRITICAL PAGE CONTROL
+================================================
+- Target length: 1 page.
+- If content cannot fit professionally on one page, create a second page.
+- Never reduce font size below 10px.
+- Never distort the layout.
+- Never overlap content.
+- Never push content outside page boundaries.
+- Maintain identical margins and spacing on every page.
+
+================================================
+CRITICAL TEMPLATE CONSISTENCY RULES
+================================================
+This resume must always look visually identical to the reference template.
+
+HEADER RULES:
+* Keep exactly the same top spacing.
+* Keep exactly the same header height.
+* Never move the name position.
+* Never move the contact information row.
+* Never reduce header spacing.
+
+FOOTER RULES:
+* Keep exactly the same bottom spacing.
+* Footer position must remain visually identical.
+* Never allow content to reach the bottom edge.
+
+CONTENT CONTROL RULES:
+When content is TOO LONG:
+* Shorten summary to maximum 3 lines.
+* Maximum 4 bullet points per job.
+* Maximum 3 bullet points per project.
+* Remove repetitive information.
+* Merge duplicate skills.
+* Keep only strongest achievements.
+* Prioritize recent experience.
+
+When content is TOO SHORT:
+* Expand achievement descriptions slightly.
+* Add more detail from existing resume content.
+* Distribute spacing evenly between sections.
+* Keep footer position unchanged.
+
+LAYOUT RULES:
+* Maintain identical top whitespace.
+* Maintain identical bottom whitespace.
+* Maintain identical section spacing.
+* Maintain identical column spacing.
+* Maintain identical visual density.
+
+FINAL CHECK BEFORE OUTPUT — Verify:
+✓ Header spacing matches template.
+✓ Footer spacing matches template.
+✓ No large empty gaps.
+✓ No content overflow.
+✓ Resume visually matches reference template.
+✓ Only content changes.
+✓ Design never changes.
+
+================================================
+CRITICAL PAGE BREAK RULES
+================================================
+1. NEVER allow a section heading to appear at the bottom of a page without at least 2 lines of content below it.
+
+2. Before rendering any section heading (PROJECTS, EXPERIENCE, EDUCATION, CERTIFICATIONS, SKILLS, etc.):
+   - Calculate remaining space on current page.
+   - Calculate height required for heading + minimum 2 content lines.
+   - If remaining space is insufficient: move the ENTIRE section (heading + content) to the next page.
+   - Do NOT print the heading on the current page if content cannot follow it.
+
+3. Apply "Keep With Next" behavior:
+   - Section heading must stay attached to its content.
+   - No orphan headings. No isolated titles.
+   CSS: use break-inside: avoid on a wrapper div containing heading + first content block.
+
+4. Maintain identical top margin on EVERY page.
+   - Page 1 and Page 2 must start at exactly the same Y position.
+   - Header spacing must be consistent across all pages.
+
+5. Maintain identical bottom margin on EVERY page.
+   - Content must never touch the footer area.
+
+6. Before creating a new page:
+   - Check if the next section can fit.
+   - If not, start the section on the next page.
+
+7. For PROJECTS section specifically:
+   - If "PROJECTS" heading appears near the page end and project content cannot fit beneath it,
+     move the heading AND all project entries to the next page.
+
+8. No page should end with:
+   - A heading only
+   - A heading plus one line
+   - A project title without its description
+
+9. Use professional pagination rules (like Microsoft Word):
+   - Keep headings with content.
+   - Keep project titles with at least first paragraph.
+   - Prevent widows and orphans.
+
+10. IMPLEMENTATION: Wrap every section's heading + first content item together in a div with:
+    style="page-break-inside: avoid; break-inside: avoid;"
+    This forces them to move together to the next page if they don't fit.
+
+================================================
+MULTI-PAGE HEADER & FOOTER RULES
+================================================
+When a resume requires more than one page:
+EVERY PAGE MUST BE TREATED AS A NEW TEMPLATE PAGE.
+
+PAGE 1:
+* Header begins at normal template position.
+* Footer remains at normal template position.
+
+PAGE 2 AND ALL SUBSEQUENT PAGES:
+* Reserve the exact same top margin as Page 1.
+* Reserve the exact same header area height as Page 1.
+* Reserve the exact same bottom margin as Page 1.
+* Reserve the exact same footer area height as Page 1.
+* Do not start content at the top edge of Page 2.
+* Before any content appears on Page 2, leave the same header spacing used on Page 1.
+* Page 2 content must begin only after the reserved header space.
+* Maintain identical footer spacing on every page.
+
+IMPLEMENTATION: Use @page margins and padding: 40px 32px on every page so content never starts at the top edge.
+
+VISUAL RULE — If Page 1 and Page 2 are placed side by side:
+✓ Header begins at same vertical position.
+✓ Content begins at same vertical position.
+✓ Footer ends at same vertical position.
+✓ Margins are identical.
+
+CONTENT FLOW RULE:
+When content moves to Page 2, do not place the next bullet/project immediately at the top.
+Start it below the reserved header area.
+
+FINAL VALIDATION:
+* Page 1 top spacing = Page 2 top spacing.
+* Page 1 footer spacing = Page 2 footer spacing.
+* Every page follows the same template grid.
+
+================================================
+TYPOGRAPHY
+================================================
+Font: Inter from Google Fonts (https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)
+Base body text: 10.5px, color #222
+
+================================================
+PRINT / PDF RULES
+================================================
+* <title></title> — empty string.
+* html, body: background: white !important; margin: 0; padding: 0;
+* Include in <style>:
+
+@media print {
+  html, body { background: white !important; margin: 0; padding: 0; }
+  .page { width: 100% !important; padding: 0 !important; background: white !important; }
+  .right { background: none !important; }
+  .body { align-items: flex-start !important; }
+  .exp-block { page-break-inside: avoid; break-inside: avoid; }
+  .edu-block { page-break-inside: avoid; break-inside: avoid; }
+  .proj-block { page-break-inside: avoid; break-inside: avoid; }
+  h2, h3, .section-title { page-break-after: avoid !important; break-after: avoid !important; }
+  h2 + *, h3 + *, .section-title + * { page-break-before: avoid !important; break-before: avoid !important; }
+  @page { size: A4 portrait; margin: 40px 32px; }
+}
+
+* The HTML body must contain ONLY the .page div — nothing before it, nothing after it.
+
+OUTPUT: Return ONLY the complete HTML starting with <!DOCTYPE html> and ending with </html>. No markdown. No code fences. No explanations.
+
+CV TO REFORMAT:
+${cvText}`;
 
     const geminiKey = process.env.GEMINI_API_KEY;
     if (!geminiKey) return NextResponse.json({ error: "API key not configured" }, { status: 500 });
@@ -333,9 +383,9 @@ REWRITTEN CV:`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.25, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { temperature: 0.15, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } },
         }),
-      }
+      },
     );
 
     if (!geminiRes.ok) {
@@ -348,45 +398,59 @@ REWRITTEN CV:`;
     }
 
     const geminiData = await geminiRes.json();
-    // Gemini 2.5 Flash returns thinking tokens in parts — find the actual text part
     const parts = geminiData?.candidates?.[0]?.content?.parts ?? [];
-    const rewritten = parts.find((p: any) => !p.thought && p.text)?.text ?? parts[0]?.text ?? "";
+    let rawHtml = parts.find((p: any) => !p.thought && p.text)?.text ?? parts[0]?.text ?? "";
 
-    if (!rewritten) {
-      return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
+    if (!rawHtml) return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
+
+    rawHtml = rawHtml
+      .replace(/^```html\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    if (!rawHtml.toLowerCase().includes("<!doctype")) {
+      return NextResponse.json({ error: "AI returned invalid HTML. Please try again." }, { status: 500 });
     }
 
-    // ── Post-process: strip "Not specified" placeholders Gemini sometimes outputs
-    const cleanRewritten = rewritten
-      .split("\n")
-      .map(line => {
-        // Remove "| Not specified" or "Not specified |" or standalone "Not specified"
-        return line
-          .replace(/\|\s*Not specified\s*\|\s*Not specified\s*-\s*Not specified/gi, "")
-          .replace(/\|\s*Not specified\s*-\s*Not specified/gi, "")
-          .replace(/\|\s*Not specified/gi, "")
-          .replace(/Not specified\s*\|/gi, "")
-          .replace(/Not specified\s*-\s*Not specified/gi, "")
-          .replace(/Not specified/gi, "")
-          .replace(/\|\s*\|/g, "|")   // collapse double pipes left by removal
-          .replace(/\|\s*$/g, "")     // trailing pipe
-          .replace(/^\s*\|\s*/g, "")  // leading pipe
-          .trimEnd();
-      })
-      .join("\n");
+    // ── Inject right column overflow fix ──────────────────────────
+    rawHtml = rawHtml.replace(
+      "</head>",
+      `<style>.right, .right * { overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-word !important; }</style></head>`
+    );
 
-    // ── Build PDF ──────────────────────────────────────────────────
-    const cvNameRaw = cleanRewritten.split("\n").find(l => l.trim())?.trim() || "CV";
-    const cvNameSlug = cvNameRaw.replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
-    const roleSlug = jobRole.split("/")[0].trim().replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
-    const downloadFilename = `${cvNameSlug}-${roleSlug}-CV.pdf`;
+    // ── Puppeteer: HTML → PDF ──────────────────────────────────────
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
 
-    const pdfBytes = await buildPDF(cleanRewritten);
+    const browserPage = await browser.newPage();
+    await browserPage.emulateMediaType("print");
+    await browserPage.setContent(rawHtml, { waitUntil: "load" });
 
-    // ── Save to Supabase (waitUntil keeps function alive after response) ──
+    const pdfBuffer = await browserPage.pdf({
+      format: "A4",
+      printBackground: true,
+      displayHeaderFooter: false,
+      margin: { top: "40px", bottom: "40px", left: "32px", right: "32px" },
+    });
+
+    await browser.close();
+
+    // ── Build download filename ────────────────────────────────────
+    const cvNameRaw  = rawHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]
+      ?.replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-") || "CV";
+    const roleSlug   = jobRole.split("/")[0].trim().replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
+    const downloadFilename = `${cvNameRaw}-${roleSlug}-CV.pdf`;
+
+    const pdfBytes = Buffer.from(pdfBuffer);
+
+    // ── Save to Supabase ───────────────────────────────────────────
     waitUntil((async () => {
       try {
-        const ts = Date.now();
+        const ts   = Date.now();
         const slug = paymentId || ts.toString();
 
         const originalPdfUrl = await storageUpload(
@@ -399,19 +463,19 @@ REWRITTEN CV:`;
         const rewrittenPdfUrl = await storageUpload(
           "cv-pdfs",
           `rewrites/${ts}-${slug}.pdf`,
-          Buffer.from(pdfBytes),
+          pdfBytes,
           "application/pdf"
         );
 
         await dbInsert("cv_rewrites", {
-          job_role: jobRole,
-          score_before: scoreBefore || null,
-          email: userEmail || null,
-          payment_id: paymentId || null,
-          original_cv_text: cvText,
-          rewritten_cv_text: cleanRewritten,
-          original_pdf_url: originalPdfUrl,
-          rewritten_pdf_url: rewrittenPdfUrl,
+          job_role:            jobRole,
+          score_before:        scoreBefore || null,
+          email:               userEmail   || null,
+          payment_id:          paymentId   || null,
+          original_cv_text:    cvText,
+          rewritten_cv_text:   rawHtml,
+          original_pdf_url:    originalPdfUrl,
+          rewritten_pdf_url:   rewrittenPdfUrl,
         });
       } catch (e) {
         console.error("Supabase save error:", e);
@@ -424,7 +488,7 @@ REWRITTEN CV:`;
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: "ScoreMyCV <noreply@scoremycv.in>",
-          to: userEmail,
+          to:   userEmail,
           subject: "Your Rewritten CV is Ready — ScoreMyCV",
           html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
             <h2 style="color:#1d4ed8">Your ATS-Optimised CV is Ready!</h2>
@@ -435,8 +499,8 @@ REWRITTEN CV:`;
             <p style="color:#6b7280;font-size:13px">ScoreMyCV - scoremycv.in</p>
           </div>`,
           attachments: [{
-            filename: "rewritten-cv.pdf",
-            content: Buffer.from(pdfBytes).toString("base64"),
+            filename: downloadFilename,
+            content:  pdfBytes.toString("base64"),
           }],
         });
       } catch (emailErr) {
@@ -444,12 +508,12 @@ REWRITTEN CV:`;
       }
     }
 
-    return new NextResponse(Buffer.from(pdfBytes), {
+    return new NextResponse(pdfBytes, {
       status: 200,
       headers: {
-        "Content-Type": "application/pdf",
+        "Content-Type":        "application/pdf",
         "Content-Disposition": `attachment; filename="${downloadFilename}"`,
-        "Cache-Control": "no-store",
+        "Cache-Control":       "no-store",
       },
     });
 

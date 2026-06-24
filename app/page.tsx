@@ -348,8 +348,8 @@ function PaymentModal({
   const [orderId]                 = useState(generateOrderId);
   const [paymentId, setPaymentId] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [downloadFilename, setDownloadFilename] = useState("rewritten-cv.pdf");
   const [email, setEmail]         = useState("");
-  const [phone, setPhone]         = useState("");
   const [linkedin, setLinkedin]   = useState("");
   const [github, setGithub]       = useState("");
 
@@ -425,7 +425,6 @@ function PaymentModal({
           fd.append("jobRole",     jobRole);
           fd.append("experience",  expOverride || experience || "Not specified");
           fd.append("email",       email);
-          fd.append("phone",       phone);
           fd.append("linkedin",    linkedin);
           fd.append("github",      github);
           fd.append("scoreBefore", String(preScore || 0));
@@ -448,6 +447,7 @@ function PaymentModal({
           const blob = await rewriteRes.blob();
           const url  = URL.createObjectURL(blob);
           setDownloadUrl(url);
+          setDownloadFilename(pdfFilename);
 
           // Auto-trigger download (desktop); on iOS Safari a.click() is blocked — fallback to new tab
           try {
@@ -528,27 +528,16 @@ function PaymentModal({
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 font-medium">
-                    ℹ️ Fill your contact details below so they appear correctly in your rewritten CV.
+                    ℹ️ Enter your email to receive the rewritten CV. LinkedIn and GitHub are optional overrides.
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Your Email <span className="text-slate-400 font-normal">(for CV header + delivery)</span></label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Your Email <span className="text-slate-400 font-normal">(we'll email your rewritten CV here)</span></label>
                     <input
                       type="email"
                       placeholder="yourname@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number <span className="text-slate-400 font-normal">(for CV header)</span></label>
-                    <input
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
                       className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
@@ -581,7 +570,7 @@ function PaymentModal({
 
                   <button
                     onClick={() => handlePay()}
-                    disabled={loading || !email || !phone}
+                    disabled={loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
                     {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
@@ -625,27 +614,16 @@ function PaymentModal({
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 font-medium">
-                    ℹ️ Fill your contact details below so they appear correctly in your rewritten CV.
+                    ℹ️ Enter your email to receive the rewritten CV. LinkedIn and GitHub are optional overrides.
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Your Email <span className="text-slate-400 font-normal">(for CV header + delivery)</span></label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Your Email <span className="text-slate-400 font-normal">(we'll email your rewritten CV here)</span></label>
                     <input
                       type="email"
                       placeholder="yourname@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number <span className="text-slate-400 font-normal">(for CV header)</span></label>
-                    <input
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
                       className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
@@ -678,7 +656,7 @@ function PaymentModal({
 
                   <button
                     onClick={() => handlePay()}
-                    disabled={!canProceed || loading || !email || !phone}
+                    disabled={!canProceed || loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
                     {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
@@ -701,7 +679,7 @@ function PaymentModal({
               {downloadUrl && (
                 <a
                   href={downloadUrl}
-                  download="rewritten-cv.pdf"
+                  download={downloadFilename}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block w-full bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-4 rounded-2xl transition text-base"

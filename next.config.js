@@ -15,7 +15,10 @@ const nextConfig = {
     return config;
   },
   experimental: {
-    serverComponentsExternalPackages: ["mammoth", "pdf-parse", "resend"],
+    serverComponentsExternalPackages: ["mammoth", "pdf-parse", "resend", "@sparticuz/chromium", "puppeteer-core"],
+    outputFileTracingIncludes: {
+      "/api/test-rewrite": ["./node_modules/@sparticuz/chromium/**/*"],
+    },
   },
 };
 module.exports = nextConfig;

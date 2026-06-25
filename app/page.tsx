@@ -511,6 +511,14 @@ function PaymentModal({
           {/* ── STEP 1 ── */}
           {step === 1 && (
             <div className="space-y-4">
+              {loading && (
+                <div className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center gap-4 rounded-3xl">
+                  <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-slate-700 font-semibold text-sm text-center px-6">{loadingMsg || "⏳ Please wait..."}</p>
+                  <p className="text-slate-400 text-xs text-center px-6">This may take 10–15 seconds</p>
+                  <p className="text-red-500 text-xs font-medium text-center px-6">⚠️ Please don't close or refresh this page</p>
+                </div>
+              )}
               {fromATS ? (
                 /* Coming from ATS check — file & role already known, go straight to pay */
                 <>
@@ -731,10 +739,10 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        <div className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2 cursor-pointer">
           <span className="text-2xl">📄</span>
           <span className="font-bold text-blue-700 text-lg">ScoreMyCV</span>
-        </div>
+        </a>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
           {navLinks.map((l) => (
             <a key={l.href} href={l.href} className="hover:text-blue-600 transition">{l.label}</a>

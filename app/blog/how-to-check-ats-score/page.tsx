@@ -53,9 +53,10 @@ export default function BlogPost() {
             </Link>
             <Link
               href="/"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-full text-sm transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm transition whitespace-nowrap"
             >
-              Check My ATS Score — Free →
+              <span className="hidden sm:inline">Check My ATS Score — Free →</span>
+              <span className="sm:hidden">Check Score →</span>
             </Link>
           </div>
         </nav>

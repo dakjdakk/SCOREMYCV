@@ -17,7 +17,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["mammoth", "pdf-parse", "resend", "@sparticuz/chromium", "puppeteer-core"],
     outputFileTracingIncludes: {
-      "/api/test-rewrite": ["./node_modules/@sparticuz/chromium/**/*"],
+      "/api/rewrite-cv": ["./node_modules/@sparticuz/chromium/**/*"],
     },
   },
 };

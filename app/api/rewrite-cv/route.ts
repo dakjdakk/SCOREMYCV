@@ -43,6 +43,21 @@ export async function POST(request: Request) {
 
     const cvText = text.trim().slice(0, 8000);
 
+    // ── Extract LinkedIn / GitHub URLs from raw PDF binary ─────────
+    let extractedLinkedin = "";
+    let extractedGithub   = "";
+    if (fileName.endsWith(".pdf")) {
+      const pdfStr = buffer.toString("latin1");
+      const liMatch = pdfStr.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s)<>"\\]+/i);
+      const ghMatch = pdfStr.match(/https?:\/\/(?:www\.)?github\.com\/[^\s)<>"\\]+/i);
+      extractedLinkedin = liMatch?.[0]?.replace(/\/$/, "") || "";
+      extractedGithub   = ghMatch?.[0]?.replace(/\/$/, "") || "";
+    }
+
+    // Form fields take priority over extracted URLs
+    const linkedinUrl = userLinkedin || extractedLinkedin;
+    const githubUrl   = userGithub   || extractedGithub;
+
     // ── Validate document looks like a CV ─────────────────────────
     const hasEmail = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(cvText);
     const hasPhone = /(\+?\d[\d\s\-().]{7,}\d)/.test(cvText);
@@ -54,8 +69,8 @@ export async function POST(request: Request) {
 
     // ── Contact overrides ──────────────────────────────────────────
     const contactSection = [
-      userLinkedin ? `LinkedIn: ${userLinkedin}` : "",
-      userGithub   ? `GitHub: ${userGithub}`     : "",
+      linkedinUrl ? `LinkedIn URL: ${linkedinUrl}` : "",
+      githubUrl   ? `GitHub URL: ${githubUrl}`     : "",
     ].filter(Boolean).join("\n");
 
     // ── Gemini prompt (HTML template) ──────────────────────────────
@@ -121,6 +136,8 @@ HEADER
 - Contact Row: Single centered line, font-size 10px, color #555
   Format: Phone | Email | LinkedIn | GitHub | Location
   Use actual values from CV. Omit any field not present. Do NOT write placeholder text.
+  LINKEDIN LINK: ${linkedinUrl ? `Use this exact URL: ${linkedinUrl}. Render as <a href="${linkedinUrl}" style="color:#555;text-decoration:none;">LinkedIn</a>` : "If the CV has a LinkedIn URL, render as <a href=\"URL\">LinkedIn</a>. If no URL found, write plain text LinkedIn only if mentioned in CV."}
+  GITHUB LINK: ${githubUrl ? `Use this exact URL: ${githubUrl}. Render as <a href="${githubUrl}" style="color:#555;text-decoration:none;">GitHub</a>` : "If the CV has a GitHub URL, render as <a href=\"URL\">GitHub</a>. If no URL found, write plain text GitHub only if mentioned in CV."}
 - ABSOLUTELY NO horizontal divider line below the contact info. Do NOT generate any hr, border, or divider element after the contact line.
 
 ================================================
@@ -166,8 +183,8 @@ EXPERIENCE FORMAT
 ================================================
 Wrap each job in <div class="exp-block">:
 - Line 1: Job Title alone — bold 11px #111. NEVER combine company and title on same line.
-- Line 2: Company Name alone — 10.5px #2563EB
-- Line 3: Dates — italic 10px #666 (dates only, no location). Use the EXACT dates from the CV. NEVER write "MM/YYYY" as a placeholder. If dates are not found, omit this line entirely.
+- Line 2: Company Name with location and work type if present in CV (e.g. "Brandsmith360, Paris, France (Remote)") — 10.5px #2563EB. ALWAYS include city, country, and Remote/On-site/Hybrid if mentioned in the CV.
+- Line 3: Dates — italic 10px #666. Use the EXACT dates from the CV. NEVER write "MM/YYYY" as a placeholder. If dates are not found, omit this line entirely.
 - 3-4 bullet points, font-size 10.5px, text-align: justify
 - Technologies: italic 10px #555
 Include all experience entries.
@@ -416,7 +433,7 @@ ${cvText}`;
     // ── Inject right column overflow fix ──────────────────────────
     rawHtml = rawHtml.replace(
       "</head>",
-      `<style>.right, .right * { overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-word !important; }</style></head>`
+      `<style>.right { overflow: hidden !important; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: normal !important; box-sizing: border-box !important; max-width: 100% !important; } .right * { overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: normal !important; max-width: 100% !important; }</style></head>`
     );
 
     // ── Puppeteer: HTML → PDF ──────────────────────────────────────

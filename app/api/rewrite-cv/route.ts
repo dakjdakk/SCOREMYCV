@@ -54,9 +54,20 @@ export async function POST(request: Request) {
       extractedGithub   = ghMatch?.[0]?.replace(/\/$/, "") || "";
     }
 
+    // Normalize URL — ensure https:// prefix
+    const normalizeUrl = (url: string) => {
+      if (!url) return "";
+      url = url.trim();
+      if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+        return "https://" + url;
+      }
+      return url;
+    };
+
     // Form fields take priority over extracted URLs
-    const linkedinUrl = userLinkedin || extractedLinkedin;
-    const githubUrl   = userGithub   || extractedGithub;
+    const linkedinUrl = normalizeUrl(userLinkedin || extractedLinkedin);
+    const githubUrl   = normalizeUrl(userGithub   || extractedGithub);
+    console.log("LinkedIn URL:", linkedinUrl, "| GitHub URL:", githubUrl);
 
     // ── Validate document looks like a CV ─────────────────────────
     const hasEmail = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(cvText);
@@ -159,8 +170,9 @@ LEFT COLUMN ORDER (inside .body .left)
 2. EXPERIENCE
 3. EDUCATION
 4. PROJECTS (only if present in CV)
+5. KEY CONTRIBUTIONS / ACHIEVEMENTS (only if present in CV — include all bullet points exactly as written)
 
-All four sections go inside .left div. Do NOT create a separate .full-width div.
+All sections go inside .left div. Do NOT create a separate .full-width div.
 
 ================================================
 RIGHT COLUMN ORDER
@@ -429,6 +441,46 @@ ${cvText}`;
     if (!rawHtml.toLowerCase().includes("<!doctype")) {
       return NextResponse.json({ error: "AI returned invalid HTML. Please try again." }, { status: 500 });
     }
+
+    // ── Inject LinkedIn / GitHub links server-side ────────────────
+    // Strip any existing anchor around the word, then inject cleanly
+    const injectLink = (html: string, word: string, url: string): string => {
+      // Step 1: strip any existing <a ...>word</a> → plain word
+      html = html.replace(new RegExp(`<a[^>]*>${word}<\\/a>`, "g"), word);
+      if (html.includes(word)) {
+        // Step 2: word exists — wrap with new link
+        html = html.replace(
+          new RegExp(`\\b${word}\\b`, "g"),
+          `<a href="${url}" style="color:inherit;text-decoration:none;">${word}</a>`
+        );
+      } else {
+        // Step 3: word missing entirely — insert into contact row
+        html = html.replace(
+          /class="contact"([^>]*)([\s\S]*?)<\/div>/,
+          (match, attrs, content) => {
+            const link = `<a href="${url}" style="color:inherit;text-decoration:none;">${word}</a>`;
+            return `class="contact"${attrs}>${content.trimEnd()} | ${link}</div>`;
+          }
+        );
+      }
+      return html;
+    };
+
+    if (linkedinUrl) rawHtml = injectLink(rawHtml, "LinkedIn", linkedinUrl);
+    if (githubUrl)   rawHtml = injectLink(rawHtml, "GitHub",   githubUrl);
+
+    // ── Replace special unicode characters that don't render in PDF fonts ──
+    rawHtml = rawHtml
+      .replace(/→/g, "-")
+      .replace(/←/g, "-")
+      .replace(/↑/g, "-")
+      .replace(/↓/g, "-")
+      .replace(/•/g, "•")
+      .replace(/–/g, "–")
+      .replace(/—/g, "—")
+      .replace(/’/g, "'")
+      .replace(/“/g, '"')
+      .replace(/”/g, '"');
 
     // ── Inject right column overflow fix ──────────────────────────
     rawHtml = rawHtml.replace(

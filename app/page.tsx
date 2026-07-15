@@ -1086,12 +1086,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
               {l.label}
             </a>
           ))}
-          <div className="border-t border-slate-100 mt-1 pt-2">
-            <button onClick={() => { setMenuOpen(false); onUpload(); }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition text-sm">
-              🚀 Build My ATS Resume — ₹19
-            </button>
-          </div>
+
         </div>
       )}
     </nav>

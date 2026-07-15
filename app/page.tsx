@@ -524,7 +524,7 @@ function HeroSection({ onUpgrade }: {
           </div>
           <h1 className="text-4xl xl:text-5xl font-extrabold text-slate-900 leading-tight">
             Land More Interviews<br />
-            <span className="text-indigo-600">With an ATS-Optimised CV</span>
+            <span className="text-indigo-600">With an ATS-Optimised Resume</span>
           </h1>
           <p className="text-slate-500 text-base max-w-md leading-relaxed">
             Free ATS score check · Full CV rewrite · Instant PDF download. Just ₹19.

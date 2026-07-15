@@ -501,18 +501,12 @@ function HeroSection({ onUpgrade }: {
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-100/40 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none" />
 
       {/* Mobile headline */}
-      <div className="lg:hidden text-center mb-5 relative px-1">
-        <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
-          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          Free ATS Check · Instant CV Rewrite
-        </div>
-        <p className="text-slate-500 text-sm mt-2">Free ATS score · Full rewrite · Instant PDF · ₹19</p>
-        <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
-          <span className="text-yellow-400 text-base leading-none tracking-tight">★★★★★</span>
-          <span className="text-sm font-semibold text-slate-800">4.5</span>
-          <span className="text-slate-400">·</span>
-          <span className="text-sm text-slate-600"><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
-        </div>
+      <div className="lg:hidden text-center mb-6 relative">
+        <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">
+          Land More Interviews<br />
+          <span className="text-indigo-600">With an ATS-Optimised CV</span>
+        </h1>
+        <p className="text-slate-500 text-sm mt-2">Free ATS check · Full rewrite · Instant PDF · ₹19</p>
       </div>
 
       <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">

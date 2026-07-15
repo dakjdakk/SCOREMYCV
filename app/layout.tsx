@@ -9,11 +9,11 @@ const SITE_URL = "https://scoremycv.in";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "ScoreMyCV — Free ATS Resume Checker | CV Rewrite for ₹18",
+  title: "ScoreMyCV — Free ATS Resume Checker | CV Rewrite for ₹19",
   description:
-    "Check your resume ATS score for free. See missing keywords and exactly why recruiters ignore your CV. Get your full CV professionally rewritten and download instantly for just ₹18.",
+    "Check your resume ATS score for free. See missing keywords and exactly why recruiters ignore your CV. Get your full CV professionally rewritten and download instantly for just ₹19.",
   keywords:
-    "ATS resume checker, ATS score India, resume rewrite India, CV score free, ATS optimized resume, resume checker online, CV rewrite ₹18, job resume India",
+    "ATS resume checker, ATS score India, resume rewrite India, CV score free, ATS optimized resume, resume checker online, CV rewrite ₹19, job resume India",
   alternates: {
     canonical: SITE_URL,
   },
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: "ScoreMyCV",
-    title: "Free ATS Score Check + CV Rewrite for ₹18 — ScoreMyCV",
+    title: "Free ATS Score Check + CV Rewrite for ₹19 — ScoreMyCV",
     description:
-      "Upload your resume. Get your free ATS score instantly. See missing keywords. Get your entire CV professionally rewritten and download the polished PDF for just ₹18.",
+      "Upload your resume. Get your free ATS score instantly. See missing keywords. Get your entire CV professionally rewritten and download the polished PDF for just ₹19.",
     images: [
       {
         url: `${SITE_URL}/og-image.png`,
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free ATS Score Check + CV Rewrite for ₹18 — ScoreMyCV",
+    title: "Free ATS Score Check + CV Rewrite for ₹19 — ScoreMyCV",
     description:
-      "Upload your resume. Get your free ATS score instantly. See missing keywords. Get your entire CV professionally rewritten and download the polished PDF for just ₹18.",
+      "Upload your resume. Get your free ATS score instantly. See missing keywords. Get your entire CV professionally rewritten and download the polished PDF for just ₹19.",
     images: [`${SITE_URL}/og-image.png`],
   },
   icons: {
@@ -75,7 +75,7 @@ const faqSchema = {
     },
     {
       "@type": "Question",
-      name: "What do I get for ₹18?",
+      name: "What do I get for ₹19?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Your entire CV is professionally rewritten — better language, strong action verbs, missing keywords added, and ATS-optimised formatting. The rewritten CV is generated instantly and downloads as a clean PDF the moment payment is confirmed.",
@@ -126,11 +126,11 @@ const serviceSchema = {
     url: SITE_URL,
   },
   description:
-    "Free ATS resume score check with instant CV rewrite for ₹18. Upload your resume, get your score, missing keywords, and a fully rewritten ATS-optimised PDF instantly.",
+    "Free ATS resume score check with instant CV rewrite for ₹19. Upload your resume, get your score, missing keywords, and a fully rewritten ATS-optimised PDF instantly.",
   url: SITE_URL,
   offers: {
     "@type": "Offer",
-    price: "18",
+    price: "19",
     priceCurrency: "INR",
     description: "Full CV rewrite — ATS-optimised PDF download",
   },

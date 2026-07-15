@@ -18,15 +18,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [atsRes, rewritesRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/ats_checks?select=*&order=created_at.desc&limit=500`, { headers: sbHeaders }),
-      fetch(`${SUPABASE_URL}/rest/v1/cv_rewrites?select=id,created_at,job_role,score_before,email,payment_id,original_pdf_url,rewritten_pdf_url&order=created_at.desc&limit=100`, { headers: sbHeaders }),
+    const [atsRes, rewritesRes, reviewsRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/ats_checks?select=*&order=created_at.desc&limit=500`, { headers: sbHeaders, cache: "no-store" }),
+      fetch(`${SUPABASE_URL}/rest/v1/cv_rewrites?select=id,created_at,job_role,score_before,email,payment_id,original_pdf_url,rewritten_pdf_url&order=created_at.desc&limit=100`, { headers: sbHeaders, cache: "no-store" }),
+      fetch(`${SUPABASE_URL}/rest/v1/cv_reviews?select=*&order=created_at.desc&limit=200`, { headers: sbHeaders, cache: "no-store" }),
     ]);
 
     const atsChecks = await atsRes.json();
     const rewrites  = await rewritesRes.json();
+    const reviews   = reviewsRes.ok ? await reviewsRes.json() : [];
 
-    return NextResponse.json({ atsChecks, rewrites });
+    return NextResponse.json({ atsChecks, rewrites, reviews });
   } catch (e) {
     console.error("Admin data fetch error:", e);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });

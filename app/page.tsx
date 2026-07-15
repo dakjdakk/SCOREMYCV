@@ -50,7 +50,7 @@ const features = [
 const steps = [
   { step: "01", title: "Upload Your Resume", desc: "Upload your existing resume in PDF or Word format." },
   { step: "02", title: "Get Free ATS Score", desc: "Instantly see your score, missing keywords, and what's holding your resume back." },
-  { step: "03", title: "Pay ₹18 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
+  { step: "03", title: "Pay ₹19 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
   { step: "04", title: "Download Instantly", desc: "Your rewritten, ATS-optimised CV downloads automatically — right away." },
 ];
 
@@ -60,7 +60,7 @@ const faqs = [
     a: "ATS stands for Applicant Tracking System — software companies use to automatically filter resumes before a human ever sees them. If your score is too low, your resume gets rejected instantly. Our free check tells you exactly where you stand.",
   },
   {
-    q: "What do I get for ₹18?",
+    q: "What do I get for ₹19?",
     a: "Your entire CV is professionally rewritten — better language, strong action verbs, missing keywords added, and ATS-optimised formatting. The rewritten CV is generated instantly and downloads as a clean PDF the moment payment is confirmed.",
   },
   {
@@ -95,8 +95,8 @@ type ATSResult = {
 
 // ── Score Gauge ───────────────────────────────────────────────────────
 function ScoreGauge({ score }: { score: number }) {
-  const color = score >= 70 ? "#16a34a" : score >= 50 ? "#d97706" : "#dc2626";
-  const label = score >= 70 ? "Good" : score >= 50 ? "Average" : "Poor";
+  const color    = score >= 90 ? "#16a34a" : score >= 70 ? "#d97706" : "#dc2626";
+  const pillText = score >= 90 ? "Shortlist-Ready" : score >= 70 ? "Below Shortlist Threshold" : score >= 50 ? "High Rejection Risk" : "Auto-Rejected by ATS";
   return (
     <div className="flex flex-col items-center">
       <div className="w-36 h-36 rounded-full flex flex-col items-center justify-center border-8 shadow-lg"
@@ -106,8 +106,136 @@ function ScoreGauge({ score }: { score: number }) {
       </div>
       <span className="mt-2 text-sm font-bold px-3 py-1 rounded-full"
         style={{ background: color + "20", color }}>
-        {label} ATS Score
+        {pillText}
       </span>
+    </div>
+  );
+}
+
+// ── CV Mockup (animated hero visual) ─────────────────────────────────
+function CVMockup() {
+  const [score, setScore]   = useState(58);
+  const [phase, setPhase]   = useState<"before" | "rewriting" | "after">("before");
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    let t1: ReturnType<typeof setTimeout>;
+    let t2: ReturnType<typeof setTimeout>;
+
+    function runCycle() {
+      setScore(58); setPhase("before");
+      t1 = setTimeout(() => {
+        setPhase("rewriting");
+        let cur = 58;
+        interval = setInterval(() => {
+          cur += 1; setScore(cur);
+          if (cur >= 95) {
+            clearInterval(interval);
+            setPhase("after");
+            t2 = setTimeout(runCycle, 4000);
+          }
+        }, 40);
+      }, 2500);
+    }
+    runCycle();
+    return () => { clearInterval(interval); clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  const scoreColor = score >= 85 ? "#16a34a" : score >= 65 ? "#d97706" : "#dc2626";
+
+  return (
+    <div className="relative w-full max-w-sm mx-auto select-none">
+      {/* Labels */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-all duration-500 ${
+          phase === "after" ? "bg-green-100 text-green-700" : phase === "rewriting" ? "bg-amber-100 text-amber-600 animate-pulse" : "bg-slate-100 text-slate-500"
+        }`}>
+          {phase === "before" ? "❌ Before Rewrite" : phase === "rewriting" ? "⚡ Rewriting CV..." : "✅ After ATS Rewrite"}
+        </span>
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white border border-slate-200 shadow-sm" style={{ color: scoreColor }}>
+          ATS Score: {score}/100
+        </span>
+      </div>
+
+      {/* CV Card */}
+      <div className={`bg-white rounded-2xl shadow-xl border overflow-hidden transition-all duration-700 ${
+        phase === "after" ? "border-green-300 shadow-green-100" : "border-slate-200"
+      }`}>
+        {/* Header */}
+        <div className="px-4 pt-4 pb-2.5 border-b border-slate-100 text-center">
+          <div className="text-[11px] font-black text-slate-800 tracking-wide uppercase">Swapnil Vainkatrao Mortale</div>
+          <div className="text-[9px] font-semibold text-blue-600 mt-0.5">Software Engineer / Developer</div>
+          <div className="text-[7px] text-slate-400 mt-0.5">+91 876-764-9179 · swapnil@email.com · Pune, Maharashtra</div>
+        </div>
+
+        {/* Two-column body */}
+        <div className="flex">
+          {/* Left col */}
+          <div className="flex-1 px-3 py-3 space-y-2.5">
+            <div>
+              <div className="text-[7px] font-black text-slate-700 uppercase tracking-widest border-b border-slate-200 pb-0.5 mb-1.5">Summary</div>
+              <div className="space-y-1">
+                {[1, 0.9, 0.75].map((w, i) => (
+                  <div key={i} className={`h-1.5 rounded-full transition-all duration-700 ${phase === "after" ? "bg-slate-300" : "bg-slate-200"}`} style={{ width: `${w * 100}%` }} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-[7px] font-black text-slate-700 uppercase tracking-widest border-b border-slate-200 pb-0.5 mb-1.5">Projects</div>
+              <div className="text-[8px] font-bold text-slate-600 mb-1">MGM's Campus Bridge</div>
+              <div className="space-y-1">
+                {[1, 0.85, 0.95, 0.7].map((w, i) => (
+                  <div key={i} className="h-1.5 rounded-full bg-slate-200" style={{ width: `${w * 100}%` }} />
+                ))}
+              </div>
+              <div className="text-[8px] font-bold text-slate-600 mb-1 mt-2">Promptify AI Assistant</div>
+              <div className="space-y-1">
+                {[1, 0.9, 0.8].map((w, i) => (
+                  <div key={i} className="h-1.5 rounded-full bg-slate-200" style={{ width: `${w * 100}%` }} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right sidebar */}
+          <div className="w-20 bg-slate-50 border-l border-slate-100 px-2.5 py-3 space-y-2.5">
+            <div>
+              <div className="text-[7px] font-black text-blue-600 uppercase tracking-widest mb-1">Skills</div>
+              {["Java", "Spring Boot", "React.js", "MySQL"].map(s => (
+                <div key={s} className="text-[7px] text-slate-600 leading-5">{s}</div>
+              ))}
+              {phase === "after" && (
+                <div className="mt-0.5 space-y-0.5">
+                  {["Docker", "Kubernetes", "REST API", "CI/CD"].map(s => (
+                    <div key={s} className="text-[7px] text-green-600 font-semibold leading-5">{s}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="text-[7px] font-black text-blue-600 uppercase tracking-widest mb-1">Keywords</div>
+              {phase === "after" ? (
+                ["Microservices", "JWT", "AWS", "Agile"].map(k => (
+                  <div key={k} className="text-[7px] text-green-600 font-semibold leading-5">✓ {k}</div>
+                ))
+              ) : (
+                <div className="text-[7px] text-red-400 italic leading-4">Missing keywords detected</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Score bar */}
+        <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/80">
+          <div className="flex items-center gap-2">
+            <span className="text-[7px] text-slate-500 font-semibold whitespace-nowrap">ATS</span>
+            <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-300" style={{ width: `${score}%`, backgroundColor: scoreColor }} />
+            </div>
+            <span className="text-[8px] font-black whitespace-nowrap" style={{ color: scoreColor }}>{score}%</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -118,6 +246,7 @@ function HeroSection({ onUpgrade }: {
 }) {
   const [file, setFile]       = useState<File | null>(null);
   const [jobRole, setJobRole] = useState("");
+  const [email, setEmail]     = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
   const [result, setResult]   = useState<ATSResult | null>(null);
@@ -131,6 +260,7 @@ function HeroSection({ onUpgrade }: {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("jobRole", jobRole);
+      if (email.trim()) fd.append("email", email.trim());
       const res  = await fetch("/api/ats-score", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to score CV");
@@ -143,11 +273,9 @@ function HeroSection({ onUpgrade }: {
   }
 
   const upsellMsg = result
-    ? result.score < 50
-      ? "Your CV is being auto-rejected by most ATS systems. Get it fixed for just ₹18."
-      : result.score < 70
-      ? "Your CV is below average — most companies will skip it. Get it rewritten for ₹18."
-      : "Good start! A professionally rewritten CV can push your score above 85. Fix it for ₹18."
+    ? result.score < 90
+      ? `⚠️ Your score is below ${Math.ceil(result.score / 10) * 10} — you are in the rejection zone. Our rewrite pushes your CV to 90+ so recruiters can't ignore you. Just ₹19.`
+      : "✅ You're in the shortlist zone! A professional rewrite polishes your CV further and maximises your chances of getting called — just ₹19."
     : "";
 
   // Scroll to top when results appear
@@ -165,20 +293,93 @@ function HeroSection({ onUpgrade }: {
             <ScoreGauge score={result.score} />
             <div className="flex-1 text-center sm:text-left w-full">
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-1">Your ATS Score: {result.score}/100</h2>
-              <p className="text-slate-500 text-sm mb-4">{upsellMsg}</p>
+              <p className="text-sm mb-3 font-semibold text-orange-600">{upsellMsg}</p>
               <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-                <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm">
-                  🚀 Fix My CV for ₹18 — Instant Download
-                </button>
-                <button onClick={() => { setResult(null); setFile(null); setJobRole(""); }}
-                  className="w-full sm:w-auto border border-slate-200 text-slate-500 hover:bg-slate-50 font-semibold px-6 py-3 rounded-2xl transition text-sm">
-                  Check Another CV
-                </button>
+                <div>
+                  <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm">
+                    🚀 Build My ATS-Friendly Resume →
+                  </button>
+                  <p className="text-xs text-slate-500 mt-1.5">✅ 90+ Score Guaranteed · Instant PDF Download</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* #3 — Issues count banner (only below 85) */}
+        {result.score < 90 && (() => {
+          const totalIssues = result.allIssues?.length || Object.values(result.breakdown).reduce((acc, b) => acc + b.issues.length, 0);
+          return totalIssues > 0 ? (
+            <div className="bg-red-600 rounded-3xl p-5 mb-6 flex items-center gap-4">
+              <div className="text-4xl font-black text-white">{totalIssues}</div>
+              <div>
+                <p className="text-white font-extrabold text-lg leading-tight">Issues found in your CV</p>
+                <p className="text-red-200 text-sm">Every issue reduces your chances of getting shortlisted. Recruiters won't tell you — they just move on.</p>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
+        {/* #1 — Recruiter Reality Check (only below 85) */}
+        {result.score < 90 && (
+        <div className="bg-white border-2 border-red-100 rounded-3xl p-6 sm:p-8 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">👀</span>
+            <h4 className="font-extrabold text-slate-800 text-lg">Recruiter Reality Check</h4>
+          </div>
+          <p className="text-slate-500 text-sm mb-4">A recruiter spends just <span className="text-red-600 font-bold">6 seconds</span> on your CV. Here is what they see:</p>
+          <div className="space-y-2.5">
+            {result.score < 90 && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
+                <span className="text-base mt-0.5">❌</span>
+                <span className="text-sm text-red-700 font-medium">CV scores below the 90+ shortlist threshold at most companies</span>
+              </div>
+            )}
+            {result.topMissingKeywords.length > 0 && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
+                <span className="text-base mt-0.5">❌</span>
+                <span className="text-sm text-red-700 font-medium">{result.topMissingKeywords.length} keywords missing that ATS systems scan for</span>
+              </div>
+            )}
+            {Object.values(result.breakdown).some(b => b.score / b.max < 0.5) && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
+                <span className="text-base mt-0.5">❌</span>
+                <span className="text-sm text-red-700 font-medium">Critical CV sections are weak or incomplete</span>
+              </div>
+            )}
+            {Object.values(result.breakdown).some(b => b.label === "Action Verbs" && b.score / b.max < 0.7) && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
+                <span className="text-base mt-0.5">❌</span>
+                <span className="text-sm text-red-700 font-medium">Weak action verbs — your experience doesn't sound impactful</span>
+              </div>
+            )}
+            <div className="flex items-start gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2.5">
+              <span className="text-base mt-0.5">📋</span>
+              <span className="text-sm text-slate-600 font-medium">Your CV looks similar to 80% of rejected applications</span>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {/* #2 — Shortlist threshold (only below 85) */}
+        {result.score < 90 && <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 sm:p-6 mb-6">
+          <h4 className="font-extrabold text-amber-800 mb-2 text-base">🏢 What Companies Actually Require</h4>
+          <p className="text-amber-700 text-sm mb-3">Top companies using ATS software typically shortlist CVs scoring <span className="font-black">90 or above.</span></p>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 bg-amber-200 rounded-full h-3">
+              <div className="h-3 rounded-full bg-amber-500" style={{ width: `${result.score}%` }} />
+            </div>
+            <span className="text-amber-800 font-bold text-sm whitespace-nowrap">You: {result.score}/100</span>
+          </div>
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex-1 bg-green-100 rounded-full h-3">
+              <div className="h-3 rounded-full bg-green-500" style={{ width: "90%" }} />
+            </div>
+            <span className="text-green-700 font-bold text-sm whitespace-nowrap">Shortlist: 90/100</span>
+          </div>
+          {result.score < 90 && <p className="text-amber-800 font-bold text-sm mt-3">⚠️ You are {90 - result.score} points below the shortlist threshold.</p>}
+        </div>}
 
         {/* Breakdown */}
         <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 sm:p-8 mb-6">
@@ -188,7 +389,7 @@ function HeroSection({ onUpgrade }: {
               <div key={b.label}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-semibold text-slate-700">{b.label}</span>
-                  <span className="text-sm font-bold text-slate-800">{b.score}/{b.max}</span>
+                  <span className={`text-sm font-bold ${b.score / b.max < 0.5 ? "text-red-600" : b.score / b.max < 0.7 ? "text-orange-500" : "text-slate-800"}`}>{b.score}/{b.max}</span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2">
                   <div className="h-2 rounded-full transition-all" style={{
@@ -210,37 +411,83 @@ function HeroSection({ onUpgrade }: {
 
         {/* Missing keywords */}
         {result.topMissingKeywords.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-sm border border-red-100 p-6 sm:p-8 mb-6">
-            <h4 className="font-extrabold text-slate-800 mb-1 text-lg">❌ Missing Keywords ({result.topMissingKeywords.length})</h4>
-            <p className="text-slate-500 text-sm mb-4">ATS systems scan for these — your CV is missing them.</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="bg-white rounded-3xl shadow-sm border border-red-200 p-6 sm:p-8 mb-6">
+            <h4 className="font-extrabold text-red-600 mb-1 text-lg">🚨 Missing Keywords ({result.topMissingKeywords.length})</h4>
+            <p className="text-slate-600 text-sm mb-1 font-medium">Recruiters at TCS, Infosys, Wipro, Accenture filter CVs using these exact keywords.</p>
+            <p className="text-red-500 text-sm mb-4 font-semibold">Your CV is missing all of these — it is being filtered out automatically before a human reads it.</p>
+            <div className="flex flex-wrap gap-2 mb-4">
               {result.topMissingKeywords.map((kw) => (
                 <span key={kw} className="bg-red-50 text-red-700 border border-red-200 text-xs font-semibold px-3 py-1 rounded-full">{kw}</span>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Found keywords */}
-        {result.foundKeywords.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-sm border border-green-100 p-6 sm:p-8 mb-6">
-            <h4 className="font-extrabold text-slate-800 mb-3 text-lg">✅ Keywords Found ({result.foundKeywords.length})</h4>
-            <div className="flex flex-wrap gap-2">
-              {result.foundKeywords.map((kw) => (
-                <span key={kw} className="bg-green-50 text-green-700 border border-green-200 text-xs font-semibold px-3 py-1 rounded-full">{kw}</span>
-              ))}
+            <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 text-sm text-red-700 font-medium">
+              💡 Our rewrite adds all these missing keywords naturally into your CV — so ATS systems pass it through.
             </div>
           </div>
         )}
 
+        {/* #5 — Jobs being posted right now */}
+        <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 sm:p-8 mb-6">
+          <h4 className="font-extrabold text-slate-800 mb-3 text-lg">📢 Jobs Being Posted Right Now</h4>
+          <p className="text-slate-500 text-sm mb-4">Hundreds of <span className="font-bold text-slate-700">{jobRole}</span> positions are posted every week on Naukri, LinkedIn, and Indeed. CVs scoring below 80 are filtered out before a recruiter ever sees them.</p>
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 text-sm text-blue-700 font-semibold">
+            ⏳ Every week you delay with this CV = more opportunities lost silently.
+          </div>
+        </div>
+
+        {/* #4 — Blurred rewritten CV preview */}
+        <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 sm:p-8 mb-6 relative overflow-hidden">
+          <h4 className="font-extrabold text-slate-800 mb-1 text-lg">📄 Your Rewritten CV Preview</h4>
+          <p className="text-slate-500 text-sm mb-4">This is what your CV looks like after our rewrite — ATS-optimised, keyword-rich, professionally structured.</p>
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200">
+            {/* Fake CV content - blurred */}
+            <div className="blur-sm pointer-events-none select-none p-6 bg-white space-y-3">
+              <div className="text-center mb-4">
+                <div className="h-5 bg-slate-800 rounded w-48 mx-auto mb-1" />
+                <div className="h-3 bg-blue-400 rounded w-32 mx-auto mb-1" />
+                <div className="h-2 bg-slate-300 rounded w-64 mx-auto" />
+              </div>
+              <div className="h-3 bg-slate-200 rounded w-24 mb-2" />
+              <div className="h-2 bg-slate-100 rounded w-full" />
+              <div className="h-2 bg-slate-100 rounded w-5/6" />
+              <div className="h-2 bg-slate-100 rounded w-4/6" />
+              <div className="h-3 bg-slate-200 rounded w-24 mt-3 mb-2" />
+              <div className="h-2 bg-slate-100 rounded w-full" />
+              <div className="h-2 bg-slate-100 rounded w-5/6" />
+              <div className="h-2 bg-slate-100 rounded w-full" />
+              <div className="h-2 bg-slate-100 rounded w-3/4" />
+              <div className="h-3 bg-slate-200 rounded w-24 mt-3 mb-2" />
+              <div className="flex flex-wrap gap-1">
+                {["SQL","Python","Power BI","Tableau","Data Analysis","ETL","Dashboard","KPI","Pandas","NumPy"].map(k => (
+                  <span key={k} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">{k}</span>
+                ))}
+              </div>
+            </div>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center gap-3">
+              <div className="text-3xl">🔒</div>
+              <p className="font-extrabold text-slate-800 text-base text-center px-4">Get your ATS-Friendly Resume — 90+ Score Guaranteed</p>
+              <p className="text-slate-500 text-xs text-center px-6">Keywords added · ATS-optimised · Instant PDF download · Just ₹19</p>
+              <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm mt-1">
+                🚀 Build My ATS-Friendly Resume →
+              </button>
+              <p className="text-xs text-slate-500 mt-1">✅ 90+ Score Guaranteed</p>
+            </div>
+          </div>
+        </div>
+
+
         {/* Final CTA */}
         <div className="bg-blue-600 rounded-3xl p-6 sm:p-8 text-center text-white">
-          <h4 className="text-xl font-extrabold mb-2">Want all of this fixed?</h4>
-          <p className="text-blue-200 text-sm mb-5">For just ₹18 your entire CV gets rewritten — missing keywords added, action verbs fixed, every line improved — download the polished PDF instantly.</p>
+          <h4 className="text-xl font-extrabold mb-2">Every day you wait = more rejections</h4>
+          <p className="text-blue-200 text-sm mb-2">Companies are posting jobs right now — and your CV is getting filtered out.</p>
+          <p className="text-white text-sm font-semibold mb-5">For ₹19 we rewrite your entire CV — missing keywords added, action verbs fixed, ATS-optimised — download the polished PDF instantly.</p>
           <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
             className="bg-white text-blue-700 font-bold px-8 py-3.5 rounded-2xl hover:bg-blue-50 transition text-sm shadow-lg">
-            🚀 Get My CV Rewritten for ₹18 — Instant Download
+            🚀 Build My ATS-Friendly Resume →
           </button>
+          <p className="text-blue-300 text-xs mt-3">✅ 90+ Score Guaranteed · Instant Download · No subscription</p>
         </div>
 
       </div>
@@ -248,25 +495,48 @@ function HeroSection({ onUpgrade }: {
   );
 
   return (
-    <section id="free-ats" className="relative bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 pt-16 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-900/30 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl pointer-events-none" />
+    <section id="free-ats" className="relative bg-gradient-to-br from-white via-slate-50 to-indigo-50 pt-16 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/50 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-100/40 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none" />
 
-      {/* Mobile-only headline */}
-      <div className="lg:hidden text-center mb-4 relative">
-        <h1 className="text-2xl font-extrabold text-white leading-tight">
-          Stop Getting Rejected.<br />
-          <span className="text-blue-200">Check Your ATS Score Free.</span>
+      {/* Mobile headline */}
+      <div className="lg:hidden text-center mb-6 relative">
+        <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">
+          Land More Interviews<br />
+          <span className="text-indigo-600">With an ATS-Optimised CV</span>
         </h1>
+        <p className="text-slate-500 text-sm mt-2">Free ATS check · Full rewrite · Instant PDF · ₹19</p>
       </div>
 
-      <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+      <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
-        {/* Upload card — right on desktop, full width on mobile */}
-        <div className="lg:order-last bg-white rounded-3xl shadow-2xl p-4 sm:p-8 w-full max-w-md mx-auto lg:mx-0">
+        {/* LEFT: Headline */}
+        <div className="hidden lg:flex flex-col gap-4 pt-4">
+          <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full w-fit">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            Free ATS Check · Instant CV Rewrite
+          </div>
+          <h1 className="text-4xl xl:text-5xl font-extrabold text-slate-900 leading-tight">
+            Land More Interviews<br />
+            <span className="text-indigo-600">With an ATS-Optimised CV</span>
+          </h1>
+          <p className="text-slate-500 text-base max-w-md leading-relaxed">
+            Free ATS score check · Full CV rewrite · Instant PDF download. Just ₹19.
+          </p>
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <span className="text-yellow-400 text-base">★★★★</span>
+            <span className="text-yellow-400 text-base">½</span>
+            <span className="font-bold text-slate-800">2,000+</span>
+            <span>job seekers landed interviews last month</span>
+          </div>
+        </div>
+
+        {/* RIGHT: Upload card */}
+        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 p-4 sm:p-8 w-full max-w-md mx-auto lg:mx-0">
           <div className="mb-3 sm:mb-4">
             <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-2.5 py-0.5 rounded-full mb-2">✅ 100% Free</span>
-            <h2 className="text-xl sm:text-xl font-extrabold text-slate-800">Check Your ATS Score</h2>
+            <h2 className="text-xl font-extrabold text-slate-800">Check Your ATS Score</h2>
             <p className="text-slate-500 text-xs mt-0.5">See exactly why recruiters are ignoring your CV.</p>
           </div>
 
@@ -305,25 +575,6 @@ function HeroSection({ onUpgrade }: {
           <p className="text-center text-slate-400 text-xs mt-2">No sign-up · Results in seconds · 100% free</p>
         </div>
 
-        {/* Text — hidden on mobile, left on desktop */}
-        <div className="hidden lg:block text-left">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-medium px-3 py-1.5 rounded-full mb-5">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Free ATS Check · Instant CV Rewrite
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">
-            Stop Getting Rejected.<br />
-            <span className="text-blue-200">Get Your CV ATS-Optimised.</span>
-          </h1>
-          <p className="text-blue-100 text-base mb-5 max-w-md leading-relaxed">
-            Check your ATS score for free. See exactly what's holding your CV back — then get it fully rewritten and download the polished PDF instantly.
-          </p>
-          <div className="flex flex-wrap gap-3 text-blue-100 text-sm">
-            <div className="flex items-center gap-1.5"><span className="text-yellow-300">★★★★★</span> 4.9/5 · 2,400+ users</div>
-            <div>✅ 86% got more interview calls</div>
-          </div>
-        </div>
-
       </div>
     </section>
   );
@@ -351,6 +602,22 @@ function PaymentModal({
   const [downloadFilename, setDownloadFilename] = useState("rewritten-cv.pdf");
   const [email, setEmail]         = useState("");
   const [linkedin, setLinkedin]   = useState("");
+  const [reviewStars, setReviewStars]     = useState(0);
+  const [reviewHover, setReviewHover]     = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSent, setReviewSent]       = useState(false);
+
+  async function submitReview(stars: number) {
+    setReviewStars(stars);
+    try {
+      await fetch("/api/submit-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_id: paymentId, stars, comment: reviewComment, email }),
+      });
+      setReviewSent(true);
+    } catch {}
+  }
   const [github, setGithub]       = useState("");
 
   // If coming from ATS check, file+role already known — only need experience (optional)
@@ -375,7 +642,7 @@ function PaymentModal({
       const orderRes  = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 3800, currency: "INR", receipt: orderId }),
+        body: JSON.stringify({ amount: 1900, currency: "INR", receipt: orderId }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
@@ -581,7 +848,7 @@ function PaymentModal({
                     disabled={loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹19 & Download →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -667,7 +934,7 @@ function PaymentModal({
                     disabled={!canProceed || loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : "🔒 Pay ₹18 & Download CV →"}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹19 & Download →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -706,6 +973,47 @@ function PaymentModal({
                     <span className="text-slate-400 text-xs">Payment ID</span>
                     <span className="font-bold text-slate-700 text-xs break-all">{paymentId}</span>
                   </div>
+                )}
+              </div>
+
+              {/* ── Star Rating ── */}
+              <div className="bg-slate-50 rounded-2xl p-4 text-center">
+                {reviewSent ? (
+                  <p className="text-green-600 font-bold text-sm">🙏 Thank you for your feedback!</p>
+                ) : (
+                  <>
+                    <p className="text-slate-600 text-sm font-semibold mb-3">How was your rewritten CV?</p>
+                    <div className="flex justify-center gap-1 mb-3">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => submitReview(s)}
+                          onMouseEnter={() => setReviewHover(s)}
+                          onMouseLeave={() => setReviewHover(0)}
+                          className="text-3xl transition-transform hover:scale-110 focus:outline-none"
+                        >
+                          <span className={(reviewHover || reviewStars) >= s ? "text-yellow-400" : "text-slate-300"}>★</span>
+                        </button>
+                      ))}
+                    </div>
+                    {reviewStars > 0 && !reviewSent && (
+                      <div className="space-y-2">
+                        <textarea
+                          placeholder="Any comments? (optional)"
+                          value={reviewComment}
+                          onChange={e => setReviewComment(e.target.value)}
+                          rows={2}
+                          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                        />
+                        <button
+                          onClick={() => submitReview(reviewStars)}
+                          className="w-full bg-blue-600 text-white text-sm font-bold py-2 rounded-xl hover:bg-blue-700 transition"
+                        >
+                          Submit Review
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -776,7 +1084,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
           <div className="border-t border-slate-100 mt-1 pt-2">
             <button onClick={() => { setMenuOpen(false); onUpload(); }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl transition text-sm">
-              📄 Fix My CV for ₹18
+              🚀 Build My ATS Resume — ₹19
             </button>
           </div>
         </div>
@@ -784,7 +1092,6 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
     </nav>
   );
 }
-
 
 // ── Features ──────────────────────────────────────────────────────────
 function Features() {
@@ -810,7 +1117,6 @@ function Features() {
   );
 }
 
-// ── How It Works ──────────────────────────────────────────────────────
 function HowItWorks() {
   return (
     <section id="how-it-works" className="py-16 sm:py-20 px-4 sm:px-6 bg-blue-50">
@@ -833,8 +1139,6 @@ function HowItWorks() {
   );
 }
 
-
-// ── FAQ ───────────────────────────────────────────────────────────────
 function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
   return (
@@ -866,7 +1170,6 @@ function FAQ() {
   );
 }
 
-// ── Footer ────────────────────────────────────────────────────────────
 function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 py-10 sm:py-12 px-4 sm:px-6">
@@ -886,7 +1189,16 @@ function Footer() {
   );
 }
 
-// ── Home ──────────────────────────────────────────────────────────────
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map((f) => ({
+    "@type": "Question",
+    "name": f.q,
+    "acceptedAnswer": { "@type": "Answer", "text": f.a },
+  })),
+};
+
 export default function Home() {
   const [showModal, setShowModal]     = useState(false);
   const [upgradeData, setUpgradeData] = useState<{ file?: File; jobRole?: string; score?: number } | null>(null);
@@ -898,6 +1210,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Navbar onUpload={() => openModal()} />
       <HeroSection onUpgrade={(data) => openModal(data)} />
       <Features />

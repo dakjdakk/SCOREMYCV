@@ -526,7 +526,7 @@ function HeroSection({ onUpgrade }: {
             Land More Interviews<br />
             <span className="text-indigo-600">With an ATS-Optimised Resume</span>
           </h1>
-          <p className="text-slate-500 text-base max-w-md leading-relaxed">
+          <p className="text-slate-500 text-base leading-relaxed">
             Free ATS score check · Full CV rewrite · Instant PDF download.
           </p>
           <div className="flex items-center gap-2 text-sm text-slate-600">

@@ -495,27 +495,27 @@ function HeroSection({ onUpgrade }: {
   );
 
   return (
-    <section id="free-ats" className="relative bg-gradient-to-br from-white via-slate-50 to-indigo-50 pt-14 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
+    <section id="free-ats" className="relative bg-gradient-to-br from-blue-600 to-indigo-700 lg:from-white lg:via-slate-50 lg:to-indigo-50 pt-14 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/50 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-100/40 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none" />
 
       {/* Mobile headline */}
       <div className="lg:hidden text-center mb-5 relative px-1">
-        <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
+        <div className="inline-flex items-center gap-2 bg-white/20 border border-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
           Free ATS Check · Instant CV Rewrite
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
           Land More Interviews<br />
-          <span className="text-indigo-600">With an ATS-Optimised CV</span>
+          <span className="text-blue-200">With an ATS-Optimised CV</span>
         </h1>
-        <p className="text-slate-500 text-sm mt-2">Free ATS score · Full rewrite · Instant PDF · ₹19</p>
+        <p className="text-blue-100 text-sm mt-2">Free ATS score · Full rewrite · Instant PDF · ₹19</p>
         <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
-          <span className="text-yellow-400 text-base leading-none tracking-tight">★★★★★</span>
-          <span className="text-sm font-semibold text-slate-800">4.5</span>
-          <span className="text-slate-400">·</span>
-          <span className="text-sm text-slate-600"><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
+          <span className="text-yellow-300 text-base leading-none tracking-tight">★★★★★</span>
+          <span className="text-sm font-semibold text-white">4.5</span>
+          <span className="text-blue-200">·</span>
+          <span className="text-sm text-blue-100"><span className="font-bold text-white">2,000+</span> landed interviews last month</span>
         </div>
       </div>
 

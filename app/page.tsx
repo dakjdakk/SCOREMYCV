@@ -495,7 +495,7 @@ function HeroSection({ onUpgrade }: {
   );
 
   return (
-    <section id="free-ats" className="relative bg-gradient-to-br from-blue-600 to-indigo-700 lg:from-white lg:via-slate-50 lg:to-indigo-50 pt-14 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
+    <section id="free-ats" className="relative bg-blue-600 lg:bg-gradient-to-br lg:from-white lg:via-slate-50 lg:to-indigo-50 pt-20 lg:pt-20 pb-10 lg:pb-16 px-4 sm:px-6 overflow-hidden">
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/50 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-100/40 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none" />

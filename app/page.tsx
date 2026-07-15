@@ -511,11 +511,11 @@ function HeroSection({ onUpgrade }: {
           <span className="text-indigo-600">With an ATS-Optimised CV</span>
         </h1>
         <p className="text-slate-500 text-sm mt-2">Free ATS score · Full rewrite · Instant PDF · ₹19</p>
-        <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-600">
-          <span className="text-yellow-400 text-base">★★★★</span>
-          <span className="text-yellow-400 text-base">½</span>
-          <span className="font-bold text-slate-800">2,000+</span>
-          <span className="text-xs">job seekers landed interviews last month</span>
+        <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
+          <span className="text-yellow-400 text-base leading-none tracking-tight">★★★★★</span>
+          <span className="text-sm font-semibold text-slate-800">4.5</span>
+          <span className="text-slate-400">·</span>
+          <span className="text-sm text-slate-600"><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
         </div>
       </div>
 
@@ -535,10 +535,10 @@ function HeroSection({ onUpgrade }: {
             Free ATS score check · Full CV rewrite · Instant PDF download. Just ₹19.
           </p>
           <div className="flex items-center gap-2 text-sm text-slate-600">
-            <span className="text-yellow-400 text-base">★★★★</span>
-            <span className="text-yellow-400 text-base">½</span>
-            <span className="font-bold text-slate-800">2,000+</span>
-            <span>job seekers landed interviews last month</span>
+            <span className="text-yellow-400 text-base leading-none tracking-tight">★★★★★</span>
+            <span className="font-semibold text-slate-800">4.5</span>
+            <span className="text-slate-400">·</span>
+            <span><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
           </div>
         </div>
 
@@ -1230,7 +1230,7 @@ export default function Home() {
       {showModal && (
         <PaymentModal
           preFile={upgradeData?.file}
-          preJobRole={upgradeData?.jobRole}
+                    preJobRole={upgradeData?.jobRole}
           preScore={upgradeData?.score}
           onClose={() => setShowModal(false)}
         />

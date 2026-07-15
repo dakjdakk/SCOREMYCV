@@ -495,18 +495,28 @@ function HeroSection({ onUpgrade }: {
   );
 
   return (
-    <section id="free-ats" className="relative bg-gradient-to-br from-white via-slate-50 to-indigo-50 pt-16 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
+    <section id="free-ats" className="relative bg-gradient-to-br from-white via-slate-50 to-indigo-50 pt-14 sm:pt-20 pb-10 sm:pb-16 px-4 sm:px-6 overflow-hidden">
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/50 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-100/40 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none" />
 
       {/* Mobile headline */}
-      <div className="lg:hidden text-center mb-6 relative">
-        <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">
+      <div className="lg:hidden text-center mb-5 relative px-1">
+        <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
+          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          Free ATS Check · Instant CV Rewrite
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
           Land More Interviews<br />
           <span className="text-indigo-600">With an ATS-Optimised CV</span>
         </h1>
-        <p className="text-slate-500 text-sm mt-2">Free ATS check · Full rewrite · Instant PDF · ₹19</p>
+        <p className="text-slate-500 text-sm mt-2">Free ATS score · Full rewrite · Instant PDF · ₹19</p>
+        <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-600">
+          <span className="text-yellow-400 text-base">★★★★</span>
+          <span className="text-yellow-400 text-base">½</span>
+          <span className="font-bold text-slate-800">2,000+</span>
+          <span className="text-xs">job seekers landed interviews last month</span>
+        </div>
       </div>
 
       <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
@@ -533,14 +543,14 @@ function HeroSection({ onUpgrade }: {
         </div>
 
         {/* RIGHT: Upload card */}
-        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 p-4 sm:p-8 w-full max-w-md mx-auto lg:mx-0">
+        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 p-5 sm:p-8 w-full max-w-md mx-auto lg:mx-0">
           <div className="mb-3 sm:mb-4">
             <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-2.5 py-0.5 rounded-full mb-2">✅ 100% Free</span>
             <h2 className="text-xl font-extrabold text-slate-800">Check Your ATS Score</h2>
             <p className="text-slate-500 text-xs mt-0.5">See exactly why recruiters are ignoring your CV.</p>
           </div>
 
-          <label className="flex items-center gap-3 border-2 border-dashed border-blue-200 rounded-2xl px-4 py-3 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition mb-3">
+          <label className="flex items-center gap-3 border-2 border-dashed border-blue-200 rounded-2xl px-4 py-3.5 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition mb-3">
             <input type="file" accept=".pdf,.doc,.docx" className="hidden"
               onChange={(e) => setFile(e.target.files?.[0] || null)} />
             <span className="text-2xl flex-shrink-0">📄</span>
@@ -549,7 +559,7 @@ function HeroSection({ onUpgrade }: {
             ) : (
               <div>
                 <p className="text-slate-700 font-semibold text-sm">Tap to upload your CV</p>
-                <p className="text-slate-400 text-xs">PDF, DOC, DOCX</p>
+                <p className="text-slate-400 text-xs">PDF, DOC, DOCX · Max 5MB</p>
               </div>
             )}
           </label>
@@ -1222,7 +1232,7 @@ export default function Home() {
           preFile={upgradeData?.file}
           preJobRole={upgradeData?.jobRole}
           preScore={upgradeData?.score}
-          onClose={() => { setShowModal(false); setUpgradeData(null); }}
+          onClose={() => setShowModal(false)}
         />
       )}
     </main>

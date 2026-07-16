@@ -1056,7 +1056,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        <Link href="/" className="flex items-center gap-2 py-3 pr-4" style={{ touchAction: "manipulation" }}>
+        <Link href="/" className="flex items-center gap-2 py-3 pr-4" style={{ touchAction: "manipulation" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <span className="text-2xl">📄</span>
           <span className="font-bold text-blue-700 text-lg">ScoreMyCV</span>
         </Link>

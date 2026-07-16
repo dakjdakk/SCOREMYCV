@@ -629,19 +629,23 @@ function PaymentModal({
   const fromATS = !!preFile && !!preJobRole;
   const canProceed = fromATS ? !!file : (!!file && !!jobRole && !!experience);
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => { document.body.removeChild(script); };
-  }, []);
-
   async function handlePay(expOverride?: string) {
     if (!file) return;
     setError(""); setLoading(true);
 
     try {
+      // 0. Load Razorpay script if not already loaded
+      if (!window.Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load payment gateway"));
+          document.body.appendChild(script);
+        });
+      }
+
       // 1. Create Razorpay order
       setLoadingMsg("⏳ Creating order...");
       const orderRes  = await fetch("/api/create-order", {

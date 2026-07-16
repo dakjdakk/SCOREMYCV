@@ -572,7 +572,7 @@ function HeroSection({ onUpgrade }: {
                 { name: "Delhivery", file: "/logos/delhivery.png" },
                 ].map((c, i) => (
                   <img key={i} src={c.file} alt={c.name} title={c.name}
-                    className="h-8 w-auto object-contain"
+                    className="h-8 w-auto object-contain" style={{ mixBlendMode: "multiply" }}
                   />
                 ))}
               </div>

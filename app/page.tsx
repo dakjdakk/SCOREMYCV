@@ -1051,7 +1051,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        <a href="/" className="flex items-center gap-2 cursor-pointer">
+        <a href="/" className="flex items-center gap-2 cursor-pointer py-2">
           <span className="text-2xl">📄</span>
           <span className="font-bold text-blue-700 text-lg">ScoreMyCV</span>
         </a>
@@ -1078,6 +1078,11 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
       </div>
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-blue-100 px-4 py-3 flex flex-col gap-1 shadow-lg">
+          <a href="/"
+            className="text-slate-700 hover:text-blue-600 font-medium text-sm py-2.5 px-2 rounded-lg hover:bg-blue-50 transition"
+            onClick={() => setMenuOpen(false)}>
+            🏠 Home
+          </a>
           {navLinks.map((l) => (
             <a key={l.href} href={l.href}
               className="text-slate-700 hover:text-blue-600 font-medium text-sm py-2.5 px-2 rounded-lg hover:bg-blue-50 transition"

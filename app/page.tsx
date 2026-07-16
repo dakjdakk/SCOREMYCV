@@ -287,6 +287,14 @@ function HeroSection({ onUpgrade }: {
     <section className="pt-16 sm:pt-20 pb-12 px-4 sm:px-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
       <div className="max-w-3xl mx-auto">
 
+        {/* Back button */}
+        <button
+          onClick={() => setResult(null)}
+          className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition font-medium"
+        >
+          ← Check Another CV
+        </button>
+
         {/* Score header */}
         <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-5 sm:p-8 mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -534,6 +542,49 @@ function HeroSection({ onUpgrade }: {
             <span className="font-semibold text-slate-800">4.5</span>
             <span className="text-slate-400">·</span>
             <span><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
+          </div>
+
+          {/* Company logo ticker — desktop only */}
+          <div className="mt-2">
+            <p className="text-xs text-slate-400 mb-2 font-medium">Top companies use ATS to shortlist — is your CV ready?</p>
+            <div className="overflow-hidden w-full">
+              <div className="flex gap-8 animate-marquee w-max">
+                {[
+                  { name: "TCS", url: "https://logo.clearbit.com/tcs.com" },
+                  { name: "Microsoft", url: "https://logo.clearbit.com/microsoft.com" },
+                  { name: "Infosys", url: "https://logo.clearbit.com/infosys.com" },
+                  { name: "Tech Mahindra", url: "https://logo.clearbit.com/techmahindra.com" },
+                  { name: "HCL", url: "https://logo.clearbit.com/hcltech.com" },
+                  { name: "Deloitte", url: "https://logo.clearbit.com/deloitte.com" },
+                  { name: "KPMG", url: "https://logo.clearbit.com/kpmg.com" },
+                  { name: "Accenture", url: "https://logo.clearbit.com/accenture.com" },
+                  { name: "Capgemini", url: "https://logo.clearbit.com/capgemini.com" },
+                  { name: "EY", url: "https://logo.clearbit.com/ey.com" },
+                  { name: "Zomato", url: "https://logo.clearbit.com/zomato.com" },
+                  { name: "Blinkit", url: "https://logo.clearbit.com/blinkit.com" },
+                  { name: "Delhivery", url: "https://logo.clearbit.com/delhivery.com" },
+                  { name: "BigBasket", url: "https://logo.clearbit.com/bigbasket.com" },
+                  { name: "TCS", url: "https://logo.clearbit.com/tcs.com" },
+                  { name: "Microsoft", url: "https://logo.clearbit.com/microsoft.com" },
+                  { name: "Infosys", url: "https://logo.clearbit.com/infosys.com" },
+                  { name: "Tech Mahindra", url: "https://logo.clearbit.com/techmahindra.com" },
+                  { name: "HCL", url: "https://logo.clearbit.com/hcltech.com" },
+                  { name: "Deloitte", url: "https://logo.clearbit.com/deloitte.com" },
+                  { name: "KPMG", url: "https://logo.clearbit.com/kpmg.com" },
+                  { name: "Accenture", url: "https://logo.clearbit.com/accenture.com" },
+                  { name: "Capgemini", url: "https://logo.clearbit.com/capgemini.com" },
+                  { name: "EY", url: "https://logo.clearbit.com/ey.com" },
+                  { name: "Zomato", url: "https://logo.clearbit.com/zomato.com" },
+                  { name: "Blinkit", url: "https://logo.clearbit.com/blinkit.com" },
+                  { name: "Delhivery", url: "https://logo.clearbit.com/delhivery.com" },
+                  { name: "BigBasket", url: "https://logo.clearbit.com/bigbasket.com" },
+                ].map((c, i) => (
+                  <img key={i} src={c.url} alt={c.name} title={c.name}
+                    className="h-7 w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1053,7 +1104,7 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
     { href: "/blog/how-to-check-ats-score", label: "Blog" },
   ];
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-[200] bg-white/90 backdrop-blur border-b border-blue-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         <a href="/" className="flex items-center gap-2 py-3 pr-4">
           <span className="text-2xl">📄</span>

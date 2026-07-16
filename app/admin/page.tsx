@@ -258,28 +258,19 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Reviews */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
-          <h2 className="text-lg font-bold text-slate-800 mb-4">⭐ Customer Reviews ({reviews.length})</h2>
-          {reviews.length === 0 ? (
-            <p className="text-slate-400 text-sm">No reviews yet</p>
-          ) : (
-            <div className="space-y-3">
-              {reviews.map(r => (
-                <div key={r.id} className="border border-slate-100 rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-yellow-400 text-lg">{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</span>
-                    <span className="text-slate-400 text-xs">{new Date(r.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })}</span>
-                  </div>
-                  {r.comment && <p className="text-slate-700 text-sm mt-1">"{r.comment}"</p>}
-                  <div className="flex gap-4 mt-2 text-xs text-slate-400">
-                    {r.email && <span>📧 {r.email}</span>}
-                    {r.payment_id && <span>💳 {r.payment_id}</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Reviews summary + link */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">⭐ Customer Reviews</h2>
+            <p className="text-slate-500 text-sm mt-1">
+              {reviews.length > 0
+                ? `${(reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1)} avg · ${reviews.length} review${reviews.length !== 1 ? "s" : ""}`
+                : "No reviews yet"}
+            </p>
+          </div>
+          <a href="/admin/reviews" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+            View All Reviews →
+          </a>
         </div>
 
       </div>

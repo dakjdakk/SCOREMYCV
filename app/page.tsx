@@ -543,42 +543,6 @@ function HeroSection({ onUpgrade }: {
             <span className="text-slate-400">·</span>
             <span><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
           </div>
-
-                    {/* Company logo ticker — desktop only */}
-          <div className="mt-2">
-            <p className="text-xs text-slate-400 mb-3 font-medium">Top companies use ATS to shortlist — is your CV ready?</p>
-            <div className="overflow-hidden w-full">
-              <div className="flex gap-10 animate-marquee w-max items-center">
-                {[
-                  { name: "TCS", file: "/logos/tcs.png" },
-                { name: "Microsoft", file: "/logos/microsoft.png" },
-                { name: "Infosys", file: "/logos/infosys.png" },
-                { name: "HCL", file: "/logos/hcl.png" },
-                { name: "Accenture", file: "/logos/accenture.png" },
-                { name: "KPMG", file: "/logos/kpmg.png" },
-                { name: "Oracle", file: "/logos/oracle.png" },
-                { name: "Zomato", file: "/logos/zomato.png" },
-                { name: "Blinkit", file: "/logos/blinkit.png" },
-                { name: "Delhivery", file: "/logos/delhivery.png" },
-                { name: "TCS", file: "/logos/tcs.png" },
-                { name: "Microsoft", file: "/logos/microsoft.png" },
-                { name: "Infosys", file: "/logos/infosys.png" },
-                { name: "HCL", file: "/logos/hcl.png" },
-                { name: "Accenture", file: "/logos/accenture.png" },
-                { name: "KPMG", file: "/logos/kpmg.png" },
-                { name: "Oracle", file: "/logos/oracle.png" },
-                { name: "Zomato", file: "/logos/zomato.png" },
-                { name: "Blinkit", file: "/logos/blinkit.png" },
-                { name: "Delhivery", file: "/logos/delhivery.png" },
-                ].map((c, i) => (
-                  <img key={i} src={c.file} alt={c.name} title={c.name}
-                    className="h-8 w-auto object-contain"
-                    style={{ mixBlendMode: "multiply" }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* RIGHT: Upload card */}

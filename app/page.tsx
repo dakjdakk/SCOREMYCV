@@ -567,6 +567,14 @@ function HeroSection({ onUpgrade }: {
             {IT_JOB_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
 
+          <input
+            type="email"
+            placeholder="Your email (optional — to save your score)"
+            className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white mb-3"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm mb-3">
               {error}

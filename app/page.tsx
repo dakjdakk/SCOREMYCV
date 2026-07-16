@@ -571,11 +571,10 @@ function HeroSection({ onUpgrade }: {
                 { name: "Blinkit", file: "/logos/blinkit.png" },
                 { name: "Delhivery", file: "/logos/delhivery.png" },
                 ].map((c, i) => (
-                  <div key={i} className="flex items-center justify-center bg-white rounded-xl px-4 py-2 shadow-sm border border-slate-100" style={{ minWidth: 90 }}>
-                    <img src={c.file} alt={c.name} title={c.name}
-                      className="h-7 w-auto object-contain"
-                    />
-                  </div>
+                  <img key={i} src={c.file} alt={c.name} title={c.name}
+                    className="h-8 w-auto object-contain"
+                    style={{ mixBlendMode: "multiply" }}
+                  />
                 ))}
               </div>
             </div>

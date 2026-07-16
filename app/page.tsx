@@ -546,42 +546,44 @@ function HeroSection({ onUpgrade }: {
 
           {/* Company logo ticker — desktop only */}
           <div className="mt-2">
-            <p className="text-xs text-slate-400 mb-2 font-medium">Top companies use ATS to shortlist — is your CV ready?</p>
+            <p className="text-xs text-slate-400 mb-3 font-medium">Top companies use ATS to shortlist — is your CV ready?</p>
             <div className="overflow-hidden w-full">
-              <div className="flex gap-8 animate-marquee w-max">
+              <div className="flex gap-6 animate-marquee w-max items-center">
                 {[
-                  { name: "TCS", url: "https://logo.clearbit.com/tcs.com" },
-                  { name: "Microsoft", url: "https://logo.clearbit.com/microsoft.com" },
-                  { name: "Infosys", url: "https://logo.clearbit.com/infosys.com" },
-                  { name: "Tech Mahindra", url: "https://logo.clearbit.com/techmahindra.com" },
-                  { name: "HCL", url: "https://logo.clearbit.com/hcltech.com" },
-                  { name: "Deloitte", url: "https://logo.clearbit.com/deloitte.com" },
-                  { name: "KPMG", url: "https://logo.clearbit.com/kpmg.com" },
-                  { name: "Accenture", url: "https://logo.clearbit.com/accenture.com" },
-                  { name: "Capgemini", url: "https://logo.clearbit.com/capgemini.com" },
-                  { name: "EY", url: "https://logo.clearbit.com/ey.com" },
-                  { name: "Zomato", url: "https://logo.clearbit.com/zomato.com" },
-                  { name: "Blinkit", url: "https://logo.clearbit.com/blinkit.com" },
-                  { name: "Delhivery", url: "https://logo.clearbit.com/delhivery.com" },
-                  { name: "BigBasket", url: "https://logo.clearbit.com/bigbasket.com" },
-                  { name: "TCS", url: "https://logo.clearbit.com/tcs.com" },
-                  { name: "Microsoft", url: "https://logo.clearbit.com/microsoft.com" },
-                  { name: "Infosys", url: "https://logo.clearbit.com/infosys.com" },
-                  { name: "Tech Mahindra", url: "https://logo.clearbit.com/techmahindra.com" },
-                  { name: "HCL", url: "https://logo.clearbit.com/hcltech.com" },
-                  { name: "Deloitte", url: "https://logo.clearbit.com/deloitte.com" },
-                  { name: "KPMG", url: "https://logo.clearbit.com/kpmg.com" },
-                  { name: "Accenture", url: "https://logo.clearbit.com/accenture.com" },
-                  { name: "Capgemini", url: "https://logo.clearbit.com/capgemini.com" },
-                  { name: "EY", url: "https://logo.clearbit.com/ey.com" },
-                  { name: "Zomato", url: "https://logo.clearbit.com/zomato.com" },
-                  { name: "Blinkit", url: "https://logo.clearbit.com/blinkit.com" },
-                  { name: "Delhivery", url: "https://logo.clearbit.com/delhivery.com" },
-                  { name: "BigBasket", url: "https://logo.clearbit.com/bigbasket.com" },
+                  { name: "TCS",           color: "#0062AC" },
+                  { name: "Microsoft",     color: "#00A4EF" },
+                  { name: "Infosys",       color: "#007CC3" },
+                  { name: "Tech Mahindra", color: "#D71920" },
+                  { name: "HCL",           color: "#0091D4" },
+                  { name: "Deloitte",      color: "#86BC25" },
+                  { name: "KPMG",          color: "#00338D" },
+                  { name: "Accenture",     color: "#A100FF" },
+                  { name: "Capgemini",     color: "#0070AD" },
+                  { name: "EY",            color: "#2E2E38" },
+                  { name: "Zomato",        color: "#E23744" },
+                  { name: "Blinkit",       color: "#0C831F" },
+                  { name: "Delhivery",     color: "#D31D25" },
+                  { name: "BigBasket",     color: "#84C225" },
+                  { name: "TCS",           color: "#0062AC" },
+                  { name: "Microsoft",     color: "#00A4EF" },
+                  { name: "Infosys",       color: "#007CC3" },
+                  { name: "Tech Mahindra", color: "#D71920" },
+                  { name: "HCL",           color: "#0091D4" },
+                  { name: "Deloitte",      color: "#86BC25" },
+                  { name: "KPMG",          color: "#00338D" },
+                  { name: "Accenture",     color: "#A100FF" },
+                  { name: "Capgemini",     color: "#0070AD" },
+                  { name: "EY",            color: "#2E2E38" },
+                  { name: "Zomato",        color: "#E23744" },
+                  { name: "Blinkit",       color: "#0C831F" },
+                  { name: "Delhivery",     color: "#D31D25" },
+                  { name: "BigBasket",     color: "#84C225" },
                 ].map((c, i) => (
-                  <img key={i} src={c.url} alt={c.name} title={c.name}
-                    className="h-7 w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"
-                  />
+                  <span key={i}
+                    className="text-sm font-extrabold whitespace-nowrap px-3 py-1 rounded-full border"
+                    style={{ color: c.color, borderColor: c.color + "30", backgroundColor: c.color + "10" }}>
+                    {c.name}
+                  </span>
                 ))}
               </div>
             </div>

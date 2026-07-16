@@ -807,7 +807,7 @@ function PaymentModal({
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 font-medium">
-                    ℹ️ Enter your email to receive the rewritten CV. LinkedIn and GitHub are optional overrides.
+                    ℹ️ Enter your email to receive the ATS-Optimised CV. LinkedIn and GitHub are optional overrides.
                   </div>
 
                   <div>
@@ -893,7 +893,7 @@ function PaymentModal({
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 font-medium">
-                    ℹ️ Enter your email to receive the rewritten CV. LinkedIn and GitHub are optional overrides.
+                    ℹ️ Enter your email to receive the ATS-Optimised CV. LinkedIn and GitHub are optional overrides.
                   </div>
 
                   <div>

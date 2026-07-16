@@ -525,7 +525,7 @@ function HeroSection({ onUpgrade }: {
       <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
         {/* LEFT: Headline */}
-        <div className="hidden lg:flex flex-col gap-4 pt-4">
+        <div className="hidden lg:flex flex-col gap-4 pt-4 lg:pl-8">
           <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full w-fit">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             Free ATS Check · Instant CV Rewrite

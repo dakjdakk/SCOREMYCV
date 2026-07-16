@@ -612,13 +612,12 @@ function PaymentModal({
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSent, setReviewSent]       = useState(false);
 
-  async function submitReview(stars: number) {
-    setReviewStars(stars);
+  async function submitReview() {
     try {
       await fetch("/api/submit-review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_id: paymentId, stars, comment: reviewComment, email }),
+        body: JSON.stringify({ payment_id: paymentId, stars: reviewStars, comment: reviewComment, email }),
       });
       setReviewSent(true);
     } catch {}
@@ -992,7 +991,7 @@ function PaymentModal({
                       {[1, 2, 3, 4, 5].map((s) => (
                         <button
                           key={s}
-                          onClick={() => submitReview(s)}
+                          onClick={() => setReviewStars(s)}
                           onMouseEnter={() => setReviewHover(s)}
                           onMouseLeave={() => setReviewHover(0)}
                           className="text-3xl transition-transform hover:scale-110 focus:outline-none"
@@ -1011,7 +1010,7 @@ function PaymentModal({
                           className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
                         />
                         <button
-                          onClick={() => submitReview(reviewStars)}
+                          onClick={() => submitReview()}
                           className="w-full bg-blue-600 text-white text-sm font-bold py-2 rounded-xl hover:bg-blue-700 transition"
                         >
                           Submit Review

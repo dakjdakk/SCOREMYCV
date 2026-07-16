@@ -548,42 +548,36 @@ function HeroSection({ onUpgrade }: {
           <div className="mt-2">
             <p className="text-xs text-slate-400 mb-3 font-medium">Top companies use ATS to shortlist — is your CV ready?</p>
             <div className="overflow-hidden w-full">
-              <div className="flex gap-6 animate-marquee w-max items-center">
+              <div className="flex gap-8 animate-marquee w-max items-center">
                 {[
-                  { name: "TCS",           color: "#0062AC" },
-                  { name: "Microsoft",     color: "#00A4EF" },
-                  { name: "Infosys",       color: "#007CC3" },
-                  { name: "Tech Mahindra", color: "#D71920" },
-                  { name: "HCL",           color: "#0091D4" },
-                  { name: "Deloitte",      color: "#86BC25" },
-                  { name: "KPMG",          color: "#00338D" },
-                  { name: "Accenture",     color: "#A100FF" },
-                  { name: "Capgemini",     color: "#0070AD" },
-                  { name: "EY",            color: "#2E2E38" },
-                  { name: "Zomato",        color: "#E23744" },
-                  { name: "Blinkit",       color: "#0C831F" },
-                  { name: "Delhivery",     color: "#D31D25" },
-                  { name: "BigBasket",     color: "#84C225" },
-                  { name: "TCS",           color: "#0062AC" },
-                  { name: "Microsoft",     color: "#00A4EF" },
-                  { name: "Infosys",       color: "#007CC3" },
-                  { name: "Tech Mahindra", color: "#D71920" },
-                  { name: "HCL",           color: "#0091D4" },
-                  { name: "Deloitte",      color: "#86BC25" },
-                  { name: "KPMG",          color: "#00338D" },
-                  { name: "Accenture",     color: "#A100FF" },
-                  { name: "Capgemini",     color: "#0070AD" },
-                  { name: "EY",            color: "#2E2E38" },
-                  { name: "Zomato",        color: "#E23744" },
-                  { name: "Blinkit",       color: "#0C831F" },
-                  { name: "Delhivery",     color: "#D31D25" },
-                  { name: "BigBasket",     color: "#84C225" },
+                  { name: "TCS",           file: "/logos/tcs.webp" },
+                  { name: "Infosys",       file: "/logos/infosys.jpg" },
+                  { name: "Tech Mahindra", file: "/logos/TechMahindra.webp" },
+                  { name: "HCL",           file: "/logos/hcl.png" },
+                  { name: "Accenture",     file: "/logos/accenture.png" },
+                  { name: "Deloitte",      file: "/logos/Deloitte.jpg" },
+                  { name: "KPMG",          file: "/logos/KPMG.webp" },
+                  { name: "EY",            file: "/logos/EY.webp" },
+                  { name: "Amazon",        file: "/logos/amazon.webp" },
+                  { name: "Zomato",        file: "/logos/zomato.png" },
+                  { name: "Blinkit",       file: "/logos/blinkit.jpg" },
+                  { name: "Delhivery",     file: "/logos/delhivery.png" },
+                  { name: "TCS",           file: "/logos/tcs.webp" },
+                  { name: "Infosys",       file: "/logos/infosys.jpg" },
+                  { name: "Tech Mahindra", file: "/logos/TechMahindra.webp" },
+                  { name: "HCL",           file: "/logos/hcl.png" },
+                  { name: "Accenture",     file: "/logos/accenture.png" },
+                  { name: "Deloitte",      file: "/logos/Deloitte.jpg" },
+                  { name: "KPMG",          file: "/logos/KPMG.webp" },
+                  { name: "EY",            file: "/logos/EY.webp" },
+                  { name: "Amazon",        file: "/logos/amazon.webp" },
+                  { name: "Zomato",        file: "/logos/zomato.png" },
+                  { name: "Blinkit",       file: "/logos/blinkit.jpg" },
+                  { name: "Delhivery",     file: "/logos/delhivery.png" },
                 ].map((c, i) => (
-                  <span key={i}
-                    className="text-sm font-extrabold whitespace-nowrap px-3 py-1 rounded-full border"
-                    style={{ color: c.color, borderColor: c.color + "30", backgroundColor: c.color + "10" }}>
-                    {c.name}
-                  </span>
+                  <img key={i} src={c.file} alt={c.name} title={c.name}
+                    className="h-8 w-auto object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all"
+                  />
                 ))}
               </div>
             </div>

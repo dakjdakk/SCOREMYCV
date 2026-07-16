@@ -544,36 +544,32 @@ function HeroSection({ onUpgrade }: {
             <span><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
           </div>
 
-          {/* Company logo ticker — desktop only */}
+                    {/* Company logo ticker — desktop only */}
           <div className="mt-2">
             <p className="text-xs text-slate-400 mb-3 font-medium">Top companies use ATS to shortlist — is your CV ready?</p>
             <div className="overflow-hidden w-full">
-              <div className="flex gap-8 animate-marquee w-max items-center">
+              <div className="flex gap-10 animate-marquee w-max items-center">
                 {[
-                  { name: "TCS",           file: "/logos/tcs.webp" },
-                  { name: "Infosys",       file: "/logos/infosys.jpg" },
-                  { name: "Tech Mahindra", file: "/logos/TechMahindra.webp" },
-                  { name: "HCL",           file: "/logos/hcl.png" },
-                  { name: "Accenture",     file: "/logos/accenture.png" },
-                  { name: "Deloitte",      file: "/logos/Deloitte.jpg" },
-                  { name: "KPMG",          file: "/logos/KPMG.webp" },
-                  { name: "EY",            file: "/logos/EY.webp" },
-                  { name: "Amazon",        file: "/logos/amazon.webp" },
-                  { name: "Zomato",        file: "/logos/zomato.png" },
-                  { name: "Blinkit",       file: "/logos/blinkit.jpg" },
-                  { name: "Delhivery",     file: "/logos/delhivery.png" },
-                  { name: "TCS",           file: "/logos/tcs.webp" },
-                  { name: "Infosys",       file: "/logos/infosys.jpg" },
-                  { name: "Tech Mahindra", file: "/logos/TechMahindra.webp" },
-                  { name: "HCL",           file: "/logos/hcl.png" },
-                  { name: "Accenture",     file: "/logos/accenture.png" },
-                  { name: "Deloitte",      file: "/logos/Deloitte.jpg" },
-                  { name: "KPMG",          file: "/logos/KPMG.webp" },
-                  { name: "EY",            file: "/logos/EY.webp" },
-                  { name: "Amazon",        file: "/logos/amazon.webp" },
-                  { name: "Zomato",        file: "/logos/zomato.png" },
-                  { name: "Blinkit",       file: "/logos/blinkit.jpg" },
-                  { name: "Delhivery",     file: "/logos/delhivery.png" },
+                  { name: "TCS", file: "/logos/tcs.png" },
+                { name: "Microsoft", file: "/logos/microsoft.png" },
+                { name: "Infosys", file: "/logos/infosys.png" },
+                { name: "HCL", file: "/logos/hcl.png" },
+                { name: "Accenture", file: "/logos/accenture.png" },
+                { name: "KPMG", file: "/logos/kpmg.png" },
+                { name: "Oracle", file: "/logos/oracle.png" },
+                { name: "Zomato", file: "/logos/zomato.png" },
+                { name: "Blinkit", file: "/logos/blinkit.png" },
+                { name: "Delhivery", file: "/logos/delhivery.png" },
+                { name: "TCS", file: "/logos/tcs.png" },
+                { name: "Microsoft", file: "/logos/microsoft.png" },
+                { name: "Infosys", file: "/logos/infosys.png" },
+                { name: "HCL", file: "/logos/hcl.png" },
+                { name: "Accenture", file: "/logos/accenture.png" },
+                { name: "KPMG", file: "/logos/kpmg.png" },
+                { name: "Oracle", file: "/logos/oracle.png" },
+                { name: "Zomato", file: "/logos/zomato.png" },
+                { name: "Blinkit", file: "/logos/blinkit.png" },
+                { name: "Delhivery", file: "/logos/delhivery.png" },
                 ].map((c, i) => (
                   <img key={i} src={c.file} alt={c.name} title={c.name}
                     className="h-8 w-auto object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all"

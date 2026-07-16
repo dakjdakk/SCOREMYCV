@@ -1,8 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const ADMIN_PASSWORD = "25227";
-
 type CvReview = {
   id: string; created_at: string; stars: number; comment?: string; email?: string; payment_id?: string;
 };
@@ -13,9 +11,17 @@ export default function AdminReviews() {
   const [error, setError]     = useState("");
 
   useEffect(() => {
-    fetch(`/api/admin/reviews?password=${ADMIN_PASSWORD}`)
-      .then(r => r.json())
-      .then(d => { setReviews(d.reviews || []); setLoading(false); })
+    const pwd = sessionStorage.getItem("adminPwd");
+    if (!pwd) {
+      window.location.href = "/admin";
+      return;
+    }
+    fetch(`/api/admin/reviews?password=${pwd}`)
+      .then(r => {
+        if (r.status === 401) { window.location.href = "/admin"; return null; }
+        return r.json();
+      })
+      .then(d => { if (d) { setReviews(d.reviews || []); setLoading(false); } })
       .catch(() => { setError("Failed to load"); setLoading(false); });
   }, []);
 
@@ -31,7 +37,6 @@ export default function AdminReviews() {
           <h1 className="text-2xl font-extrabold text-slate-800">⭐ Customer Reviews</h1>
         </div>
 
-        {/* Summary */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-6 inline-flex items-center gap-4">
           <div className="text-4xl font-black text-yellow-400">{avg}</div>
           <div>
@@ -54,7 +59,7 @@ export default function AdminReviews() {
                 <span className="text-yellow-400 text-lg">{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</span>
                 <span className="text-xs text-slate-400">{new Date(r.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
               </div>
-              {r.comment && <p className="text-slate-700 text-sm mt-1">"{r.comment}"</p>}
+              {r.comment && <p className="text-slate-700 text-sm mt-1">&ldquo;{r.comment}&rdquo;</p>}
               <div className="flex gap-4 mt-2 text-xs text-slate-400">
                 {r.email && <span>📧 {r.email}</span>}
                 {r.payment_id && <span>💳 {r.payment_id}</span>}

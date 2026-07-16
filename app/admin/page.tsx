@@ -45,6 +45,7 @@ export default function AdminPage() {
       setAtsChecks(data.atsChecks || []);
       setRewrites(data.rewrites || []);
       setReviews(data.reviews || []);
+      sessionStorage.setItem("adminPwd", password);
       setAuthed(true);
     } catch {
       setError("Failed to load data");

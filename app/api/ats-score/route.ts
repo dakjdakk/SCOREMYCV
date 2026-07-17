@@ -155,11 +155,32 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      // Use lib path to bypass pdf-parse's test runner (avoids ENOENT on ./test/data/)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      const data = await pdfParse(buffer, { stopAtErrors: false });
-      text = data.text;
+      try {
+        // Primary: pdf-parse (fast, works for most PDFs)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+        const data = await pdfParse(buffer, { stopAtErrors: false });
+        text = data.text;
+      } catch {
+        // Fallback: pdfjs-dist v6 (better XRef repair for malformed PDFs)
+        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs" as string);
+        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = "";
+        const loadingTask = (pdfjsLib as any).getDocument({
+          data: new Uint8Array(buffer),
+          stopAtErrors: false,
+          isEvalSupported: false,
+        });
+        const pdfDoc = await loadingTask.promise;
+        const pages: string[] = [];
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(
+            (content.items as any[]).map((item) => item.str ?? "").join(" ")
+          );
+        }
+        text = pages.join("\n");
+      }
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       const result  = await mammoth.extractRawText({ buffer });

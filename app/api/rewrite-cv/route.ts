@@ -28,8 +28,26 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      text = (await pdfParse(buffer, { stopAtErrors: false })).text;
+      try {
+        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+        text = (await pdfParse(buffer, { stopAtErrors: false })).text;
+      } catch {
+        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs" as string);
+        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = "";
+        const loadingTask = (pdfjsLib as any).getDocument({
+          data: new Uint8Array(buffer),
+          stopAtErrors: false,
+          isEvalSupported: false,
+        });
+        const pdfDoc = await loadingTask.promise;
+        const pages: string[] = [];
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          pages.push((content.items as any[]).map((item) => item.str ?? "").join(" "));
+        }
+        text = pages.join("\n");
+      }
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       text = (await mammoth.extractRawText({ buffer })).value;

@@ -155,10 +155,27 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      const data = await pdfParse(buffer);
-      text = data.text;
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+        const data = await pdfParse(buffer);
+        text = data.text;
+      } catch {
+        // Fallback: pdfjs-dist v6 with file:// worker (handles malformed XRef PDFs)
+        const path = await import("path");
+        const { getDocument, GlobalWorkerOptions } = await import("pdfjs-dist/legacy/build/pdf.mjs" as string);
+        const workerPath = path.join(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
+        (GlobalWorkerOptions as any).workerSrc = `file://${workerPath}`;
+        const task = (getDocument as any)({ data: new Uint8Array(buffer) });
+        const doc = await task.promise;
+        const pages: string[] = [];
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const content = await page.getTextContent();
+          pages.push((content.items as any[]).map((item) => item.str ?? "").join(" "));
+        }
+        text = pages.join("\n");
+      }
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       const result  = await mammoth.extractRawText({ buffer });

@@ -158,7 +158,7 @@ export async function POST(request: Request) {
       // Use lib path to bypass pdf-parse's test runner (avoids ENOENT on ./test/data/)
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      const data = await pdfParse(buffer);
+      const data = await pdfParse(buffer, { stopAtErrors: false });
       text = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");

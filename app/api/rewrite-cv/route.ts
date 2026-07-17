@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     if (fileName.endsWith(".pdf")) {
       const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      text = (await pdfParse(buffer)).text;
+      text = (await pdfParse(buffer, { stopAtErrors: false })).text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       text = (await mammoth.extractRawText({ buffer })).value;

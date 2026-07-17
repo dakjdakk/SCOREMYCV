@@ -28,38 +28,8 @@ export async function POST(request: Request) {
     let text = "";
 
     if (fileName.endsWith(".pdf")) {
-      try {
-        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-        text = (await pdfParse(buffer, { stopAtErrors: false })).text;
-      } catch {
-        if (typeof (globalThis as any).DOMMatrix === "undefined") {
-          (globalThis as any).DOMMatrix = class {
-            m11=1;m12=0;m21=0;m22=1;m41=0;m42=0;a=1;b=0;c=0;d=1;e=0;f=0;
-            constructor(_?: any) {}
-            multiply() { return this; }
-            translate() { return this; }
-            scale() { return this; }
-            rotate() { return this; }
-            inverse() { return this; }
-            toString() { return "matrix(1,0,0,1,0,0)"; }
-          };
-        }
-        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs" as string);
-        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = "";
-        const loadingTask = (pdfjsLib as any).getDocument({
-          data: new Uint8Array(buffer),
-          stopAtErrors: false,
-          isEvalSupported: false,
-        });
-        const pdfDoc = await loadingTask.promise;
-        const pages: string[] = [];
-        for (let i = 1; i <= pdfDoc.numPages; i++) {
-          const page = await pdfDoc.getPage(i);
-          const content = await page.getTextContent();
-          pages.push((content.items as any[]).map((item) => item.str ?? "").join(" "));
-        }
-        text = pages.join("\n");
-      }
+      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+      text = (await pdfParse(buffer)).text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       text = (await mammoth.extractRawText({ buffer })).value;

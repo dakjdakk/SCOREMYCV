@@ -565,9 +565,11 @@ function HeroSection({ onUpgrade }: {
             rel="noopener noreferrer"
             className="mt-4 inline-flex items-center gap-3 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors rounded-xl px-4 py-3 w-fit group"
           >
-            <div className="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white flex-shrink-0 text-xl">
-              👨‍💼
-            </div>
+            <img
+              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop&crop=face"
+              alt="Resume Expert"
+              className="w-11 h-11 rounded-full object-cover flex-shrink-0 border-2 border-indigo-300"
+            />
             <div>
               <div className="text-xs text-indigo-400 font-medium leading-none mb-0.5">Need a professional resume from scratch?</div>
               <div className="text-sm font-bold text-indigo-700 group-hover:text-indigo-800 leading-snug">Get Expert Resume Help →</div>

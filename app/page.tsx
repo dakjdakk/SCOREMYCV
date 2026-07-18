@@ -526,7 +526,7 @@ function HeroSection({ onUpgrade }: {
 
         {/* Floating help button — bottom right of hero */}
         <a
-          href="https://www.instagram.com/scoremycv.in"
+          href="https://ig.me/m/scoremycv.in"
           target="_blank"
           rel="noopener noreferrer"
           className="absolute bottom-0 right-0 w-12 h-12 bg-white hover:bg-green-50 rounded-full flex items-center justify-center shadow-lg transition-colors z-10 border border-green-200"

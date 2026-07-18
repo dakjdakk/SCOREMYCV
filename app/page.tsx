@@ -541,7 +541,21 @@ function HeroSection({ onUpgrade }: {
             <span className="text-yellow-400 text-base leading-none tracking-tight">★★★★★</span>
             <span className="font-semibold text-slate-800">4.5</span>
             <span className="text-slate-400">·</span>
-            <span><span className="font-bold text-slate-800">2,000+</span> landed interviews last month</span>
+            <span>Rated by our users</span>
+          </div>
+
+          {/* Benefit checklist */}
+          <div className="flex flex-col gap-3 mt-2">
+            {[
+              { icon: "✅", text: "Free ATS score — see exactly where you rank" },
+              { icon: "✅", text: "Full CV rewrite optimised for your target role" },
+              { icon: "✅", text: "Download your new CV as a PDF instantly" },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-start gap-3">
+                <span className="text-lg leading-none mt-0.5">{icon}</span>
+                <span className="text-slate-700 text-sm leading-snug">{text}</span>
+              </div>
+            ))}
           </div>
         </div>
 

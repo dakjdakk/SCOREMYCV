@@ -565,12 +565,12 @@ function HeroSection({ onUpgrade }: {
             rel="noopener noreferrer"
             className="mt-4 inline-flex items-center gap-3 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors rounded-xl px-4 py-3 w-fit group"
           >
-            <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg flex-shrink-0">
-              🤖
+            <div className="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white flex-shrink-0 text-xl">
+              👨‍💼
             </div>
             <div>
-              <div className="text-xs text-indigo-400 font-medium leading-none mb-0.5">Need a CV from scratch?</div>
-              <div className="text-sm font-bold text-indigo-700 group-hover:text-indigo-800 leading-snug">Get Personal Expert Help →</div>
+              <div className="text-xs text-indigo-400 font-medium leading-none mb-0.5">Need a professional resume from scratch?</div>
+              <div className="text-sm font-bold text-indigo-700 group-hover:text-indigo-800 leading-snug">Get Expert Resume Help →</div>
             </div>
           </a>
         </div>

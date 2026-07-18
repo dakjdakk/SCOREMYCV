@@ -558,23 +558,6 @@ function HeroSection({ onUpgrade }: {
             ))}
           </div>
 
-          {/* Personal help CTA */}
-          <a
-            href="https://www.instagram.com/scoremycv.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-3 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors rounded-xl px-4 py-3 w-fit group"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop&crop=face"
-              alt="Resume Expert"
-              className="w-11 h-11 rounded-full object-cover flex-shrink-0 border-2 border-indigo-300"
-            />
-            <div>
-              <div className="text-xs text-indigo-400 font-medium leading-none mb-0.5">Need a professional resume from scratch?</div>
-              <div className="text-sm font-bold text-indigo-700 group-hover:text-indigo-800 leading-snug">Get Expert Resume Help →</div>
-            </div>
-          </a>
         </div>
 
         {/* RIGHT: Upload card */}
@@ -1105,11 +1088,6 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <a href="/sql-practice"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition text-xs sm:text-sm whitespace-nowrap">
-            <span className="hidden sm:inline">⚡ Practice SQL · Get Hired</span>
-            <span className="sm:hidden">⚡ SQL</span>
-          </a>
           <button
             className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-slate-100 transition"
             onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu"

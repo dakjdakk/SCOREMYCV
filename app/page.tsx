@@ -529,14 +529,12 @@ function HeroSection({ onUpgrade }: {
           href="https://www.instagram.com/scoremycv.in"
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-0 right-0 w-12 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+          className="absolute bottom-0 right-0 w-12 h-12 bg-white hover:bg-green-50 rounded-full flex items-center justify-center shadow-lg transition-colors z-10 border border-green-200"
           title="Get Expert Help"
         >
-          <img
-            src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=96&h=96&fit=crop&crop=face"
-            alt="Support"
-            className="w-full h-full rounded-full object-cover"
-          />
+          <svg viewBox="0 0 24 24" fill="#25D366" className="w-7 h-7">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.09-1.34A9.93 9.93 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.07 13.86c-.22.61-1.27 1.16-1.76 1.23-.45.07-1.02.1-1.64-.1-.38-.12-.86-.28-1.48-.55-2.6-1.12-4.3-3.75-4.43-3.92-.13-.17-1.06-1.41-1.06-2.69 0-1.28.67-1.91.91-2.17.24-.26.52-.33.69-.33.17 0 .35.002.5.008.16.007.38-.06.59.45.22.52.74 1.8.8 1.93.07.13.11.28.02.45-.09.17-.13.27-.26.42-.13.15-.27.33-.39.44-.13.12-.26.25-.11.49.15.24.66 1.09 1.42 1.76.97.87 1.79 1.14 2.04 1.27.25.13.39.11.54-.07.15-.17.62-.72.78-.97.16-.25.33-.21.55-.13.22.08 1.39.66 1.63.78.24.12.4.18.46.28.06.1.06.58-.16 1.19z"/>
+          </svg>
         </a>
 
         {/* LEFT: Headline */}

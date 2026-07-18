@@ -50,7 +50,7 @@ const features = [
 const steps = [
   { step: "01", title: "Upload Your Resume", desc: "Upload your existing resume in PDF or Word format." },
   { step: "02", title: "Get Free ATS Score", desc: "Instantly see your score, missing keywords, and what's holding your resume back." },
-  { step: "03", title: "Pay ₹19 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
+  { step: "03", title: "Pay ₹49 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
   { step: "04", title: "Download Instantly", desc: "Your rewritten, ATS-optimised CV downloads automatically — right away." },
 ];
 
@@ -60,7 +60,7 @@ const faqs = [
     a: "ATS stands for Applicant Tracking System — software companies use to automatically filter resumes before a human ever sees them. If your score is too low, your resume gets rejected instantly. Our free check tells you exactly where you stand.",
   },
   {
-    q: "What do I get for ₹19?",
+    q: "What do I get for ₹49?",
     a: "Your entire CV is professionally rewritten — better language, strong action verbs, missing keywords added, and ATS-optimised formatting. The rewritten CV is generated instantly and downloads as a clean PDF the moment payment is confirmed.",
   },
   {
@@ -274,8 +274,8 @@ function HeroSection({ onUpgrade }: {
 
   const upsellMsg = result
     ? result.score < 90
-      ? `⚠️ Your score is below ${Math.ceil(result.score / 10) * 10} — you are in the rejection zone. Our rewrite pushes your CV to 90+ so recruiters can't ignore you. Just ₹19.`
-      : "✅ You're in the shortlist zone! A professional rewrite polishes your CV further and maximises your chances of getting called — just ₹19."
+      ? `⚠️ Your score is below ${Math.ceil(result.score / 10) * 10} — you are in the rejection zone. Our rewrite pushes your CV to 90+ so recruiters can't ignore you. Just ₹49.`
+      : "✅ You're in the shortlist zone! A professional rewrite polishes your CV further and maximises your chances of getting called — just ₹49."
     : "";
 
   // Scroll to top when results appear
@@ -475,7 +475,7 @@ function HeroSection({ onUpgrade }: {
             <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center gap-3">
               <div className="text-3xl">🔒</div>
               <p className="font-extrabold text-slate-800 text-base text-center px-4">Get your ATS-Friendly Resume — 90+ Score Guaranteed</p>
-              <p className="text-slate-500 text-xs text-center px-6">Keywords added · ATS-optimised · Instant PDF download · Just ₹19</p>
+              <p className="text-slate-500 text-xs text-center px-6">Keywords added · ATS-optimised · Instant PDF download · Just ₹49</p>
               <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm mt-1">
                 🚀 Build My ATS-Friendly Resume →
@@ -490,7 +490,7 @@ function HeroSection({ onUpgrade }: {
         <div className="bg-blue-600 rounded-3xl p-6 sm:p-8 text-center text-white">
           <h4 className="text-xl font-extrabold mb-2">Every day you wait = more rejections</h4>
           <p className="text-blue-200 text-sm mb-2">Companies are posting jobs right now — and your CV is getting filtered out.</p>
-          <p className="text-white text-sm font-semibold mb-5">For ₹19 we rewrite your entire CV — missing keywords added, action verbs fixed, ATS-optimised — download the polished PDF instantly.</p>
+          <p className="text-white text-sm font-semibold mb-5">For ₹49 we rewrite your entire CV — missing keywords added, action verbs fixed, ATS-optimised — download the polished PDF instantly.</p>
           <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
             className="bg-white text-blue-700 font-bold px-8 py-3.5 rounded-2xl hover:bg-blue-50 transition text-sm shadow-lg">
             🚀 Build My ATS-Friendly Resume →
@@ -673,7 +673,7 @@ function PaymentModal({
       const orderRes  = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 1900, currency: "INR", receipt: orderId }),
+        body: JSON.stringify({ amount: 4900, currency: "INR", receipt: orderId }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
@@ -879,7 +879,7 @@ function PaymentModal({
                     disabled={loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹19 & Download →</span>}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹49 & Download →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -965,7 +965,7 @@ function PaymentModal({
                     disabled={!canProceed || loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹19 & Download →</span>}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹49 & Download →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>

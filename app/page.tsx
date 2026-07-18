@@ -524,6 +524,20 @@ function HeroSection({ onUpgrade }: {
 
       <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
+        {/* Floating help button — bottom right of hero */}
+        <a
+          href="https://www.instagram.com/scoremycv.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-0 right-0 w-12 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+          title="Get Expert Help"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-6 h-6">
+            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            <path d="M18 8.5h.5a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H18a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5zM6 8.5h-.5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2H6a.5.5 0 0 0 .5-.5v-4A.5.5 0 0 0 6 8.5z" opacity="0.85"/>
+          </svg>
+        </a>
+
         {/* LEFT: Headline */}
         <div className="hidden lg:flex flex-col gap-4 pt-4 lg:pl-8">
           <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full w-fit">

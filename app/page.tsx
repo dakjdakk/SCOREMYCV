@@ -532,10 +532,11 @@ function HeroSection({ onUpgrade }: {
           className="absolute bottom-0 right-0 w-12 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
           title="Get Expert Help"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-6 h-6">
-            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-            <path d="M18 8.5h.5a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H18a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5zM6 8.5h-.5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2H6a.5.5 0 0 0 .5-.5v-4A.5.5 0 0 0 6 8.5z" opacity="0.85"/>
-          </svg>
+          <img
+            src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=96&h=96&fit=crop&crop=face"
+            alt="Support"
+            className="w-full h-full rounded-full object-cover"
+          />
         </a>
 
         {/* LEFT: Headline */}

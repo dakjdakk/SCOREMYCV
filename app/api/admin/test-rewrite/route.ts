@@ -306,10 +306,11 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       const headerLines4 = cvText.split("\n").slice(1, 4).join("\n");
       const NON_CITY4 = /^(Python|Java|Machine|Learning|Analyst|Engineer|Developer|Data|Science|Software|Web|Full|Stack|Frontend|Backend|Mobile|Cloud|Aws|Azure|Gcp|React|Node|Next|Angular|Vue|Sql|Nosql|Ml|Ai|Deep|Natural|Language|Processing|Computer|Vision|Tableau|Power|Excel|Statistics|Analytics|Business|Intelligence)$/i;
       const locationMatch4 = (() => {
-        const m = headerLines4.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?(?:,\s*India)?)\b/g);
+        // Matches "City, ST" (2-3 letter abbrev like AP, TN) OR "City, Statename" OR "City, Statename, India"
+        const m = headerLines4.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*India)?)\b/g);
         if (!m) return null;
         const valid = m.find(loc => {
-          const parts = loc.split(/[,\s]+/);
+          const parts = loc.split(/[,\s]+/).filter(Boolean);
           return parts.every(w => !NON_CITY4.test(w));
         });
         return valid ? [null, valid] : null;
@@ -452,7 +453,9 @@ ${cvText}`;
       cvData.projects      = Array.isArray(cvData.projects)      ? cvData.projects      : [];
       cvData.education     = Array.isArray(cvData.education)     ? cvData.education     : [];
       cvData.certifications= Array.isArray(cvData.certifications)? cvData.certifications: [];
-      cvData.achievements  = Array.isArray(cvData.achievements)  ? cvData.achievements  : [];
+      cvData.achievements  = Array.isArray(cvData.achievements)
+        ? cvData.achievements.map((a: string) => (typeof a === "string" ? a.replace(/^[A-Za-z][A-Za-z\s&]*:\s*/, "") : a))
+        : [];
       cvData.leadership    = Array.isArray(cvData.leadership)    ? cvData.leadership    : [];
       console.log("[OPT4] cvData parsed. name:", cvData.name, "skills:", cvData.skills.length, "exp:", cvData.experience.length);
 

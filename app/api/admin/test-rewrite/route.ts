@@ -472,7 +472,7 @@ ${cvText}`;
       // Profile Summary
       const summaryHtml4 = sec("Profile Summary",
         cvData.summary
-          ? `<p style="font-size:10.5px;text-align:justify;margin-top:3px;">${esc(cvData.summary)}</p>`
+          ? `<p style="font-size:10px;text-align:justify;margin-top:3px;">${esc(cvData.summary)}</p>`
           : ""
       );
 
@@ -568,34 +568,34 @@ ${cvText}`;
 <style>
 * { font-family: 'Calibri', Arial, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
 body { background: white; }
-.page { width: 750px; margin: 0 auto; padding: 36px 50px; background: white; color: #000; line-height: 1.45; }
+.page { width: 750px; margin: 0 auto; padding: 28px 44px; background: white; color: #000; line-height: 1.38; }
 .name { font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 3px; letter-spacing: 0.5px; }
-.designation { font-size: 12px; font-weight: bold; text-align: center; color: #333; margin-bottom: 5px; }
-.contact { text-align: center; font-size: 10px; color: #333; margin-bottom: 14px; }
+.designation { font-size: 12px; font-weight: bold; text-align: center; color: #333; margin-bottom: 4px; }
+.contact { text-align: center; font-size: 10px; color: #333; margin-bottom: 10px; }
 .contact a { color: #333; text-decoration: none; }
-.section { margin-top: 10px; margin-bottom: 0; }
+.section { margin-top: 8px; margin-bottom: 0; }
 .section-title { font-size: 14px; font-weight: bold; color: #000; margin-bottom: 1px; }
-.section-rule { border: none; border-top: 1.2px solid #000; margin: 0 0 6px 0; }
-.exp-block { margin-bottom: 4px; }
+.section-rule { border: none; border-top: 1.2px solid #000; margin: 0 0 5px 0; }
+.exp-block { margin-bottom: 3px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; }
 .row-left { font-weight: bold; font-size: 11px; }
 .row-right { font-size: 10px; font-style: italic; white-space: nowrap; }
 .role { font-style: italic; font-size: 10px; margin: 1px 0 2px 0; }
-ul.bullets { margin: 3px 0 4px 18px; padding: 0; list-style-type: disc; }
-ul.bullets li { font-size: 10px; margin-bottom: 2px; text-align: justify; }
-.proj-block { margin-bottom: 4px; page-break-inside: avoid; break-inside: avoid; }
+ul.bullets { margin: 2px 0 3px 18px; padding: 0; list-style-type: disc; }
+ul.bullets li { font-size: 10px; margin-bottom: 1px; text-align: justify; }
+.proj-block { margin-bottom: 3px; page-break-inside: avoid; break-inside: avoid; }
 .proj-row { display: flex; justify-content: space-between; align-items: baseline; }
 .proj-left { font-size: 10.5px; flex: 1; min-width: 0; }
 .proj-title { font-weight: bold; }
 .proj-tools { font-style: italic; }
 .proj-date { font-size: 10px; font-style: italic; white-space: nowrap; margin-left: 8px; }
 .skills-block { padding-left: 14px; margin-top: 2px; }
-.skills-block p { font-size: 10.5px; margin-bottom: 3px; }
+.skills-block p { font-size: 10px; margin-bottom: 2px; }
 .cert-list { padding-left: 18px; margin-top: 3px; list-style-type: disc; }
-.cert-list li { font-size: 10px; margin-bottom: 2px; }
+.cert-list li { font-size: 10px; margin-bottom: 1px; }
 @media print {
   .page { width: 100% !important; padding: 0 !important; }
-  @page { size: A4 portrait; margin: 36px 50px; }
+  @page { size: A4 portrait; margin: 28px 44px; }
 }
 </style>
 </head>
@@ -632,7 +632,7 @@ ${leaderHtml4}
         format: "A4",
         printBackground: true,
         displayHeaderFooter: false,
-        margin: { top: "40px", bottom: "40px", left: "48px", right: "48px" },
+        margin: { top: "28px", bottom: "28px", left: "44px", right: "44px" },
       });
 
       await browser4.close();

@@ -457,6 +457,19 @@ ${cvText}`;
         ? cvData.achievements.map((a: string) => (typeof a === "string" ? a.replace(/^[A-Za-z][A-Za-z\s&]*:\s*/, "") : a))
         : [];
       cvData.leadership    = Array.isArray(cvData.leadership)    ? cvData.leadership    : [];
+
+      // ── Normalize date casing: "DEC 2024" → "Dec 2024", "JUNE" → "June" etc.
+      const normDate = (s: string): string => {
+        if (!s) return s;
+        return s.replace(
+          /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g,
+          (m) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()
+        );
+      };
+      cvData.experience.forEach((job: any) => { if (job.dates) job.dates = normDate(job.dates); });
+      cvData.education.forEach((edu: any)  => { if (edu.dates)  edu.dates  = normDate(edu.dates);  });
+      cvData.projects.forEach((proj: any)  => { if (proj.date)  proj.date  = normDate(proj.date);  });
+
       console.log("[OPT4] cvData parsed. name:", cvData.name, "skills:", cvData.skills.length, "exp:", cvData.experience.length);
 
       // ── STEP 2: Build HTML entirely from JSON — server controls every element ──
@@ -568,31 +581,31 @@ ${cvText}`;
 <style>
 * { font-family: 'Calibri', Arial, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
 body { background: white; }
-.page { width: 750px; margin: 0 auto; padding: 28px 44px; background: white; color: #000; line-height: 1.38; }
-.name { font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 3px; letter-spacing: 0.5px; }
-.designation { font-size: 12px; font-weight: bold; text-align: center; color: #333; margin-bottom: 4px; }
-.contact { text-align: center; font-size: 10px; color: #333; margin-bottom: 10px; }
+.page { width: 750px; margin: 0 auto; padding: 28px 44px; background: white; color: #000; line-height: 1.42; }
+.name { font-size: 26px; font-weight: bold; text-align: center; margin-bottom: 3px; letter-spacing: 0.5px; }
+.designation { font-size: 11.5px; font-weight: bold; text-align: center; color: #333; margin-bottom: 4px; }
+.contact { text-align: center; font-size: 10.5px; color: #333; margin-bottom: 10px; }
 .contact a { color: #333; text-decoration: none; }
-.section { margin-top: 8px; margin-bottom: 0; }
-.section-title { font-size: 14px; font-weight: bold; color: #000; margin-bottom: 1px; }
+.section { margin-top: 9px; margin-bottom: 0; }
+.section-title { font-size: 13.5px; font-weight: bold; color: #000; margin-bottom: 1px; }
 .section-rule { border: none; border-top: 1.2px solid #000; margin: 0 0 5px 0; }
-.exp-block { margin-bottom: 3px; }
+.exp-block { margin-bottom: 5px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; }
 .row-left { font-weight: bold; font-size: 11px; }
-.row-right { font-size: 10px; font-style: italic; white-space: nowrap; }
-.role { font-style: italic; font-size: 10px; margin: 1px 0 2px 0; }
-ul.bullets { margin: 2px 0 3px 18px; padding: 0; list-style-type: disc; }
-ul.bullets li { font-size: 10px; margin-bottom: 1px; text-align: justify; }
-.proj-block { margin-bottom: 3px; page-break-inside: avoid; break-inside: avoid; }
+.row-right { font-size: 10.5px; font-style: italic; white-space: nowrap; }
+.role { font-style: italic; font-size: 10.5px; margin: 1px 0 3px 0; }
+ul.bullets { margin: 3px 0 4px 18px; padding: 0; list-style-type: disc; }
+ul.bullets li { font-size: 10.5px; margin-bottom: 2px; text-align: justify; }
+.proj-block { margin-bottom: 5px; page-break-inside: avoid; break-inside: avoid; }
 .proj-row { display: flex; justify-content: space-between; align-items: baseline; }
-.proj-left { font-size: 10.5px; flex: 1; min-width: 0; }
+.proj-left { font-size: 11px; flex: 1; min-width: 0; }
 .proj-title { font-weight: bold; }
 .proj-tools { font-style: italic; }
-.proj-date { font-size: 10px; font-style: italic; white-space: nowrap; margin-left: 8px; }
-.skills-block { padding-left: 14px; margin-top: 2px; }
-.skills-block p { font-size: 10px; margin-bottom: 2px; }
+.proj-date { font-size: 10.5px; font-style: italic; white-space: nowrap; margin-left: 8px; }
+.skills-block { padding-left: 14px; margin-top: 3px; }
+.skills-block p { font-size: 10.5px; margin-bottom: 3px; }
 .cert-list { padding-left: 18px; margin-top: 3px; list-style-type: disc; }
-.cert-list li { font-size: 10px; margin-bottom: 1px; }
+.cert-list li { font-size: 10.5px; margin-bottom: 2px; }
 @media print {
   .page { width: 100% !important; padding: 0 !important; }
   @page { size: A4 portrait; margin: 28px 44px; }

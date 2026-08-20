@@ -1,13 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // @sparticuz/chromium ships a native binary that webpack relocates,
-      // breaking the path lookup. Externalizing keeps it in node_modules.
-      const existing = Array.isArray(config.externals) ? config.externals : [];
-      config.externals = [...existing, '@sparticuz/chromium'];
-    }
-    return config;
+  experimental: {
+    // Prevents Next.js from bundling these packages — keeps them as external
+    // node_modules so @sparticuz/chromium's native binary path stays valid.
+    serverComponentsExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   },
 };
 

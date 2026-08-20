@@ -1,24 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/sql-practice",
-        destination: "/sql-practice.html",
-      },
-    ];
-  },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals = [...(config.externals || []), "canvas"];
+      // @sparticuz/chromium ships a native binary that webpack relocates,
+      // breaking the path lookup. Externalizing keeps it in node_modules.
+      const existing = Array.isArray(config.externals) ? config.externals : [];
+      config.externals = [...existing, '@sparticuz/chromium'];
     }
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ["mammoth", "pdf-parse", "resend", "@sparticuz/chromium", "puppeteer-core"],
-    outputFileTracingIncludes: {
-      "/api/rewrite-cv": ["./node_modules/@sparticuz/chromium/**/*"],
-    },
-  },
 };
+
 module.exports = nextConfig;

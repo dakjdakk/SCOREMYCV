@@ -300,7 +300,16 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         return phoneRaw4;
       })();
       const headerLines4 = cvText.split("\n").slice(1, 4).join("\n");
-      const locationMatch4 = headerLines4.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?(?:,\s*India)?)\b/);
+      const NON_CITY4 = /^(Python|Java|Machine|Learning|Analyst|Engineer|Developer|Data|Science|Software|Web|Full|Stack|Frontend|Backend|Mobile|Cloud|Aws|Azure|Gcp|React|Node|Next|Angular|Vue|Sql|Nosql|Ml|Ai|Deep|Natural|Language|Processing|Computer|Vision|Tableau|Power|Excel|Statistics|Analytics|Business|Intelligence)$/i;
+      const locationMatch4 = (() => {
+        const m = headerLines4.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?(?:,\s*India)?)\b/g);
+        if (!m) return null;
+        const valid = m.find(loc => {
+          const parts = loc.split(/[,\s]+/);
+          return parts.every(w => !NON_CITY4.test(w));
+        });
+        return valid ? [null, valid] : null;
+      })();
       const relocateMatch4 = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
       const headerText4   = cvText.split("\n").slice(0, 10).join(" ");
       const mentionsLinkedin4  = /linkedin/i.test(headerText4);

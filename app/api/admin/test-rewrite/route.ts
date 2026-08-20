@@ -390,22 +390,56 @@ ${cvText}`;
 
       if (!rawJson4) return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
 
+      // Robust JSON extraction: strip fences, then find balanced outer { } block
       rawJson4 = rawJson4
         .replace(/^```json\s*/i, "")
         .replace(/^```\s*/i, "")
         .replace(/\s*```$/i, "")
         .trim();
 
-      // Parse JSON with fallback
+      // Balanced-brace extractor — handles trailing text/notes after the JSON object
+      const extractBalancedJson = (s: string): string => {
+        const start = s.indexOf("{");
+        if (start === -1) return s;
+        let depth = 0;
+        let inStr = false;
+        let escape = false;
+        for (let i = start; i < s.length; i++) {
+          const ch = s[i];
+          if (escape) { escape = false; continue; }
+          if (ch === "\\" && inStr) { escape = true; continue; }
+          if (ch === '"') { inStr = !inStr; continue; }
+          if (inStr) continue;
+          if (ch === "{") depth++;
+          else if (ch === "}") { depth--; if (depth === 0) return s.slice(start, i + 1); }
+        }
+        return s.slice(start);
+      };
+
       let cvData: any;
       try {
         cvData = JSON.parse(rawJson4);
       } catch {
-        const jsonMatch = rawJson4.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) return NextResponse.json({ error: "AI returned invalid data. Please try again." }, { status: 500 });
-        try { cvData = JSON.parse(jsonMatch[0]); }
-        catch { return NextResponse.json({ error: "AI returned invalid data. Please try again." }, { status: 500 }); }
+        const extracted = extractBalancedJson(rawJson4);
+        try { cvData = JSON.parse(extracted); }
+        catch (e2) {
+          console.error("[OPT4] JSON parse failed. Raw:", rawJson4.slice(0, 500), "Error:", e2);
+          return NextResponse.json({ error: "AI returned invalid data. Please try again." }, { status: 500 });
+        }
       }
+
+      // Safety: ensure all expected fields exist and are correct types
+      if (!cvData || typeof cvData !== "object") {
+        return NextResponse.json({ error: "AI returned invalid data. Please try again." }, { status: 500 });
+      }
+      cvData.skills        = Array.isArray(cvData.skills)        ? cvData.skills        : [];
+      cvData.experience    = Array.isArray(cvData.experience)    ? cvData.experience    : [];
+      cvData.projects      = Array.isArray(cvData.projects)      ? cvData.projects      : [];
+      cvData.education     = Array.isArray(cvData.education)     ? cvData.education     : [];
+      cvData.certifications= Array.isArray(cvData.certifications)? cvData.certifications: [];
+      cvData.achievements  = Array.isArray(cvData.achievements)  ? cvData.achievements  : [];
+      cvData.leadership    = Array.isArray(cvData.leadership)    ? cvData.leadership    : [];
+      console.log("[OPT4] cvData parsed. name:", cvData.name, "skills:", cvData.skills.length, "exp:", cvData.experience.length);
 
       // ── STEP 2: Build HTML entirely from JSON — server controls every element ──
       // Helper: escape HTML special chars

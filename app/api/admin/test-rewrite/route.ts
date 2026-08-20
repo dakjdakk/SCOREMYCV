@@ -6,6 +6,10 @@ import puppeteer from "puppeteer-core";
 
 export const maxDuration = 60;
 
+// Chromium binary CDN URL — downloaded on cold start, cached in /tmp/chromium for warm calls
+const CHROMIUM_URL =
+  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
+
 // ── Route handler ─────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
@@ -612,7 +616,7 @@ ${leaderHtml4}
       // ── STEP 3: Puppeteer → PDF ────────────────────────────────────
       const browser4 = await puppeteer.launch({
         args: chromium.args,
-        executablePath: await chromium.executablePath(),
+        executablePath: await chromium.executablePath(CHROMIUM_URL),
         headless: true,
       });
 
@@ -1163,7 +1167,7 @@ ${cvText}`;
     // ── Puppeteer: HTML → PDF ──────────────────────────────────────
     const browser = await puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.executablePath(CHROMIUM_URL),
       headless: true,
     });
 

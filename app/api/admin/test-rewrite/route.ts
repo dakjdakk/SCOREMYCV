@@ -8,7 +8,7 @@ export const maxDuration = 60;
 
 // Chromium binary CDN URL — downloaded on cold start, cached in /tmp/chromium for warm calls
 const CHROMIUM_URL =
-  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
+  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar";
 
 // ── Route handler ─────────────────────────────────────────────────────
 export async function POST(request: Request) {

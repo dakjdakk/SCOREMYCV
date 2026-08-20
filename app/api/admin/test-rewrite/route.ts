@@ -372,7 +372,7 @@ ${cvText}`;
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: extractPrompt }] }],
-            generationConfig: { temperature: 0, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
+            generationConfig: { temperature: 0, maxOutputTokens: 4096, responseMimeType: "application/json" },
           }),
         },
       );
@@ -388,6 +388,8 @@ ${cvText}`;
       const parts4 = geminiData4?.candidates?.[0]?.content?.parts ?? [];
       let rawJson4 = parts4.find((p: any) => !p.thought && p.text)?.text ?? parts4[0]?.text ?? "";
 
+      console.log("[OPT4] geminiData4 candidates:", JSON.stringify(geminiData4?.candidates?.[0]?.content?.parts?.map((p:any)=>({thought:p.thought,textLen:p.text?.length})) ?? []));
+      console.log("[OPT4] rawJson4 first 300:", rawJson4.slice(0, 300));
       if (!rawJson4) return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
 
       // Robust JSON extraction: strip fences, then find balanced outer { } block

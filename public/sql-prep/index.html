@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day SQL Interview Prep — Master SQL & Land Your Dream Job</title>
+<meta name="description" content="230+ real interview questions from Google, Amazon, Microsoft. Live SQL editor. Certificate. Q&A forum. Start for free.">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; }
+
+/* NAV */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(15,23,42,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #1e293b; padding: 0 24px; height: 58px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-size: 16px; font-weight: 800; color: #60a5fa; }
+.nav-links { display: flex; gap: 10px; align-items: center; }
+.nav-link { color: #94a3b8; font-size: 13px; text-decoration: none; padding: 6px 12px; border-radius: 6px; transition: color 0.15s; }
+.nav-link:hover { color: #e2e8f0; }
+.nav-cta { background: #3b82f6; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.nav-cta:hover { background: #2563eb; }
+
+/* HERO */
+.hero { max-width: 900px; margin: 0 auto; padding: 80px 24px 60px; text-align: center; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: #1e3a5f; border: 1px solid #1d4ed8; color: #93c5fd; border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 700; margin-bottom: 24px; }
+.hero h1 { font-size: clamp(32px, 6vw, 58px); font-weight: 900; line-height: 1.1; color: #f1f5f9; margin-bottom: 20px; }
+.hero h1 span { background: linear-gradient(135deg, #3b82f6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero p { font-size: 18px; color: #94a3b8; line-height: 1.7; max-width: 620px; margin: 0 auto 36px; }
+.hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { background: #3b82f6; color: #fff; border: none; border-radius: 10px; padding: 16px 32px; font-size: 16px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.2s; }
+.btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.4); }
+.btn-demo { background: transparent; color: #e2e8f0; border: 2px solid #334155; border-radius: 10px; padding: 16px 32px; font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.2s; }
+.btn-demo:hover { border-color: #60a5fa; color: #60a5fa; }
+.hero-note { margin-top: 16px; font-size: 13px; color: #475569; }
+
+/* STATS */
+.stats { display: flex; justify-content: center; gap: 0; flex-wrap: wrap; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; background: #111827; }
+.stat { padding: 28px 40px; text-align: center; border-right: 1px solid #1e293b; }
+.stat:last-child { border-right: none; }
+.stat-num { font-size: 32px; font-weight: 900; color: #60a5fa; }
+.stat-label { font-size: 12px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* SECTIONS */
+.section { max-width: 960px; margin: 0 auto; padding: 70px 24px; }
+.section-tag { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; margin-bottom: 12px; }
+.section-title { font-size: clamp(24px, 4vw, 36px); font-weight: 900; color: #f1f5f9; margin-bottom: 14px; line-height: 1.2; }
+.section-sub { font-size: 16px; color: #64748b; line-height: 1.7; max-width: 580px; }
+
+/* WHAT YOU GET */
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 40px; }
+.feature-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 24px; transition: border-color 0.2s; }
+.feature-card:hover { border-color: #3b82f6; }
+.feature-icon { font-size: 28px; margin-bottom: 14px; }
+.feature-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+.feature-desc { font-size: 13px; color: #64748b; line-height: 1.6; }
+
+/* CURRICULUM PREVIEW */
+.week-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 36px; }
+.week-card { border-radius: 12px; padding: 20px; }
+.week-card.free { background: #1e3a5f; border: 1px solid #1d4ed8; }
+.week-card.locked { background: #1e293b; border: 1px solid #334155; opacity: 0.7; }
+.week-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.week-card.free .week-label { color: #60a5fa; }
+.week-card.locked .week-label { color: #475569; }
+.week-title { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+.week-days { font-size: 12px; color: #64748b; }
+.free-tag { display: inline-block; background: #22c55e; color: #0f172a; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 8px; }
+.lock-tag { display: inline-block; background: #334155; color: #64748b; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 8px; }
+
+/* SAMPLE QUESTIONS */
+.q-preview { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 20px; margin-top: 12px; }
+.q-preview-item { padding: 14px 0; border-bottom: 1px solid #334155; display: flex; align-items: flex-start; gap: 12px; }
+.q-preview-item:last-child { border-bottom: none; padding-bottom: 0; }
+.q-badge { background: #1e3a5f; color: #60a5fa; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 10px; flex-shrink: 0; white-space: nowrap; }
+.q-preview-text { font-size: 14px; color: #cbd5e1; line-height: 1.5; }
+
+/* CERTIFICATE PREVIEW */
+.cert-preview { background: linear-gradient(135deg, #1e3a5f, #0f172a); border: 2px solid #1d4ed8; border-radius: 16px; padding: 40px; text-align: center; margin-top: 36px; }
+.cert-preview h3 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #93c5fd; margin-bottom: 10px; }
+.cert-preview .cert-name { font-size: 28px; font-weight: 900; color: #60a5fa; font-style: italic; margin: 12px 0; }
+.cert-preview p { color: #94a3b8; font-size: 14px; line-height: 1.7; }
+
+/* FORUM PREVIEW */
+.forum-preview { background: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; margin-top: 36px; }
+.forum-header { background: #0f172a; padding: 14px 20px; font-size: 13px; font-weight: 700; color: #94a3b8; border-bottom: 1px solid #334155; }
+.forum-item { padding: 16px 20px; border-bottom: 1px solid #1e293b; }
+.forum-item:last-child { border-bottom: none; }
+.forum-q { font-size: 14px; color: #e2e8f0; margin-bottom: 6px; }
+.forum-meta { font-size: 12px; color: #475569; }
+.forum-answered { color: #22c55e; font-weight: 700; }
+
+/* PRICING */
+.pricing-card { background: linear-gradient(135deg, #1e293b, #1e3a5f); border: 2px solid #3b82f6; border-radius: 20px; padding: 40px; max-width: 440px; margin: 40px auto 0; text-align: center; position: relative; overflow: hidden; }
+.pricing-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 60%); }
+.popular-tag { background: #3b82f6; color: #fff; font-size: 11px; font-weight: 800; padding: 4px 14px; border-radius: 20px; display: inline-block; margin-bottom: 20px; letter-spacing: 0.05em; text-transform: uppercase; }
+.price { font-size: 52px; font-weight: 900; color: #f1f5f9; line-height: 1; }
+.price-currency { font-size: 24px; vertical-align: top; margin-top: 10px; display: inline-block; color: #94a3b8; }
+.price-period { font-size: 14px; color: #64748b; margin-top: 6px; }
+.price-strikethrough { font-size: 18px; color: #475569; text-decoration: line-through; margin-bottom: 4px; }
+.pricing-features { text-align: left; margin: 28px 0; display: flex; flex-direction: column; gap: 10px; }
+.pf-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #cbd5e1; }
+.pf-check { color: #22c55e; font-weight: 900; flex-shrink: 0; }
+.buy-btn { width: 100%; background: #3b82f6; color: #fff; border: none; border-radius: 12px; padding: 18px; font-size: 17px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-decoration: none; display: block; margin-top: 8px; }
+.buy-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 12px 30px rgba(59,130,246,0.5); }
+.pricing-note { font-size: 12px; color: #475569; margin-top: 14px; }
+
+/* FAQ */
+.faq { max-width: 680px; margin: 36px auto 0; }
+.faq-item { border: 1px solid #334155; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.faq-q { padding: 16px 20px; font-size: 14px; font-weight: 600; color: #e2e8f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.faq-q:hover { background: #1e293b; }
+.faq-arrow { color: #475569; transition: transform 0.2s; }
+.faq-a { display: none; padding: 0 20px 16px; font-size: 13px; color: #64748b; line-height: 1.7; }
+.faq-item.open .faq-a { display: block; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+/* FOOTER CTA */
+.footer-cta { background: linear-gradient(135deg, #1e3a5f, #0f172a); border-top: 1px solid #1e293b; padding: 70px 24px; text-align: center; }
+.footer-cta h2 { font-size: clamp(24px, 4vw, 36px); font-weight: 900; color: #f1f5f9; margin-bottom: 14px; }
+.footer-cta p { color: #64748b; font-size: 16px; margin-bottom: 32px; }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid #1e293b; }
+
+@media(max-width: 600px) {
+  .stat { padding: 20px; }
+  .hero { padding: 50px 20px 40px; }
+  nav { padding: 0 16px; }
+  .nav-link { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">🎯 SQL Interview Prep</div>
+  <div class="nav-links">
+    <a href="#curriculum" class="nav-link">Curriculum</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="/forum.html" class="nav-link">Q&A Forum</a>
+    <a href="/login.html" class="nav-link">Login</a>
+    <a href="#pricing" class="nav-cta">Buy Now</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🔥 230+ Real Interview Questions</div>
+  <h1>Master SQL in <span>30 Days</span> &amp; Crack Any Interview</h1>
+  <p>Structured daily lessons, real questions asked at Google, Amazon &amp; Microsoft, a live SQL editor, and a certificate — all in your browser. No setup needed.</p>
+  <div class="hero-btns">
+    <a href="/sql-prep-portal.html?demo=1" class="btn-demo">▶ View Demo — Week 1 Free</a>
+    <a href="#pricing" class="btn-primary">Buy Full Access →</a>
+  </div>
+  <div class="hero-note">Week 1 is completely free. No credit card needed for demo.</div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">30</div><div class="stat-label">Structured Days</div></div>
+  <div class="stat"><div class="stat-num">230+</div><div class="stat-label">Interview Questions</div></div>
+  <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Browser-Based</div></div>
+  <div class="stat"><div class="stat-num">🏆</div><div class="stat-label">Certificate</div></div>
+</div>
+
+<!-- WHAT YOU GET -->
+<div class="section">
+  <div class="section-tag">What's Included</div>
+  <div class="section-title">Everything you need to ace SQL interviews</div>
+  <div class="section-sub">No YouTube rabbit holes. No scattered blogs. One focused 30-day system built for job seekers.</div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">📅</div>
+      <div class="feature-title">30 Structured Days</div>
+      <div class="feature-desc">From CREATE TABLE to Window Functions — every topic covered in a logical order, one day at a time.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">230+ Interview Q&As</div>
+      <div class="feature-desc">Real questions from Google, Amazon, Infosys, TCS, Flipkart. Show answer toggle so you can test yourself first.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">Live SQL Editor</div>
+      <div class="feature-desc">Write and run real SQL queries in your browser — no installation, no database setup. Powered by SQLite.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <div class="feature-title">Certificate of Completion</div>
+      <div class="feature-desc">Finish all 30 days and download a personalised certificate with your name — share it on LinkedIn.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <div class="feature-title">Q&A Forum Access</div>
+      <div class="feature-desc">Post your doubts and get answers from the instructor. Forum is visible to everyone — answers are public.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Progress Tracking</div>
+      <div class="feature-desc">Mark days complete and track your % progress. Your progress is saved automatically in your browser.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- CURRICULUM -->
+<div class="section" id="curriculum">
+  <div class="section-tag">Curriculum</div>
+  <div class="section-title">30 days. Zero fluff.</div>
+  <div class="section-sub">Each day has theory, syntax, examples, practice queries, and interview questions.</div>
+  <div class="week-grid">
+    <div class="week-card free">
+      <div class="week-label">Week 1</div>
+      <div class="week-title">DDL Foundations</div>
+      <div class="week-days">Days 1–7 · CREATE, ALTER, DROP, Constraints, Data Types</div>
+      <div class="free-tag">✓ FREE in Demo</div>
+    </div>
+    <div class="week-card locked">
+      <div class="week-label">Week 2</div>
+      <div class="week-title">DML & Querying</div>
+      <div class="week-days">Days 8–14 · INSERT, UPDATE, DELETE, SELECT, WHERE, ORDER BY</div>
+      <div class="lock-tag">🔒 Full Access</div>
+    </div>
+    <div class="week-card locked">
+      <div class="week-label">Week 3</div>
+      <div class="week-title">Joins & Aggregations</div>
+      <div class="week-days">Days 15–21 · JOINs, GROUP BY, HAVING, Subqueries, CTEs</div>
+      <div class="lock-tag">🔒 Full Access</div>
+    </div>
+    <div class="week-card locked">
+      <div class="week-label">Week 4</div>
+      <div class="week-title">Advanced SQL</div>
+      <div class="week-days">Days 22–30 · Window Functions, Indexes, Stored Procedures, Performance</div>
+      <div class="lock-tag">🔒 Full Access</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SAMPLE QUESTIONS -->
+<div class="section">
+  <div class="section-tag">Sample Questions</div>
+  <div class="section-title">The exact questions companies ask</div>
+  <div class="section-sub">Here's a taste of what's inside — 230+ more await.</div>
+  <div class="q-preview">
+    <div class="q-preview-item">
+      <span class="q-badge">Amazon</span>
+      <span class="q-preview-text">What is the difference between WHERE and HAVING clause in SQL?</span>
+    </div>
+    <div class="q-preview-item">
+      <span class="q-badge">Google</span>
+      <span class="q-preview-text">Write a query to find the second highest salary from an employees table.</span>
+    </div>
+    <div class="q-preview-item">
+      <span class="q-badge">Microsoft</span>
+      <span class="q-preview-text">Explain the difference between INNER JOIN, LEFT JOIN, and FULL OUTER JOIN.</span>
+    </div>
+    <div class="q-preview-item">
+      <span class="q-badge">Flipkart</span>
+      <span class="q-preview-text">What are window functions? Write a query using ROW_NUMBER().</span>
+    </div>
+    <div class="q-preview-item">
+      <span class="q-badge">TCS</span>
+      <span class="q-preview-text">What is a CTE (Common Table Expression) and when should you use it over a subquery?</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- CERTIFICATE -->
+<div class="section">
+  <div class="section-tag">Certificate</div>
+  <div class="section-title">Earn something worth showing off</div>
+  <div class="section-sub">Complete all 30 days, get a personalised certificate. Download as PDF and add it to your LinkedIn profile or resume.</div>
+  <div class="cert-preview">
+    <h3>Certificate of Completion</h3>
+    <div style="font-size:36px;margin:8px 0;">🏆</div>
+    <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;">This certifies that</div>
+    <div class="cert-name">Your Name Here</div>
+    <p>has successfully completed the<br><strong style="color:#f1f5f9;">30-Day SQL Interview Prep Program</strong><br>covering all 30 days of SQL concepts and 230+ interview questions.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- FORUM -->
+<div class="section">
+  <div class="section-tag">Q&A Forum</div>
+  <div class="section-title">Get your doubts answered</div>
+  <div class="section-sub">Post questions, get answers from the instructor. The forum is open — anyone can read. Buyers can post.</div>
+  <div class="forum-preview">
+    <div class="forum-header">💬 Recent Questions</div>
+    <div class="forum-item">
+      <div class="forum-q">What's the difference between RANK() and DENSE_RANK()?</div>
+      <div class="forum-meta">by rahul123 · <span class="forum-answered">✓ Answered</span></div>
+    </div>
+    <div class="forum-item">
+      <div class="forum-q">How do I optimise a query that runs slow on large tables?</div>
+      <div class="forum-meta">by priya_sql · <span class="forum-answered">✓ Answered</span></div>
+    </div>
+    <div class="forum-item">
+      <div class="forum-q">Can I use a WHERE clause inside a window function?</div>
+      <div class="forum-meta">by dev_learner · <span class="forum-answered">✓ Answered</span></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:20px;">
+    <a href="/forum.html" style="color:#60a5fa;font-size:14px;text-decoration:none;font-weight:600;">View all questions in the forum →</a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- PRICING -->
+<div class="section" id="pricing" style="text-align:center;">
+  <div class="section-tag">Pricing</div>
+  <div class="section-title">One price. Lifetime access.</div>
+  <div class="section-sub" style="margin:0 auto;">No subscriptions. No recurring fees. Pay once, access forever.</div>
+  <div class="pricing-card">
+    <div class="popular-tag">Most Popular</div>
+    <div class="price-strikethrough">₹999</div>
+    <div class="price"><span class="price-currency">₹</span>599</div>
+    <div class="price-period">one-time · lifetime access</div>
+    <div class="pricing-features">
+      <div class="pf-item"><span class="pf-check">✓</span> All 30 days of content</div>
+      <div class="pf-item"><span class="pf-check">✓</span> 230+ interview Q&As with answers</div>
+      <div class="pf-item"><span class="pf-check">✓</span> Live SQL editor (runs in browser)</div>
+      <div class="pf-item"><span class="pf-check">✓</span> Certificate of completion</div>
+      <div class="pf-item"><span class="pf-check">✓</span> Q&A forum — post questions, get answers</div>
+      <div class="pf-item"><span class="pf-check">✓</span> Lifetime access — no expiry</div>
+    </div>
+    <a href="#" class="buy-btn" id="buy-btn">Buy Now for ₹599 →</a>
+    <div class="pricing-note">After payment, you'll receive your login credentials via email within a few hours.</div>
+  </div>
+</div>
+
+<hr class="divider" style="margin-top:60px;">
+
+<!-- FAQ -->
+<div class="section">
+  <div class="section-tag">FAQ</div>
+  <div class="section-title">Common questions</div>
+  <div class="faq">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Do I need to install anything? <span class="faq-arrow">▼</span></div>
+      <div class="faq-a">No. Everything runs in your browser. The SQL editor uses SQLite compiled to WebAssembly — no database setup needed.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How do I get access after buying? <span class="faq-arrow">▼</span></div>
+      <div class="faq-a">After payment, share your preferred username. You'll receive login credentials (username + password) via email within a few hours.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How long do I have access? <span class="faq-arrow">▼</span></div>
+      <div class="faq-a">Lifetime. Pay once and access whenever you want — no expiry date.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Is this suitable for beginners? <span class="faq-arrow">▼</span></div>
+      <div class="faq-a">Yes. Day 1 starts from absolute basics (CREATE TABLE). By Day 30 you'll be comfortable with Window Functions and query optimisation.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Can I try before buying? <span class="faq-arrow">▼</span></div>
+      <div class="faq-a">Yes — click "View Demo" to access all of Week 1 (7 days) completely free. No credit card needed.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER CTA -->
+<div class="footer-cta">
+  <h2>Start for free today</h2>
+  <p>Try Week 1 — 7 full days, no payment required.</p>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+    <a href="/sql-prep-portal.html?demo=1" class="btn-demo">▶ View Demo</a>
+    <a href="#pricing" class="btn-primary">Buy Full Access →</a>
+  </div>
+</div>
+
+<script>
+function toggleFaq(el) {
+  el.parentElement.classList.toggle('open');
+}
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+});
+</script>
+</body>
+</html>

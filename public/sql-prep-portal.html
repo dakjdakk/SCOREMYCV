@@ -221,6 +221,22 @@ table.result-table tr:hover td { background: #f0f9ff; }
   <div id="main"><div class="day-content" id="day-content"></div></div>
 </div>
 
+<!-- Buy Modal (demo mode) -->
+<div id="buy-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#1e293b;border:1px solid #3b82f6;border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;">
+    <div style="font-size:40px;margin-bottom:16px;">🔒</div>
+    <h2 style="font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:10px;">Week 2–4 Locked</h2>
+    <p style="color:#64748b;font-size:14px;line-height:1.7;margin-bottom:24px;">You're in demo mode. Buy full access to unlock all 30 days, 230+ interview questions, the SQL editor, certificate, and forum.</p>
+    <div style="background:#0f172a;border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="font-size:13px;color:#64748b;text-decoration:line-through;margin-bottom:4px;">₹999</div>
+      <div style="font-size:36px;font-weight:900;color:#f1f5f9;">₹599</div>
+      <div style="font-size:12px;color:#64748b;margin-top:4px;">one-time · lifetime access</div>
+    </div>
+    <a href="/sql-prep/" style="display:block;background:#3b82f6;color:#fff;border-radius:10px;padding:14px;font-size:15px;font-weight:800;text-decoration:none;margin-bottom:12px;">Buy Full Access →</a>
+    <button onclick="document.getElementById('buy-modal').style.display='none'" style="background:none;border:none;color:#475569;font-size:13px;cursor:pointer;">Continue with demo</button>
+  </div>
+</div>
+
 <!-- Certificate Modal -->
 <div class="cert-overlay" id="cert-overlay">
   <div class="cert-modal">
@@ -5398,7 +5414,15 @@ function buildSidebar() {
     btn.className = 'day-btn' + (isActive?' active':'') + (isDone?' done':'') + (item.locked?' locked':'');
     btn.innerHTML = `<span class="day-num">${isDone ? '✓' : item.day}</span>
       <span style="flex:1;line-height:1.3">${item.title}${item.locked?'<br><span style="font-size:10px;opacity:.5">🔒 Coming soon</span>':''}</span>`;
-    if (!item.locked) btn.onclick = () => { currentDay = item.day; buildSidebar(); renderDay(item.day); };
+    if (!item.locked) {
+      const isLocked = IS_DEMO && !DEMO_FREE_DAYS.includes(item.day);
+      if (isLocked) {
+        btn.onclick = () => { document.getElementById('buy-modal').style.display = 'flex'; };
+        btn.title = '🔒 Buy to unlock';
+      } else {
+        btn.onclick = () => { currentDay = item.day; buildSidebar(); renderDay(item.day); };
+      }
+    }
     sb.appendChild(btn);
   });
   updateProgress();
@@ -5452,7 +5476,28 @@ function doLogout() {
   window.location.href = 'login.html';
 }
 
+const IS_DEMO = new URLSearchParams(window.location.search).get('demo') === '1';
+const DEMO_FREE_DAYS = [1,2,3,4,5,6,7]; // Week 1 free
+
 function initUser() {
+  if (IS_DEMO) {
+    // Demo mode — no login needed, show demo banner
+    const el = document.getElementById('nav-username');
+    if (el) el.textContent = '📚 Demo Mode';
+    const buyBtn = document.createElement('a');
+    buyBtn.href = '/sql-prep/';
+    buyBtn.className = 'nav-forum-btn';
+    buyBtn.style.background = '#f59e0b';
+    buyBtn.style.color = '#0f172a';
+    buyBtn.textContent = '🔓 Buy Full Access';
+    document.getElementById('nav-logout-btn').insertAdjacentElement('beforebegin', buyBtn);
+    // Add demo banner below nav
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#1e3a5f;border-bottom:1px solid #1d4ed8;padding:10px 24px;text-align:center;font-size:13px;color:#93c5fd;';
+    banner.innerHTML = '📚 <strong>Demo Mode</strong> — Week 1 (Days 1–7) is free. <a href="/sql-prep/" style="color:#60a5fa;font-weight:700;">Buy full access →</a> to unlock all 30 days.';
+    document.querySelector('.layout').insertAdjacentElement('beforebegin', banner);
+    return;
+  }
   const stored = localStorage.getItem('sql30_user');
   if (!stored) {
     window.location.href = 'login.html';
@@ -5476,6 +5521,10 @@ function initUser() {
 
 // ─── RENDER DAY ───────────────────────────────────────────────────────────
 function renderDay(dayNum) {
+  if (IS_DEMO && !DEMO_FREE_DAYS.includes(dayNum)) {
+    document.getElementById('buy-modal').style.display = 'flex';
+    return;
+  }
   const d = curriculum.find(c => c.day === dayNum);
   if (!d || d.locked) return;
   const done = getCompleted().includes(dayNum);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { waitUntil } from "@vercel/functions";
-import { dbInsert } from "@/lib/supabase";
+import { dbInsertReturn } from "@/lib/supabase";
 
 // ── Role keywords map ─────────────────────────────────────────────────
 const ROLE_KEYWORDS: Record<string, string[]> = {
@@ -139,7 +139,7 @@ function scoreResume(text: string, jobRole: string) {
   const allIssues: string[] = [];
   for (const b of Object.values(breakdown)) allIssues.push(...b.issues);
 
-  return { score: total, wordCount, breakdown, topMissingKeywords: missing.slice(0, 10), foundKeywords: found, allIssues: allIssues.slice(0, 10) };
+  return { score: Math.min(total, 96), wordCount, breakdown, topMissingKeywords: missing.slice(0, 10), foundKeywords: found, allIssues: allIssues.slice(0, 10) };
 }
 
 export async function POST(request: Request) {
@@ -167,8 +167,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Only PDF, DOC, DOCX files are supported" }, { status: 400 });
     }
 
-    if (!text || text.trim().length < 50) {
-      return NextResponse.json({ error: "Could not extract text from file. Make sure the CV is not a scanned image." }, { status: 422 });
+    if (!text || text.trim().length < 200) {
+      return NextResponse.json({ error: "Could not extract enough text from this file. The CV may be a scanned image or image-based PDF — please upload a text-based CV." }, { status: 422 });
     }
 
     // ── CV detection ──────────────────────────────────────────────────
@@ -188,20 +188,40 @@ export async function POST(request: Request) {
       }, { status: 422 });
     }
 
-    const result = scoreResume(text, jobRole);
+    // Detect PDFs with missing spaces (avg word length > 20 = concatenated text)
+    const avgWordLen = text.trim().length / Math.max(wordCount, 1);
+    if (avgWordLen > 20) {
+      return NextResponse.json({
+        error: "We were unable to process this document. Please try with a different file.",
+      }, { status: 422 });
+    }
 
     // Auto-extract email from CV text
     const emailMatch = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
     const extractedEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
 
+    if (!extractedEmail) {
+      return NextResponse.json({
+        error: "We were unable to process this document. Please try with a different file.",
+      }, { status: 422 });
+    }
+
+    const result = scoreResume(text, jobRole);
+
+    // Detect device from User-Agent
+    const ua = (request.headers.get("user-agent") || "").toLowerCase();
+    const device = /mobile|android|iphone|ipad|ipod/.test(ua) ? "M" : "D";
+
     // Track ATS check synchronously so email is never lost
+    let checkId: string | null = null;
     try {
-      await dbInsert("ats_checks", { job_role: jobRole, score: result.score, ...(extractedEmail ? { email: extractedEmail } : {}) });
+      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, ...(extractedEmail ? { email: extractedEmail } : {}) });
+      checkId = row?.id ?? null;
     } catch (dbErr) {
       console.error("DB insert error:", dbErr);
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, checkId });
   } catch (err: any) {
     console.error("ATS score error:", err);
     return NextResponse.json({ error: `Failed to process file: ${err?.message || err}` }, { status: 500 });

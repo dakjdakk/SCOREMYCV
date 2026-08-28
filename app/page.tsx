@@ -96,7 +96,7 @@ type ATSResult = {
 // ── Score Gauge ───────────────────────────────────────────────────────
 function ScoreGauge({ score }: { score: number }) {
   const color    = score >= 90 ? "#16a34a" : score >= 70 ? "#d97706" : "#dc2626";
-  const pillText = score >= 90 ? "Shortlist-Ready" : score >= 70 ? "Below Shortlist Threshold" : score >= 50 ? "High Rejection Risk" : "Auto-Rejected by ATS";
+  const pillText = score >= 90 ? "Strong Resume" : score >= 70 ? "Needs Improvement" : score >= 50 ? "Weak Resume" : "Very Weak Resume";
   return (
     <div className="flex flex-col items-center">
       <div className="w-36 h-36 rounded-full flex flex-col items-center justify-center border-8 shadow-lg"
@@ -250,6 +250,7 @@ function HeroSection({ onUpgrade }: {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
   const [result, setResult]   = useState<ATSResult | null>(null);
+  const [checkId, setCheckId] = useState<string | null>(null);
 
   const canCheck = !!file && !!jobRole;
 
@@ -265,6 +266,7 @@ function HeroSection({ onUpgrade }: {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to score CV");
       setResult(data);
+      if (data.checkId) setCheckId(data.checkId);
     } catch (e: any) {
       setError(e.message || "Something went wrong. Please try again.");
     } finally {
@@ -272,10 +274,16 @@ function HeroSection({ onUpgrade }: {
     }
   }
 
+  function trackUpgrade() {
+    if (checkId) {
+      fetch("/api/track-upgrade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ checkId }) }).catch(() => {});
+    }
+  }
+
   const upsellMsg = result
     ? result.score < 90
-      ? `⚠️ Your score is below ${Math.ceil(result.score / 10) * 10} — you are in the rejection zone. Our rewrite pushes your CV to 90+ so recruiters can't ignore you. Just ₹49.`
-      : "✅ You're in the shortlist zone! A professional rewrite polishes your CV further and maximises your chances of getting called — just ₹49."
+      ? `${Math.min(85, Math.round((90 - result.score) * 1.5 + 25))}% of jobseekers have a stronger resume than yours.`
+      : `You're among the top ${Math.max(2, Math.round(5 - (result.score - 90) * 0.5))}% of jobseekers with a strong resume.`
     : "";
 
   // Scroll to top when results appear
@@ -301,10 +309,11 @@ function HeroSection({ onUpgrade }: {
             <ScoreGauge score={result.score} />
             <div className="flex-1 text-center sm:text-left w-full">
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-1">Your ATS Score: {result.score}/100</h2>
-              <p className="text-sm mb-3 font-semibold text-orange-600">{upsellMsg}</p>
+              <p className="text-sm font-semibold text-orange-600">{upsellMsg}</p>
+              {result.score < 90 && <p className="text-sm mb-3 text-slate-500">A few tweaks can take it to the next level.</p>}
               <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
                 <div>
-                  <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
+                  <button onClick={() => { trackUpgrade(); file && onUpgrade({ file, jobRole, score: result?.score }); }}
                     className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm">
                     🚀 Build My ATS-Friendly Resume →
                   </button>
@@ -323,7 +332,7 @@ function HeroSection({ onUpgrade }: {
               <div className="text-4xl font-black text-white">{totalIssues}</div>
               <div>
                 <p className="text-white font-extrabold text-lg leading-tight">Issues found in your CV</p>
-                <p className="text-red-200 text-sm">Every issue reduces your chances of getting shortlisted. Recruiters won't tell you — they just move on.</p>
+                <p className="text-red-200 text-sm">Every issue reduces your chances of getting a callback. Recruiters won't tell you — they just move on.</p>
               </div>
             </div>
           ) : null;
@@ -332,62 +341,35 @@ function HeroSection({ onUpgrade }: {
         {/* #1 — Recruiter Reality Check (only below 85) */}
         {result.score < 90 && (
         <div className="bg-white border-2 border-red-100 rounded-3xl p-6 sm:p-8 mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xl">👀</span>
-            <h4 className="font-extrabold text-slate-800 text-lg">Recruiter Reality Check</h4>
-          </div>
+          <h4 className="font-extrabold text-slate-800 text-lg mb-1">Recruiter Reality Check</h4>
           <p className="text-slate-500 text-sm mb-4">A recruiter spends just <span className="text-red-600 font-bold">6 seconds</span> on your CV. Here is what they see:</p>
           <div className="space-y-2.5">
-            {result.score < 90 && (
-              <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
-                <span className="text-base mt-0.5">❌</span>
-                <span className="text-sm text-red-700 font-medium">CV scores below the 90+ shortlist threshold at most companies</span>
-              </div>
-            )}
             {result.topMissingKeywords.length > 0 && (
               <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
-                <span className="text-base mt-0.5">❌</span>
+                <span className="text-base mt-0.5 text-red-500 font-bold">–</span>
                 <span className="text-sm text-red-700 font-medium">{result.topMissingKeywords.length} keywords missing that ATS systems scan for</span>
               </div>
             )}
             {Object.values(result.breakdown).some(b => b.score / b.max < 0.5) && (
               <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
-                <span className="text-base mt-0.5">❌</span>
+                <span className="text-base mt-0.5 text-red-500 font-bold">–</span>
                 <span className="text-sm text-red-700 font-medium">Critical CV sections are weak or incomplete</span>
               </div>
             )}
             {Object.values(result.breakdown).some(b => b.label === "Action Verbs" && b.score / b.max < 0.7) && (
               <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
-                <span className="text-base mt-0.5">❌</span>
+                <span className="text-base mt-0.5 text-red-500 font-bold">–</span>
                 <span className="text-sm text-red-700 font-medium">Weak action verbs — your experience doesn't sound impactful</span>
               </div>
             )}
             <div className="flex items-start gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2.5">
-              <span className="text-base mt-0.5">📋</span>
-              <span className="text-sm text-slate-600 font-medium">Your CV looks similar to 80% of rejected applications</span>
+              <span className="text-base mt-0.5 text-slate-400 font-bold">–</span>
+              <span className="text-sm text-slate-600 font-medium">Most recruiters spend under 10 seconds scanning a CV before moving on</span>
             </div>
           </div>
         </div>
         )}
 
-        {/* #2 — Shortlist threshold (only below 85) */}
-        {result.score < 90 && <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 sm:p-6 mb-6">
-          <h4 className="font-extrabold text-amber-800 mb-2 text-base">🏢 What Companies Actually Require</h4>
-          <p className="text-amber-700 text-sm mb-3">Top companies using ATS software typically shortlist CVs scoring <span className="font-black">90 or above.</span></p>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 bg-amber-200 rounded-full h-3">
-              <div className="h-3 rounded-full bg-amber-500" style={{ width: `${result.score}%` }} />
-            </div>
-            <span className="text-amber-800 font-bold text-sm whitespace-nowrap">You: {result.score}/100</span>
-          </div>
-          <div className="flex items-center gap-3 mt-2">
-            <div className="flex-1 bg-green-100 rounded-full h-3">
-              <div className="h-3 rounded-full bg-green-500" style={{ width: "90%" }} />
-            </div>
-            <span className="text-green-700 font-bold text-sm whitespace-nowrap">Shortlist: 90/100</span>
-          </div>
-          {result.score < 90 && <p className="text-amber-800 font-bold text-sm mt-3">⚠️ You are {90 - result.score} points below the shortlist threshold.</p>}
-        </div>}
 
         {/* Breakdown */}
         <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 sm:p-8 mb-6">
@@ -408,7 +390,7 @@ function HeroSection({ onUpgrade }: {
                 {b.issues.length > 0 && (
                   <ul className="mt-1.5 space-y-1">
                     {b.issues.slice(0, 3).map((issue, i) => (
-                      <li key={i} className="text-xs text-red-600 flex items-start gap-1"><span>⚠</span> {issue}</li>
+                      <li key={i} className="text-xs text-red-600 flex items-start gap-1"><span className="font-bold">–</span> {issue}</li>
                     ))}
                   </ul>
                 )}
@@ -420,7 +402,7 @@ function HeroSection({ onUpgrade }: {
         {/* Missing keywords */}
         {result.topMissingKeywords.length > 0 && (
           <div className="bg-white rounded-3xl shadow-sm border border-red-200 p-6 sm:p-8 mb-6">
-            <h4 className="font-extrabold text-red-600 mb-1 text-lg">🚨 Missing Keywords ({result.topMissingKeywords.length})</h4>
+            <h4 className="font-extrabold text-red-600 mb-1 text-lg">Missing Keywords ({result.topMissingKeywords.length})</h4>
             <p className="text-slate-600 text-sm mb-1 font-medium">Recruiters at TCS, Infosys, Wipro, Accenture filter CVs using these exact keywords.</p>
             <p className="text-red-500 text-sm mb-4 font-semibold">Your CV is missing all of these — it is being filtered out automatically before a human reads it.</p>
             <div className="flex flex-wrap gap-2 mb-4">
@@ -429,14 +411,14 @@ function HeroSection({ onUpgrade }: {
               ))}
             </div>
             <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 text-sm text-red-700 font-medium">
-              💡 Our rewrite adds all these missing keywords naturally into your CV — so ATS systems pass it through.
+              Our rewrite adds all these missing keywords naturally into your CV — so ATS systems pass it through.
             </div>
           </div>
         )}
 
         {/* #5 — Jobs being posted right now */}
         <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 sm:p-8 mb-6">
-          <h4 className="font-extrabold text-slate-800 mb-3 text-lg">📢 Jobs Being Posted Right Now</h4>
+          <h4 className="font-extrabold text-slate-800 mb-3 text-lg">Jobs Being Posted Right Now</h4>
           <p className="text-slate-500 text-sm mb-4">Hundreds of <span className="font-bold text-slate-700">{jobRole}</span> positions are posted every week on Naukri, LinkedIn, and Indeed. CVs scoring below 80 are filtered out before a recruiter ever sees them.</p>
           <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 text-sm text-blue-700 font-semibold">
             ⏳ Every week you delay with this CV = more opportunities lost silently.
@@ -445,7 +427,7 @@ function HeroSection({ onUpgrade }: {
 
         {/* #4 — Blurred rewritten CV preview */}
         <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 sm:p-8 mb-6 relative overflow-hidden">
-          <h4 className="font-extrabold text-slate-800 mb-1 text-lg">📄 Your Rewritten CV Preview</h4>
+          <h4 className="font-extrabold text-slate-800 mb-1 text-lg">Your Rewritten CV Preview</h4>
           <p className="text-slate-500 text-sm mb-4">This is what your CV looks like after our rewrite — ATS-optimised, keyword-rich, professionally structured.</p>
           <div className="relative rounded-2xl overflow-hidden border border-slate-200">
             {/* Fake CV content - blurred */}
@@ -476,7 +458,7 @@ function HeroSection({ onUpgrade }: {
               <div className="text-3xl">🔒</div>
               <p className="font-extrabold text-slate-800 text-base text-center px-4">Get your ATS-Friendly Resume — 90+ Score Guaranteed</p>
               <p className="text-slate-500 text-xs text-center px-6">Keywords added · ATS-optimised · Instant PDF download · Just ₹49</p>
-              <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
+              <button onClick={() => { trackUpgrade(); file && onUpgrade({ file, jobRole, score: result?.score }); }}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm mt-1">
                 🚀 Build My ATS-Friendly Resume →
               </button>
@@ -486,17 +468,6 @@ function HeroSection({ onUpgrade }: {
         </div>
 
 
-        {/* Final CTA */}
-        <div className="bg-blue-600 rounded-3xl p-6 sm:p-8 text-center text-white">
-          <h4 className="text-xl font-extrabold mb-2">Every day you wait = more rejections</h4>
-          <p className="text-blue-200 text-sm mb-2">Companies are posting jobs right now — and your CV is getting filtered out.</p>
-          <p className="text-white text-sm font-semibold mb-5">For ₹49 we rewrite your entire CV — missing keywords added, action verbs fixed, ATS-optimised — download the polished PDF instantly.</p>
-          <button onClick={() => file && onUpgrade({ file, jobRole, score: result?.score })}
-            className="bg-white text-blue-700 font-bold px-8 py-3.5 rounded-2xl hover:bg-blue-50 transition text-sm shadow-lg">
-            🚀 Build My ATS-Friendly Resume →
-          </button>
-          <p className="text-blue-300 text-xs mt-3">✅ 90+ Score Guaranteed · Instant Download · No subscription</p>
-        </div>
 
       </div>
     </section>
@@ -514,28 +485,14 @@ function HeroSection({ onUpgrade }: {
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
           Free ATS Check · Instant CV Rewrite
         </div>
-        <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
-          <span className="text-yellow-300 text-base leading-none tracking-tight">★★★★★</span>
-          <span className="text-sm font-semibold text-white">4.5</span>
-          <span className="text-blue-200">·</span>
-          <span className="text-sm text-blue-100"><span className="font-bold text-white">2,000+</span> landed interviews last month</span>
+        <div className="flex flex-col items-center justify-center gap-1 mt-2">
+          <span className="text-sm font-semibold text-white">India's Last Minute Resume Fix App</span>
+          <span className="text-sm text-blue-200">Beat the ATS, Get the Interview</span>
         </div>
       </div>
 
-      <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+      <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
-        {/* Floating help button — bottom right of hero */}
-        <a
-          href="https://www.instagram.com/scoremycv.in"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute bottom-0 right-0 w-12 h-12 bg-white hover:bg-green-50 rounded-full flex items-center justify-center shadow-lg transition-colors z-10 border border-green-200"
-          title="Get Expert Help"
-        >
-          <svg viewBox="0 0 24 24" fill="#25D366" className="w-7 h-7">
-            <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.09-1.34A9.93 9.93 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.07 13.86c-.22.61-1.27 1.16-1.76 1.23-.45.07-1.02.1-1.64-.1-.38-.12-.86-.28-1.48-.55-2.6-1.12-4.3-3.75-4.43-3.92-.13-.17-1.06-1.41-1.06-2.69 0-1.28.67-1.91.91-2.17.24-.26.52-.33.69-.33.17 0 .35.002.5.008.16.007.38-.06.59.45.22.52.74 1.8.8 1.93.07.13.11.28.02.45-.09.17-.13.27-.26.42-.13.15-.27.33-.39.44-.13.12-.26.25-.11.49.15.24.66 1.09 1.42 1.76.97.87 1.79 1.14 2.04 1.27.25.13.39.11.54-.07.15-.17.62-.72.78-.97.16-.25.33-.21.55-.13.22.08 1.39.66 1.63.78.24.12.4.18.46.28.06.1.06.58-.16 1.19z"/>
-          </svg>
-        </a>
 
         {/* LEFT: Headline */}
         <div className="hidden lg:flex flex-col gap-4 pt-4 lg:pl-8">
@@ -574,7 +531,7 @@ function HeroSection({ onUpgrade }: {
         </div>
 
         {/* RIGHT: Upload card */}
-        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 p-5 sm:p-8 w-full max-w-md mx-auto lg:mx-0">
+        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 p-5 sm:p-8 w-full max-w-md mx-auto lg:ml-auto lg:mr-0 lg:mt-3">
           <div className="mb-3 sm:mb-4">
             <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-2.5 py-0.5 rounded-full mb-2">✅ 100% Free</span>
             <h2 className="text-xl font-extrabold text-slate-800">Check Your ATS Score</h2>
@@ -797,23 +754,23 @@ function PaymentModal({
 
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 sm:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">📄</span>
+            <span className="font-bold text-white text-lg">ScoreMyCV</span>
+          </div>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">📄</span>
-              <span className="font-bold text-white text-lg">ScoreMyCV</span>
+              {[1, 2].map((s) => (
+                <div key={s} className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s ? "bg-white text-blue-700" : "bg-white/20 text-white/60"}`}>{s}</div>
+                  {s < 2 && <div className={`h-0.5 w-12 rounded ${step > s ? "bg-white" : "bg-white/20"}`} />}
+                </div>
+              ))}
+              <span className="text-white/80 text-xs ml-2">
+                {step === 1 ? "Your Details" : "Download Ready!"}
+              </span>
             </div>
             <button onClick={onClose} className="text-white/80 hover:text-white text-3xl leading-none">×</button>
-          </div>
-          <div className="flex items-center gap-2">
-            {[1, 2].map((s) => (
-              <div key={s} className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s ? "bg-white text-blue-700" : "bg-white/20 text-white/60"}`}>{s}</div>
-                {s < 2 && <div className={`h-0.5 w-12 rounded ${step > s ? "bg-white" : "bg-white/20"}`} />}
-              </div>
-            ))}
-            <span className="text-white/80 text-xs ml-2">
-              {step === 1 ? "Your Details" : "Download Ready!"}
-            </span>
           </div>
         </div>
 
@@ -847,7 +804,7 @@ function PaymentModal({
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 font-medium">
-                    ℹ️ Enter your email to receive the ATS-Optimised CV. LinkedIn and GitHub are optional overrides.
+                    ℹ️ Enter your email to receive the ATS-Optimised CV instantly. LinkedIn and GitHub are optional overrides.
                   </div>
 
                   <div>
@@ -892,7 +849,7 @@ function PaymentModal({
                     disabled={loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹49 & Download →</span>}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Pay ₹49 & Download Instantly →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -933,7 +890,7 @@ function PaymentModal({
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-700 font-medium">
-                    ℹ️ Enter your email to receive the ATS-Optimised CV. LinkedIn and GitHub are optional overrides.
+                    ℹ️ Enter your email to receive the ATS-Optimised CV instantly. LinkedIn and GitHub are optional overrides.
                   </div>
 
                   <div>
@@ -978,7 +935,7 @@ function PaymentModal({
                     disabled={!canProceed || loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Build My ATS Resume — Pay ₹49 & Download →</span>}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Pay ₹49 & Download Instantly →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -1076,6 +1033,7 @@ function PaymentModal({
       </div>
     </div>
   );
+
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────
@@ -1093,9 +1051,12 @@ function Navbar({ onUpload }: { onUpload: () => void }) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         <a href="/" className="flex items-center gap-2 py-3 pr-4">
           <span className="text-2xl">📄</span>
-          <span className="font-bold text-blue-700 text-lg">ScoreMyCV</span>
+          <div className="flex flex-col leading-tight">
+            <span className="font-bold text-blue-700 text-lg">ScoreMyCV</span>
+            <span className="hidden sm:block text-xs text-slate-400 font-medium animate-pulse">India's Last Minute Resume Fix App</span>
+          </div>
         </a>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 ml-auto">
           {navLinks.map((l) => (
             <a key={l.href} href={l.href} className="hover:text-blue-600 transition">{l.label}</a>
           ))}

@@ -7,6 +7,9 @@ import puppeteer from "puppeteer-core";
 
 export const maxDuration = 60;
 
+const CHROMIUM_URL =
+  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar";
+
 // ── Route handler ─────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
@@ -15,9 +18,10 @@ export async function POST(request: Request) {
     const jobRole   = (formData.get("jobRole")   as string) || "Software Engineer";
     const experience= (formData.get("experience")as string) || "0-2 years";
     const userEmail = (formData.get("email")     as string) || "";
-    const userLinkedin = (formData.get("linkedin") as string) || "";
-    const userGithub   = (formData.get("github")   as string) || "";
-    const scoreBefore  = parseInt((formData.get("scoreBefore") as string) || "0", 10);
+    const userLinkedin  = (formData.get("linkedin")  as string) || "";
+    const userGithub    = (formData.get("github")    as string) || "";
+    const userPortfolio = (formData.get("portfolio") as string) || "";
+    const scoreBefore   = parseInt((formData.get("scoreBefore") as string) || "0", 10);
     const paymentId    = (formData.get("paymentId") as string) || "";
 
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -43,32 +47,68 @@ export async function POST(request: Request) {
 
     const cvText = text.trim().slice(0, 8000);
 
-    // ── Extract ALL URLs from raw PDF binary ─────────────────────────
+    // ── Extract ALL URLs from PDF (annotation-based + binary fallback) ──
     let extractedLinkedin = "";
     let extractedGithub   = "";
     let allExtractedUrls: string[] = [];
     if (fileName.endsWith(".pdf")) {
-      const pdfStr = buffer.toString("latin1");
-      const liMatch = pdfStr.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s)<>"\\]+/i);
-      const ghMatch = pdfStr.match(/https?:\/\/(?:www\.)?github\.com\/[^\s)<>"\\]+/i);
-      extractedLinkedin = liMatch?.[0]?.replace(/\/$/, "") || "";
-      extractedGithub   = ghMatch?.[0]?.replace(/\/$/, "") || "";
-      // Extract all URLs for portfolio, project links, credentials etc.
-      const allUrlMatches = pdfStr.match(/https?:\/\/[^\s)<>"\\]{8,}/gi) || [];
+      const rawUrlsFromBinary: string[] = [];
+      try {
+        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+        await pdfParse(buffer, {
+          pagerender: async (pageData: any) => {
+            try {
+              const annotations = await pageData.getAnnotations();
+              for (const annot of annotations) {
+                if (annot.url) rawUrlsFromBinary.push(annot.url);
+              }
+            } catch (_) {}
+            return "";
+          }
+        });
+      } catch (_) {
+        // Fallback: binary scan
+        const pdfStr = buffer.toString("latin1");
+        (pdfStr.match(/https?:\/\/[^\s)<>"\\]{8,}/gi) || []).forEach(u => rawUrlsFromBinary.push(u));
+      }
+      const httpUrls = rawUrlsFromBinary.filter(u => /^https?:\/\//i.test(u));
+      const liMatch = httpUrls.find(u => /linkedin\.com\/in\//i.test(u));
+      const ghMatch = httpUrls.find(u => /github\.com\//i.test(u) && !u.includes("/commit"));
+      extractedLinkedin = liMatch?.replace(/[.,;)]+$/, "").replace(/\/$/, "") || "";
+      extractedGithub   = ghMatch?.replace(/[.,;)]+$/, "").replace(/\/$/, "") || "";
       const urlSet = new Set<string>(
-        allUrlMatches
+        httpUrls
           .map(u => u.replace(/[.,;]+$/, "").trim())
           .filter(u =>
             u.length > 12 &&
             !u.includes("adobe") &&
             !u.includes("w3.org") &&
             !u.includes("pdfium") &&
-            !u.includes("linkedin.com") &&  // already handled separately
-            !u.includes("github.com")        // already handled separately
+            !u.includes("purl.org") &&
+            !u.includes("linkedin.com") &&
+            !/\.(png|jpg|jpeg|gif|svg|webp|ico|bmp)(\?.*)?$/i.test(u)
           )
       );
       allExtractedUrls = Array.from(urlSet);
     }
+
+    // ── Bare domain scan: linkedin.com/in/... and github.com/... without https:// prefix ──
+    const liBarMatch = text.match(/\blinkedin\.com\/in\/[A-Za-z0-9\-_%]+/i);
+    if (liBarMatch && !extractedLinkedin) extractedLinkedin = "https://" + liBarMatch[0].replace(/[.,;)]+$/, "");
+    const ghBarMatch = text.match(/\bgithub\.com\/[A-Za-z0-9\-_%]+(?:\/[A-Za-z0-9\-_%]+)*/i);
+    if (ghBarMatch && !extractedGithub) extractedGithub = "https://" + ghBarMatch[0].replace(/[.,;)]+$/, "");
+
+    // ── Also scan extracted plain text for URLs (catches PDF text-layer links) ──
+    const textUrlMatches = text.match(/(?:https?:\/\/|www\.)[^\s,;|•(){}<>"'\\]{8,}/gi) || [];
+    textUrlMatches.forEach(u => {
+      u = u.replace(/[.,;)]+$/, "").trim();
+      if (!u.startsWith("http")) u = "https://" + u;
+      if (u.includes("linkedin.com/in/") && !extractedLinkedin) extractedLinkedin = u;
+      else if (u.includes("github.com/") && !u.includes("/commit") && !extractedGithub) extractedGithub = u;
+      else if (!u.includes("linkedin.com") && !u.includes("adobe") && !u.includes("w3.org") && !u.includes("purl.org") && u.length > 12 && !/\.(png|jpg|jpeg|gif|svg|webp|ico|bmp)(\?.*)?$/i.test(u)) {
+        if (!allExtractedUrls.includes(u)) allExtractedUrls.push(u);
+      }
+    });
 
     // Normalize URL — ensure https:// prefix
     const normalizeUrl = (url: string) => {
@@ -82,8 +122,9 @@ export async function POST(request: Request) {
 
     // Form fields take priority over extracted URLs
     const linkedinUrl = normalizeUrl(userLinkedin || extractedLinkedin);
-    const githubUrl   = normalizeUrl(userGithub   || extractedGithub);
-    console.log("LinkedIn URL:", linkedinUrl, "| GitHub URL:", githubUrl);
+    const githubUrl    = normalizeUrl(userGithub    || extractedGithub);
+    const portfolioUrl = normalizeUrl(userPortfolio);
+    console.log("LinkedIn URL:", linkedinUrl, "| GitHub URL:", githubUrl, "| Portfolio:", portfolioUrl);
 
     // ── Validate document looks like a CV ─────────────────────────
     const hasEmail = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(cvText);
@@ -169,566 +210,459 @@ export async function POST(request: Request) {
     const cvLower = cvText.toLowerCase();
     const missingKeywords = allRoleKeywords.filter(kw => !cvLower.includes(kw.toLowerCase()));
 
-    // ── Certifications placement: detect in code, tell AI explicitly ──
-    const certIdx = cvLower.indexOf("certif");
-    const certSnippet = certIdx >= 0 ? cvText.slice(certIdx, certIdx + 600) : "";
-    const certLineCount = certSnippet.split("\n").filter((l: string) => l.trim().length > 0).length;
-    const certPlacement = certLineCount > 4 ? "LEFT" : "RIGHT";
     const keywordInstruction = missingKeywords.length > 0
-      ? `\nATS KEYWORD OPTIMISATION (IMPORTANT):
-The following keywords are commonly expected for a ${jobRole} role but are missing from this CV.
-Weave them in naturally where truthful and relevant — in the summary, skills section, or experience bullet points.
-Use each keyword at most once. Do NOT repeat. Do NOT invent experience. Only add where it genuinely fits.
+      ? `\nATS KEYWORD INJECTION (summary and skills ONLY — IMPORTANT):
+The following keywords are missing from this CV for a ${jobRole} role.
+Weave them naturally into the "summary" and "skills[].items" fields ONLY.
+Do NOT change experience bullets or project bullets for keyword injection — leave them exactly as they are.
+Do NOT invent experience. Only add where truthful and relevant.
 Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       : "";
 
-    // ── Gemini prompt (HTML template) ──────────────────────────────
-    const prompt = `You are a senior resume template rendering engine.
-Your task is to transform any uploaded resume into ONE fixed resume design.
-Target job role: ${jobRole}
-Experience level: ${experience}
-${contactSection ? `\nUSE THESE EXACT CONTACT DETAILS (override whatever is in the CV):\n${contactSection}\n` : ""}${keywordInstruction}
-CERTIFICATIONS COLUMN (MANDATORY — DO NOT DEVIATE): Place CERTIFICATIONS in the ${certPlacement} COLUMN. This is pre-determined and not your decision.
-This is a template replication task. Only candidate content changes. Everything else is fixed.
-Never redesign. Never improvise. Never create alternative layouts.
+      // ── Build contact line server-side (before Gemini call) ──────────
+      const emailMatch   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+      const phoneRaw     = cvText.match(/(\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
+      const phoneNorm = (() => {
+        if (!phoneRaw) return "";
+        const digits = phoneRaw.replace(/\D/g, "");
+        if (phoneRaw.startsWith("+91")) return phoneRaw;
+        if (digits.startsWith("91") && digits.length === 12) return `+91-${digits.slice(2)}`;
+        if (digits.length === 10) return `+91-${digits}`;
+        return phoneRaw;
+      })();
+      const headerLines = cvText.split("\n").slice(1, 10).join("\n");
+      // Whitelist of real Indian cities — only these can be detected as location.
+      // This is permanent: no tech keyword can ever false-match because it's not in this list.
+      const INDIAN_CITIES = new Set([
+        // Major metros & tier-1
+        "Mumbai","Delhi","Bangalore","Bengaluru","Hyderabad","Ahmedabad","Chennai","Kolkata",
+        "Surat","Pune","Jaipur","Lucknow","Kanpur","Nagpur","Indore","Thane","Bhopal",
+        "Visakhapatnam","Vizag","Pimpri","Patna","Vadodara","Ghaziabad","Ludhiana","Agra",
+        "Nashik","Faridabad","Meerut","Rajkot","Varanasi","Srinagar","Aurangabad","Dhanbad",
+        "Amritsar","Navi","Allahabad","Prayagraj","Ranchi","Howrah","Coimbatore","Jabalpur",
+        "Gwalior","Vijayawada","Jodhpur","Madurai","Raipur","Kota","Guwahati","Chandigarh",
+        "Solapur","Hubli","Dharwad","Bareilly","Moradabad","Mysore","Mysuru","Gurgaon","Gurugram",
+        "Aligarh","Jalandhar","Tiruchirappalli","Trichy","Bhubaneswar","Salem","Mira","Bhiwandi",
+        "Saharanpur","Guntur","Bikaner","Noida","Amravati","Jamshedpur","Bhilai","Cuttack",
+        "Firozabad","Kochi","Cochin","Bhavnagar","Dehradun","Durgapur","Asansol","Nanded",
+        "Kolhapur","Ajmer","Gulbarga","Kalaburagi","Jamnagar","Ujjain","Loni","Siliguri",
+        "Jhansi","Ulhasnagar","Nellore","Jammu","Sangli","Belgaum","Belagavi","Mangalore",
+        "Mangaluru","Ambattur","Tirunelveli","Malegaon","Gaya","Jalgaon","Udaipur","Maheshtala",
+        "Tiruppur","Davanagere","Kozhikode","Calicut","Akola","Kurnool","Bokaro",
+        "Warangal","Thrissur","Murwara","Katni","Bhagalpur","Agartala","Mathura",
+        "Panipat","Rohtak","Bilaspur","Muzaffarpur","Patiala","Erode","Kharagpur",
+        "Nizamabad","Tumkur","Tumakuru","Hisar","Gorakhpur","Bathinda","Rampur","Shivamogga",
+        "Shimoga","Rourkela","Darbhanga","Kakinada","Rajahmundry","Bhimavaram","Ongole",
+        "Chittoor","Nalgonda","Karimnagar","Khammam","Secunderabad","Tirupati","Anantapur",
+        "Kadapa","Eluru","Hapur","Shimla","Gangtok","Imphal","Aizawl","Itanagar","Kohima",
+        "Dispur","Shillong","Panaji","Portblair","Pondicherry","Puducherry","Silvassa",
+        "Daman","Diu","Leh","Kavaratti",
+        // Tamil Nadu tier-2
+        "Vellore","Nagercoil","Thanjavur","Cuddalore","Dindigul","Karur","Namakkal",
+        "Krishnagiri","Kanchipuram","Villupuram","Tiruvallur","Tiruvannamalai",
+        // Karnataka tier-2
+        "Ballari","Bidar","Raichur","Gadag","Mandya","Udupi","Vijayapura","Chitradurga","Chikmagalur",
+        // Andhra Pradesh tier-2
+        "Machilipatnam","Adoni","Proddatur","Hindupur","Srikakulam","Vizianagaram",
+        // Telangana tier-2
+        "Mahbubnagar","Adilabad","Medak",
+        // Maharashtra tier-2
+        "Latur","Parbhani","Chandrapur","Wardha","Jalna","Beed","Osmanabad","Yavatmal","Buldhana",
+        // Gujarat tier-2
+        "Mehsana","Morbi","Junagadh","Porbandar","Navsari","Gandhinagar","Bharuch","Surendranagar",
+        // Rajasthan tier-2
+        "Alwar","Bhilwara","Sikar","Barmer","Jaisalmer","Chittorgarh","Dungarpur","Tonk",
+        // Uttar Pradesh tier-2
+        "Muzaffarnagar","Shahjahanpur","Mirzapur","Azamgarh","Sultanpur","Lakhimpur",
+        // Haryana tier-2
+        "Karnal","Sonipat","Ambala","Yamunanagar","Sirsa","Bhiwani","Rewari","Palwal",
+        // Punjab tier-2
+        "Hoshiarpur","Moga","Ferozepur","Sangrur","Barnala","Muktsar",
+        // Uttarakhand
+        "Haridwar","Roorkee","Rishikesh","Haldwani","Rudrapur","Kashipur",
+        // Jharkhand tier-2
+        "Hazaribagh","Deoghar","Dumka","Giridih",
+        // Chhattisgarh tier-2
+        "Korba","Durg","Rajnandgaon",
+        // Bihar tier-2
+        "Purnia","Begusarai","Munger","Chapra","Samastipur","Katihar","Hajipur","Arrah",
+        // Assam tier-2
+        "Dibrugarh","Jorhat","Silchar","Tezpur","Tinsukia",
+        // Odisha tier-2
+        "Sambalpur","Balasore","Baripada","Berhampur","Brahmapur",
+        // Goa
+        "Vasco","Margao",
+        // Work-mode entries (for "Remote, India" style)
+        "Remote","Hybrid"
+      ]);
+      const locationMatch = (() => {
+        // Match "Word Word, State" patterns in the header, but only accept if first word is a known city
+        const m = headerLines.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*India)?)\b/g);
+        if (!m) return null;
+        const valid = m.find(loc => {
+          const firstWord = loc.split(/[\s,]+/)[0];
+          return INDIAN_CITIES.has(firstWord);
+        });
+        return valid ? [null, valid] : null;
+      })();
+      const relocateMatch = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
+      const headerText   = cvText.split("\n").slice(0, 10).join(" ");
+      const mentionsLinkedin  = /linkedin/i.test(headerText);
+      const mentionsGithub    = /github/i.test(headerText);
+      const mentionsPortfolio = /portfolio/i.test(headerText);
+      const imageExtRe = /\.(png|jpg|jpeg|gif|svg|webp|ico|bmp|tiff?)(\?.*)?$/i;
+      const getDomainLabel = (u: string) => {
+        try {
+          const hostname = new URL(u).hostname.replace(/^www\./, "");
+          const domain = hostname.split(".")[0];
+          return domain.charAt(0).toUpperCase() + domain.slice(1);
+        } catch { return u.replace(/https?:\/\//, "").split("/")[0]; }
+      };
+      const contactParts: string[] = [];
+      if (locationMatch) contactParts.push(locationMatch[1].trim());
+      if (phoneNorm)     contactParts.push(phoneNorm);
+      if (emailMatch)    contactParts.push(`<a href="mailto:${emailMatch[0]}" style="color:inherit;text-decoration:none;">${emailMatch[0]}</a>`);
+      if (linkedinUrl)         contactParts.push(`<a href="${linkedinUrl}" style="color:inherit;text-decoration:none;">LinkedIn</a>`);
+      else if (mentionsLinkedin) contactParts.push("LinkedIn");
+      if (githubUrl)           contactParts.push(`<a href="${githubUrl}" style="color:inherit;text-decoration:none;">GitHub</a>`);
+      else if (mentionsGithub)   contactParts.push("GitHub");
+      if (portfolioUrl)        contactParts.push(`<a href="${portfolioUrl}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
+      else if (mentionsPortfolio && !linkedinUrl && !githubUrl) contactParts.push("Portfolio");
+      if (relocateMatch) contactParts.push("Open to Relocate");
+      allExtractedUrls
+        .filter(u => u !== portfolioUrl && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imageExtRe.test(u))
+        .slice(0, 2)
+        .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDomainLabel(u)}</a>`));
+      console.log("[OPT] contactParts:", contactParts);
 
-================================================
-PAGE STRUCTURE
-================================================
-A4 Portrait. Width: 794px.
-Do NOT set height or min-height on .page — EVER. Do not set height: 297mm, height: 100vh, or any fixed page height.
-White background on html, body, and .page — NEVER use gray or colored backgrounds.
-Fixed outer padding: Top: 40px, Bottom: 40px, Left: 32px, Right: 32px
-Use box-sizing: border-box on all elements.
+      // ── STEP 1: Ask Gemini for structured JSON only ───────────────
+      const extractPrompt = `You are a CV data extractor. Extract the resume content below into valid JSON matching this exact schema. Output ONLY valid JSON — no markdown, no code fences, no explanation.
 
-CRITICAL: All resume content (header + body + skills + education + projects) must be inside ONE single .page div.
-Do NOT create multiple .page divs. Do NOT create a separate page div for the header.
-The HTML body must contain ONLY ONE .page div.
+Rules:
+- Extract ONLY what exists in the CV. Never invent or add information.
+- "designation": Best title for a "${jobRole}" candidate (e.g. "Data Analyst & ML Engineer").
+- "summary": Copy EXACTLY as written in the CV. Only fix grammar, punctuation, and action verbs — do NOT change the meaning, reorder sentences, or add/remove any facts.
+- skills[].items: comma-separated string of skills for that category.
+- SKILLS GROUPING: If the CV lists skills without sub-categories (e.g. a flat list under "Core Competencies", "Technical Skills", "Skills"), you MUST intelligently group them into standard categories. Use these category names where applicable: "Programming Languages", "Frameworks & Libraries", "Databases", "Cloud & DevOps", "Machine Learning & AI", "Data & Visualization Tools", "Tools & Platforms". Only use categories that have at least one skill. Do NOT use vague names like "Core Competencies" or "Technical Skills" as category names.
+- For bullets: extract actual content, lightly improve phrasing for ATS but never fabricate facts.
+- "achievements": bullets from ANY section named "Coding Practices", "Achievements", "Awards", "Key Achievements". IMPORTANT: Strip any section-name prefix — if bullet says "Coding Practices: Solved 100+ problems..." just extract "Solved 100+ problems...". Never include the section name as a prefix inside the bullet text.
+- "leadership": items from "Leadership", "Extracurricular", "Activities" sections.
+- If a section does not exist in the CV, use null or empty array [].
+- certifications[].issuer may be empty string if not mentioned.
+- Do NOT extract personal details such as Date of Birth, DOB, Nationality, Religion, Gender, Marital Status, Languages Known, Father's Name, Mother's Name — skip these entirely.
 
-EXACT HTML SKELETON — follow this structure precisely:
-<div class="page">
-  <!-- HEADER (full width) -->
-  <div class="header">
-    <h1>CANDIDATE NAME</h1>
-    <div class="job-title">Job Title</div>
-    <div class="contact">Phone | Email | LinkedIn | GitHub | Location</div>
-  </div>
-  <!-- TWO-COLUMN BODY -->
-  <div class="body">
-    <div class="left">
-      <!-- Summary -->
-      <!-- Experience -->
-      <!-- Education -->
-      <!-- Projects (if present) -->
-    </div>
-    <div class="right">
-      <!-- Skills -->
-      <!-- Tools & Technologies -->
-      <!-- Certifications (if SHORT — see placement rule) -->
-      <!-- Languages (if present) -->
-    </div>
-  </div>
-</div>
-
-ABSOLUTELY FORBIDDEN:
-* page-break-after: always — on ANY element, including the header div
-* break-after: page — on ANY element
-* height: 297mm or any fixed page height
-* min-height on .page
-* Multiple .page divs
-* Any explicit forced page breaks in HTML or CSS
-
-================================================
-HEADER
-================================================
-- Candidate Name: Bold, Uppercase, Black, font-size 26px, centered
-- Job Title: Blue accent (#2563EB), font-size 13px, centered, directly under name
-- Contact Row: Single centered line, font-size 10px, color #555
-  Format: Phone | Email | LinkedIn | GitHub | Location
-  Use actual values from CV. Omit any field not present. Do NOT write placeholder text.
-  LINKEDIN LINK: ${linkedinUrl ? `Use this exact URL: ${linkedinUrl}. Render as <a href="${linkedinUrl}" style="color:#555;text-decoration:none;">LinkedIn</a>` : "If the CV has a LinkedIn URL, render as <a href=\"URL\">LinkedIn</a>. If no URL found, write plain text LinkedIn only if mentioned in CV."}
-  GITHUB LINK: ${githubUrl ? `Use this exact URL: ${githubUrl}. Render as <a href="${githubUrl}" style="color:#555;text-decoration:none;">GitHub</a>` : "If the CV has a GitHub URL, render as <a href=\"URL\">GitHub</a>. If no URL found, write plain text GitHub only if mentioned in CV."}
-  PORTFOLIO LINK: If the CV mentions a Portfolio or personal website, find its URL from the extracted URLs list and render as <a href="URL" style="color:#555;text-decoration:none;">Portfolio</a> in the contact row.
-  PROJECT LINKS: If a project has a live link/demo, find its URL from the extracted URLs list and render it as a clickable <a href="URL" style="color:#2563EB;text-decoration:none;">Live Demo</a> next to the project title.
-  CERTIFICATION LINKS: If certifications have "View Credentials" or similar links, find their URLs from the extracted URLs list and render each as <a href="URL" style="color:#2563EB;font-size:10px;">View Credential</a> after the certification name.
-- ABSOLUTELY NO horizontal divider line below the contact info. Do NOT generate any hr, border, or divider element after the contact line.
-
-================================================
-MAIN LAYOUT
-================================================
-Two Column Layout inside .body div:
-Left Column (.left): 68% width
-Right Column (.right): 32% width
-CSS: .body { display: flex; align-items: flex-start; gap: 24px; margin-top: 8px; }
-.left { flex: 0 0 68%; min-width: 0; }
-.right { flex: 0 0 calc(32% - 24px); min-width: 0; border-left: 1px solid #e5e7eb; padding-left: 16px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
-Do NOT set background-color on .right.
-TEXT ALIGNMENT: Left column paragraphs/bullets use text-align: justify. Right column uses text-align: left. Header uses text-align: center.
-
-================================================
-LEFT COLUMN ORDER (inside .body .left)
-================================================
-1. SUMMARY — paragraph text flush left, NO extra padding or margin-left
-2. EXPERIENCE
-3. EDUCATION
-4. PROJECTS (only if present in CV)
-5. KEY CONTRIBUTIONS / ACHIEVEMENTS (only if present in CV — include all bullet points exactly as written)
-6. CERTIFICATIONS — only if LONG (see placement rule below)
-
-All sections go inside .left div. Do NOT create a separate .full-width div.
-
-================================================
-RIGHT COLUMN ORDER
-================================================
-1. SKILLS
-2. TOOLS & TECHNOLOGIES
-3. CERTIFICATIONS — only if SHORT (see placement rule below)
-4. LANGUAGES (if present)
-
-================================================
-CERTIFICATIONS PLACEMENT RULE — STRICTLY FOLLOW THIS
-================================================
-Count the total number of lines of certification content (titles + descriptions combined).
-
-IF total certification lines <= 3 (e.g. just 2-3 cert names with no descriptions):
-  → Place CERTIFICATIONS in the RIGHT column, after Tools & Technologies
-  → Render as a simple list of names
-
-IF total certification lines > 3 (e.g. any cert has a description paragraph):
-  → Place CERTIFICATIONS in the LEFT column, after Projects or Key Contributions
-  → Do NOT put it in the right column at all
-  → Format: Bold title on its own line, then description as a plain paragraph below (NO bullets, NO nested items)
-
-Swapnil's CV example has descriptions → goes in LEFT column.
-If no certifications exist, omit the section entirely from both columns.
-
-================================================
-SECTION STYLE
-================================================
-- Uppercase, Bold, Black (#111), font-size 11px, letter-spacing: 0.5px
-- Horizontal divider directly underneath: border-top: 1.5px solid #111, margin-bottom: 8px
-- margin-top: 14px on each section
-- Section titles are BLACK, not blue.
-
-================================================
-EXPERIENCE FORMAT
-================================================
-Wrap each job in <div class="exp-block">:
-- Line 1: Job Title alone — bold 11px #111. NEVER combine company and title on same line.
-- Line 2: Company Name with location and work type if present in CV (e.g. "Brandsmith360, Paris, France (Remote)") — 10.5px #2563EB. ALWAYS include city, country, and Remote/On-site/Hybrid if mentioned in the CV.
-- Line 3: Dates — italic 10px #666. Use the EXACT dates from the CV. NEVER write "MM/YYYY" as a placeholder. If dates are not found, omit this line entirely.
-- 3-4 bullet points, font-size 10.5px, text-align: justify
-- Technologies: italic 10px #555
-Include all experience entries.
-
-================================================
-EDUCATION FORMAT
-================================================
-Wrap each entry in <div class="edu-block">:
-- Degree — bold 11px #111
-- Institution — 10.5px #2563EB
-- Year — italic 10px #666
-- CGPA/Percentage/Additional info — plain 10.5px #444, NOT bold, NOT a heading tag. Must use <p style="font-size:10.5px;color:#444;margin:0"> or a <span>. NEVER use h1/h2/h3/h4 for CGPA or any education detail.
-Include all education entries.
-
-================================================
-PROJECTS FORMAT
-================================================
-Wrap each project in <div class="proj-block">:
-- Project Title — bold 11px #111
-- Tech Stack — italic 10px #555
-- 2-3 bullet points, font-size 10.5px, text-align: justify
-Include all projects if present.
-
-================================================
-SKILLS FORMAT
-================================================
-Right column only. Group skills by category:
-- Category title: bold 10.5px, color #2563EB (blue)
-- Skills below: 10px #333, text-align: left
-Use only categories relevant to the CV.
-
-================================================
-CRITICAL PAGE CONTROL
-================================================
-- Target length: 1 page.
-- If content cannot fit professionally on one page, create a second page.
-- Never reduce font size below 10px.
-- Never distort the layout.
-- Never overlap content.
-- Never push content outside page boundaries.
-- Maintain identical margins and spacing on every page.
-
-================================================
-CRITICAL TEMPLATE CONSISTENCY RULES
-================================================
-This resume must always look visually identical to the reference template.
-
-HEADER RULES:
-* Keep exactly the same top spacing.
-* Keep exactly the same header height.
-* Never move the name position.
-* Never move the contact information row.
-* Never reduce header spacing.
-
-FOOTER RULES:
-* Keep exactly the same bottom spacing.
-* Footer position must remain visually identical.
-* Never allow content to reach the bottom edge.
-
-CONTENT CONTROL RULES:
-When content is TOO LONG:
-* Shorten summary to maximum 3 lines.
-* Maximum 4 bullet points per job.
-* Maximum 3 bullet points per project.
-* Remove repetitive information.
-* Merge duplicate skills.
-* Keep only strongest achievements.
-* Prioritize recent experience.
-
-When content is TOO SHORT:
-* Expand achievement descriptions slightly.
-* Add more detail from existing resume content.
-* Distribute spacing evenly between sections.
-* Keep footer position unchanged.
-
-LAYOUT RULES:
-* Maintain identical top whitespace.
-* Maintain identical bottom whitespace.
-* Maintain identical section spacing.
-* Maintain identical column spacing.
-* Maintain identical visual density.
-
-FINAL CHECK BEFORE OUTPUT — Verify:
-✓ Header spacing matches template.
-✓ Footer spacing matches template.
-✓ No large empty gaps.
-✓ No content overflow.
-✓ Resume visually matches reference template.
-✓ Only content changes.
-✓ Design never changes.
-
-================================================
-CRITICAL PAGE BREAK RULES
-================================================
-1. NEVER allow a section heading to appear at the bottom of a page without at least 2 lines of content below it.
-
-2. Before rendering any section heading (PROJECTS, EXPERIENCE, EDUCATION, CERTIFICATIONS, SKILLS, etc.):
-   - Calculate remaining space on current page.
-   - Calculate height required for heading + minimum 2 content lines.
-   - If remaining space is insufficient: move the ENTIRE section (heading + content) to the next page.
-   - Do NOT print the heading on the current page if content cannot follow it.
-
-3. Apply "Keep With Next" behavior:
-   - Section heading must stay attached to its content.
-   - No orphan headings. No isolated titles.
-   CSS: use break-inside: avoid on a wrapper div containing heading + first content block.
-
-4. Maintain identical top margin on EVERY page.
-   - Page 1 and Page 2 must start at exactly the same Y position.
-   - Header spacing must be consistent across all pages.
-
-5. Maintain identical bottom margin on EVERY page.
-   - Content must never touch the footer area.
-
-6. Before creating a new page:
-   - Check if the next section can fit.
-   - If not, start the section on the next page.
-
-7. For PROJECTS section specifically:
-   - If "PROJECTS" heading appears near the page end and project content cannot fit beneath it,
-     move the heading AND all project entries to the next page.
-
-8. No page should end with:
-   - A heading only
-   - A heading plus one line
-   - A project title without its description
-
-9. Use professional pagination rules (like Microsoft Word):
-   - Keep headings with content.
-   - Keep project titles with at least first paragraph.
-   - Prevent widows and orphans.
-
-10. IMPLEMENTATION: Wrap every section's heading + first content item together in a div with:
-    style="page-break-inside: avoid; break-inside: avoid;"
-    This forces them to move together to the next page if they don't fit.
-
-================================================
-PAGE 2 LAYOUT RULE — FULL WIDTH WHEN RIGHT COLUMN IS EMPTY
-================================================
-When content overflows to a second page AND the right column has no remaining content for Page 2:
-
-MANDATORY IMPLEMENTATION:
-- Do NOT use .body flex layout on Page 2.
-- Do NOT create a .left div or .right div on Page 2.
-- Place ALL Page 2 content (Education, Projects, etc.) inside ONE full-width div like this:
-
-<div style="width:100%;max-width:100%;margin-top:8px;">
-  <!-- All page 2 sections here — Education, Projects, etc. -->
-</div>
-
-- The text must span the FULL width of the page — from left margin to right margin.
-- flex: 0 0 68% must NOT apply to any content on Page 2 when right column is empty.
-- No border-left divider on Page 2.
-- Sections on Page 2 use the same section heading style (uppercase, bold, black, with divider line) but span full width.
-- Bullet points and paragraphs on Page 2 must reach the full right margin — same as a single-column document.
-
-================================================
-MULTI-PAGE HEADER & FOOTER RULES
-================================================
-When a resume requires more than one page:
-EVERY PAGE MUST BE TREATED AS A NEW TEMPLATE PAGE.
-
-PAGE 1:
-* Header begins at normal template position.
-* Footer remains at normal template position.
-
-PAGE 2 AND ALL SUBSEQUENT PAGES:
-* Reserve the exact same top margin as Page 1.
-* Reserve the exact same header area height as Page 1.
-* Reserve the exact same bottom margin as Page 1.
-* Reserve the exact same footer area height as Page 1.
-* Do not start content at the top edge of Page 2.
-* Before any content appears on Page 2, leave the same header spacing used on Page 1.
-* Page 2 content must begin only after the reserved header space.
-* Maintain identical footer spacing on every page.
-
-IMPLEMENTATION: Use @page margins and padding: 40px 32px on every page so content never starts at the top edge.
-
-VISUAL RULE — If Page 1 and Page 2 are placed side by side:
-✓ Header begins at same vertical position.
-✓ Content begins at same vertical position.
-✓ Footer ends at same vertical position.
-✓ Margins are identical.
-
-CONTENT FLOW RULE:
-When content moves to Page 2, do not place the next bullet/project immediately at the top.
-Start it below the reserved header area.
-
-FINAL VALIDATION:
-* Page 1 top spacing = Page 2 top spacing.
-* Page 1 footer spacing = Page 2 footer spacing.
-* Every page follows the same template grid.
-
-================================================
-TYPOGRAPHY
-================================================
-Font: Inter from Google Fonts (https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)
-Base body text: 10.5px, color #222
-
-BOLD / HIGHLIGHT RULES — STRICTLY FOLLOW:
-* Do NOT bold any words inside bullet points, paragraphs, or summary text.
-* Do NOT use <strong> or <b> tags anywhere in body content.
-* The ONLY elements that should be bold are:
-  - Candidate name (h1)
-  - Section headings (e.g. EXPERIENCE, EDUCATION, SKILLS)
-  - Job titles
-  - Degree names
-  - Project titles
-  - Skill category labels in the right column
-* Everything else — bullet point text, summary, company names description, technologies line — must be regular weight (font-weight: 400). No exceptions.
-
-================================================
-PRINT / PDF RULES
-================================================
-* <title></title> — empty string.
-* html, body: background: white !important; margin: 0; padding: 0;
-* Include in <style>:
-
-@media print {
-  html, body { background: white !important; margin: 0; padding: 0; }
-  .page { width: 100% !important; padding: 0 !important; background: white !important; }
-  .right { background: none !important; }
-  .body { align-items: flex-start !important; }
-  .exp-block { page-break-inside: avoid; break-inside: avoid; }
-  .edu-block { page-break-inside: avoid; break-inside: avoid; }
-  .edu-block p, .edu-block span, .edu-block div { font-size: 10.5px !important; }
-  .exp-block p, .exp-block span, .exp-block div { font-size: 10.5px !important; }
-  .proj-block p, .proj-block span, .proj-block div { font-size: 10.5px !important; }
-  .proj-block { page-break-inside: avoid; break-inside: avoid; }
-  h2, h3, .section-title { page-break-after: avoid !important; break-after: avoid !important; }
-  h2 + *, h3 + *, .section-title + * { page-break-before: avoid !important; break-before: avoid !important; }
-  @page { size: A4 portrait; margin: 40px 32px; }
+JSON Schema (output this exact structure):
+{
+  "name": "string",
+  "designation": "string",
+  "summary": "string",
+  "skills": [{"category": "string", "items": "string"}],
+  "experience": [{"company": "string", "location": "string", "role": "string", "dates": "string", "bullets": ["string"]}],
+  "projects": [{"title": "string", "tools": "string", "date": "string", "bullets": ["string"]}],
+  "education": [{"institution": "string", "location": "string", "degree": "string", "dates": "string", "cgpa": "string"}],
+  "certifications": [{"name": "string", "issuer": "string"}],
+  "achievements": ["string"],
+  "leadership": [{"role": "string", "description": "string"}]
 }
 
-* The HTML body must contain ONLY the .page div — nothing before it, nothing after it.
-
-OUTPUT: Return ONLY the complete HTML starting with <!DOCTYPE html> and ending with </html>. No markdown. No code fences. No explanations.
-
-CV TO REFORMAT:
+${keywordInstruction}
+CV:
 ${cvText}`;
 
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey) return NextResponse.json({ error: "API key not configured" }, { status: 500 });
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey) return NextResponse.json({ error: "API key not configured" }, { status: 500 });
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.15, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } },
-        }),
-      },
-    );
+      // Balanced-brace extractor — handles trailing text/notes after the JSON object
+      const extractBalancedJson = (s: string): string => {
+        const start = s.indexOf("{");
+        if (start === -1) return s;
+        let depth = 0;
+        let inStr = false;
+        let escape = false;
+        for (let i = start; i < s.length; i++) {
+          const ch = s[i];
+          if (escape) { escape = false; continue; }
+          if (ch === "\\" && inStr) { escape = true; continue; }
+          if (ch === '"') { inStr = !inStr; continue; }
+          if (inStr) continue;
+          if (ch === "{") depth++;
+          else if (ch === "}") { depth--; if (depth === 0) return s.slice(start, i + 1); }
+        }
+        return s.slice(start);
+      };
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error("Gemini API error:", geminiRes.status, errText);
-      const userMsg = geminiRes.status === 429
-        ? "Our servers are busy right now. Please try again in a minute."
-        : "CV rewrite failed. Please try again in a moment.";
-      return NextResponse.json({ error: userMsg }, { status: 502 });
-    }
-
-    const geminiData = await geminiRes.json();
-    const parts = geminiData?.candidates?.[0]?.content?.parts ?? [];
-    let rawHtml = parts.find((p: any) => !p.thought && p.text)?.text ?? parts[0]?.text ?? "";
-
-    if (!rawHtml) return NextResponse.json({ error: "AI returned empty response. Please try again." }, { status: 500 });
-
-    rawHtml = rawHtml
-      .replace(/^```html\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-
-    if (!rawHtml.toLowerCase().includes("<!doctype")) {
-      return NextResponse.json({ error: "AI returned invalid HTML. Please try again." }, { status: 500 });
-    }
-
-    // ── Inject LinkedIn / GitHub links server-side ────────────────
-    // Strip any existing anchor around the word, then inject cleanly
-    const injectLink = (html: string, word: string, url: string): string => {
-      // Step 1: strip any existing <a ...>word</a> → plain word
-      html = html.replace(new RegExp(`<a[^>]*>${word}<\\/a>`, "g"), word);
-      if (html.includes(word)) {
-        // Step 2: word exists — wrap with new link
-        html = html.replace(
-          new RegExp(`\\b${word}\\b`, "g"),
-          `<a href="${url}" style="color:inherit;text-decoration:none;">${word}</a>`
+      const callGemini = async (): Promise<{ ok: boolean; rawJson: string; status?: number }> => {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: extractPrompt }] }],
+              generationConfig: {
+                temperature: 0,
+                maxOutputTokens: 8192,
+                responseMimeType: "application/json",
+                thinkingConfig: { thinkingBudget: 0 },
+              },
+            }),
+          },
         );
-      } else {
-        // Step 3: word missing entirely — insert into contact row
-        html = html.replace(
-          /class="contact"([^>]*)([\s\S]*?)<\/div>/,
-          (match, attrs, content) => {
-            const link = `<a href="${url}" style="color:inherit;text-decoration:none;">${word}</a>`;
-            return `class="contact"${attrs}>${content.trimEnd()} | ${link}</div>`;
-          }
-        );
+        if (!res.ok) return { ok: false, rawJson: "", status: res.status };
+        const data = await res.json();
+        const pts = data?.candidates?.[0]?.content?.parts ?? [];
+        const text = pts.find((p: any) => !p.thought && p.text)?.text ?? pts[0]?.text ?? "";
+        return { ok: true, rawJson: text };
+      };
+
+      const tryParseJson = (raw: string): any | null => {
+        const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+        try { return JSON.parse(cleaned); } catch { /* fall through */ }
+        try { return JSON.parse(extractBalancedJson(cleaned)); } catch { /* fall through */ }
+        return null;
+      };
+
+      // Attempt 1
+      let attempt = await callGemini();
+      if (!attempt.ok) {
+        const userMsg = attempt.status === 429
+          ? "Our servers are busy right now. Please try again in a minute."
+          : "CV rewrite failed. Please try again in a moment.";
+        return NextResponse.json({ error: userMsg }, { status: 502 });
       }
-      return html;
-    };
+      console.log("[OPT] rawJson first 300:", attempt.rawJson.slice(0, 300));
 
-    if (linkedinUrl) rawHtml = injectLink(rawHtml, "LinkedIn", linkedinUrl);
-    if (githubUrl)   rawHtml = injectLink(rawHtml, "GitHub",   githubUrl);
+      let cvData: any = tryParseJson(attempt.rawJson);
 
-    // ── Strip bold tags from bullet/body content (keep only structural bold) ──
-    // Remove <strong> and <b> tags inside bullet points and paragraphs only
-    rawHtml = rawHtml.replace(/<(strong|b)>(.*?)<\/(strong|b)>/gi, "$2");
+      // Attempt 2 — retry once if parsing failed
+      if (!cvData) {
+        console.warn("[OPT] First attempt JSON parse failed, retrying...");
+        attempt = await callGemini();
+        if (attempt.ok) cvData = tryParseJson(attempt.rawJson);
+      }
 
-    // ── Replace special unicode characters that don't render in PDF fonts ──
-    rawHtml = rawHtml
-      .replace(/→/g, "-")
-      .replace(/←/g, "-")
-      .replace(/↑/g, "-")
-      .replace(/↓/g, "-")
-      .replace(/•/g, "•")
-      .replace(/–/g, "–")
-      .replace(/—/g, "—")
-      .replace(/’/g, "'")
-      .replace(/“/g, '"')
-      .replace(/”/g, '"');
+      if (!cvData) {
+        console.error("[OPT] JSON parse failed after retry. Raw:", attempt.rawJson.slice(0, 500));
+        return NextResponse.json({ error: "AI returned invalid data. Please try again." }, { status: 500 });
+      }
 
-    // ── Inject right column overflow fix + page 2 full width fix ──
-    rawHtml = rawHtml.replace(
-      "</head>",
-      `<style>
-        .right { overflow: hidden !important; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: normal !important; box-sizing: border-box !important; max-width: 100% !important; }
-        .right * { overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: normal !important; max-width: 100% !important; }
-        .page2-body { width: 100% !important; max-width: 100% !important; flex: none !important; display: block !important; }
-        .page2-body * { max-width: 100% !important; flex: none !important; }
-        .full-width { width: 100% !important; max-width: 100% !important; flex: none !important; display: block !important; }
-        .full-width .left { flex: none !important; width: 100% !important; max-width: 100% !important; }
-      </style></head>`
-    );
+      // Safety: ensure all expected fields exist and are correct types
+      if (!cvData || typeof cvData !== "object") {
+        return NextResponse.json({ error: "AI returned invalid data. Please try again." }, { status: 500 });
+      }
+      cvData.skills        = Array.isArray(cvData.skills)        ? cvData.skills        : [];
+      cvData.experience    = Array.isArray(cvData.experience)    ? cvData.experience    : [];
+      cvData.projects      = Array.isArray(cvData.projects)      ? cvData.projects      : [];
+      cvData.education     = Array.isArray(cvData.education)     ? cvData.education     : [];
+      // Drop 10th/12th entries if graduation is present
+      const hasGraduation = cvData.education.some((e: any) => {
+        const d = (e.degree || "").toLowerCase();
+        return /bachelor|master|b\.?e|b\.?tech|b\.?sc|m\.?sc|m\.?tech|b\.?com|m\.?com|bca|mca|b\.?a|m\.?a|phd|degree/.test(d);
+      });
+      if (hasGraduation) {
+        cvData.education = cvData.education.filter((e: any) => {
+          const d = (e.degree || "").toLowerCase();
+          return !/10th|sslc|secondar|matriculat|hslc|12th|higher secondary|hsc|intermediate|wbchse|wbbse|cbse class|class x|class xii/.test(d);
+        });
+      }
+      cvData.certifications= Array.isArray(cvData.certifications)? cvData.certifications: [];
+      cvData.achievements  = Array.isArray(cvData.achievements)
+        ? cvData.achievements.map((a: string) => (typeof a === "string" ? a.replace(/^[A-Za-z][A-Za-z\s&]*:\s*/, "") : a))
+        : [];
+      cvData.leadership    = Array.isArray(cvData.leadership)    ? cvData.leadership    : [];
 
-    // ── Force full width on page 2 left column if right column is empty on page 2 ──
-    // If there's a page2-body or full-width div, ensure .left inside it goes full width
-    rawHtml = rawHtml.replace(
-      /(<div[^>]*class="[^"]*(?:page2-body|full-width)[^"]*"[^>]*>)([\s\S]*?)(<\/div>\s*$)/,
-      (match) => match.replace(/class="left"/g, 'class="left" style="flex:none!important;width:100%!important;max-width:100%!important;"')
-    );
+      // ── Normalize date casing: "DEC 202" → "Dec 202", "JUNE" → "June" etc.
+      const normDate = (s: string): string => {
+        if (!s) return s;
+        return s.replace(
+          /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g,
+          (m) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()
+        );
+      };
+      cvData.experience.forEach((job: any) => { if (job.dates) job.dates = normDate(job.dates); });
+      cvData.education.forEach((edu: any)  => { if (edu.dates)  edu.dates  = normDate(edu.dates);  });
+      cvData.projects.forEach((proj: any)  => { if (proj.date)  proj.date  = normDate(proj.date);  });
 
-    // ── Puppeteer: HTML → PDF ──────────────────────────────────────
+      console.log("[OPT] cvData parsed. name:", cvData.name, "skills:", cvData.skills.length, "exp:", cvData.experience.length);
+
+      // ── STEP 2: Build HTML entirely from JSON — server controls every element ──
+      // Helper: escape HTML special chars
+      const esc = (s: string) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+      // Helper: wrap content in a section block (returns "" if content is empty)
+      const sec = (title: string, content: string) =>
+        content?.trim()
+          ? `<div class="section"><div class="section-title">${title}</div><hr class="section-rule">${content}</div>`
+          : "";
+
+      // Profile Summary
+      const summaryHtml = sec("Profile Summary",
+        cvData.summary
+          ? `<p style="font-size:10px;text-align:justify;margin-top:3px;">${esc(cvData.summary)}</p>`
+          : ""
+      );
+
+      // Technical Skills
+      const skillsInner = Array.isArray(cvData.skills) && cvData.skills.length
+        ? `<div class="skills-block">${cvData.skills.map((s: any) =>
+            `<p><strong>${esc(s.category)}:</strong> ${esc(s.items)}</p>`
+          ).join("\n")}</div>`
+        : "";
+      const skillsHtml = sec("Technical Skills", skillsInner);
+
+      // Experience
+      const expInner = Array.isArray(cvData.experience) && cvData.experience.length
+        ? cvData.experience.map((job: any) => `
+<div class="exp-block">
+  <div class="row">
+    <span class="row-left">${esc(job.company)}${job.location ? " — " + esc(job.location) : ""}</span>
+    <span class="row-right">${esc(job.dates)}</span>
+  </div>
+  <div class="role">${esc(job.role)}</div>
+  ${Array.isArray(job.bullets) && job.bullets.length
+    ? `<ul class="bullets">${job.bullets.map((b: string) => `<li>${esc(b)}</li>`).join("\n")}</ul>`
+    : ""}
+</div>`).join("\n")
+        : "";
+      const expHtml = sec("Experience", expInner);
+
+      // Projects — no links (PDF gives us no reliable project URLs)
+      const projInner = Array.isArray(cvData.projects) && cvData.projects.length
+        ? cvData.projects.map((proj: any) => `
+<div class="proj-block">
+  <div class="proj-row">
+    <span class="proj-left">
+      <span class="proj-title">${esc(proj.title)}</span>${proj.tools ? ` | <span class="proj-tools">${esc(proj.tools)}</span>` : ""}
+    </span>
+    ${proj.date ? `<span class="proj-date">${esc(proj.date)}</span>` : ""}
+  </div>
+  ${Array.isArray(proj.bullets) && proj.bullets.length
+    ? `<ul class="bullets">${proj.bullets.map((b: string) => `<li>${esc(b)}</li>`).join("\n")}</ul>`
+    : ""}
+</div>`).join("\n")
+        : "";
+      const projHtml = sec("Projects", projInner);
+
+      // Education
+      const eduInner = Array.isArray(cvData.education) && cvData.education.length
+        ? cvData.education.map((edu: any) => `
+<div class="exp-block">
+  <div class="row">
+    <span class="row-left">${esc(edu.institution)}${edu.location ? " — " + esc(edu.location) : ""}</span>
+    <span class="row-right">${esc(edu.dates)}</span>
+  </div>
+  <div class="role">${esc(edu.degree)}${edu.cgpa ? " &nbsp; CGPA: " + esc(edu.cgpa) : ""}</div>
+</div>`).join("\n")
+        : "";
+      const eduHtml = sec("Education", eduInner);
+
+      // Certifications
+      const certInner = Array.isArray(cvData.certifications) && cvData.certifications.length
+        ? `<ul class="cert-list">${cvData.certifications.map((c: any) =>
+            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
+          ).join("\n")}</ul>`
+        : "";
+      const certHtml = sec("Certifications", certInner);
+
+      // Achievements — rendered as clean bullets, no section-name prefix ever
+      const achieveInner = Array.isArray(cvData.achievements) && cvData.achievements.length
+        ? `<ul class="bullets" style="margin-top:3px;">${cvData.achievements.map((a: string) => `<li>${esc(a)}</li>`).join("\n")}</ul>`
+        : "";
+      const achieveHtml = sec("Achievements", achieveInner);
+
+      // Leadership — always rendered as bullet list (not plain paragraphs)
+      const leaderInner = Array.isArray(cvData.leadership) && cvData.leadership.length
+        ? `<ul class="bullets" style="margin-top:3px;">${cvData.leadership.map((l: any) =>
+            `<li><strong>${esc(l.role)}:</strong> ${esc(l.description)}</li>`
+          ).join("\n")}</ul>`
+        : "";
+      const leaderHtml = sec("Leadership & Activities", leaderInner);
+
+      // Candidate name and designation (from JSON, fallback to CV text scan)
+      const candidateName = esc(
+        cvData.name ||
+        cvText.split("\n").map((l: string) => l.trim()).find((l: string) => l.length > 1 && l.length < 60 && /^[A-Za-z]/.test(l)) ||
+        "Candidate"
+      );
+      const designation = esc(jobRole);
+
+      // Assemble final HTML — server owns every byte of this
+      const rawHtml = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { font-family: 'Calibri', Arial, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+body { background: white; }
+.page { width: 750px; margin: 0 auto; padding: 28px 44px; background: white; color: #000; line-height: 1.42; }
+.name { font-size: 26px; font-weight: bold; text-align: center; margin-bottom: 3px; letter-spacing: 0.5px; }
+.designation { font-size: 11.5px; font-weight: bold; text-align: center; color: #333; margin-bottom: 4px; }
+.contact { text-align: center; font-size: 10.5px; color: #333; margin-bottom: 10px; }
+.contact a { color: #333; text-decoration: none; }
+.section { margin-top: 9px; margin-bottom: 0; }
+.section-title { font-size: 13.5px; font-weight: bold; color: #000; margin-bottom: 1px; page-break-after: avoid; break-after: avoid; }
+.section-rule { border: none; border-top: 1.2px solid #000; margin: 0 0 5px 0; page-break-after: avoid; break-after: avoid; }
+.exp-block { margin-bottom: 5px; }
+.row { display: flex; justify-content: space-between; align-items: baseline; page-break-after: avoid; break-after: avoid; }
+.row-left { font-weight: bold; font-size: 11px; }
+.row-right { font-size: 10.5px; font-style: italic; white-space: nowrap; }
+.role { font-style: italic; font-size: 10.5px; margin: 1px 0 3px 0; page-break-after: avoid; break-after: avoid; }
+ul.bullets { margin: 3px 0 4px 18px; padding: 0; list-style-type: disc; }
+ul.bullets li { font-size: 10.5px; margin-bottom: 2px; text-align: justify; }
+.proj-block { margin-bottom: 5px; page-break-inside: avoid; break-inside: avoid; }
+.proj-row { display: flex; justify-content: space-between; align-items: baseline; }
+.proj-left { font-size: 11px; flex: 1; min-width: 0; }
+.proj-title { font-weight: bold; }
+.proj-tools { font-style: italic; }
+.proj-date { font-size: 10.5px; font-style: italic; white-space: nowrap; margin-left: 8px; }
+.skills-block { padding-left: 14px; margin-top: 3px; }
+.skills-block p { font-size: 10.5px; margin-bottom: 3px; }
+.cert-list { padding-left: 18px; margin-top: 3px; list-style-type: disc; }
+.cert-list li { font-size: 10.5px; margin-bottom: 2px; }
+@media print {
+  .page { width: 100% !important; padding: 0 !important; }
+  @page { size: A4 portrait; margin: 28px 44px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="name">${candidateName}</div>
+<div class="designation">${designation}</div>
+<div class="contact">${contactParts.join(" &nbsp;|&nbsp; ")}</div>
+${summaryHtml}
+${skillsHtml}
+${expHtml}
+${projHtml}
+${eduHtml}
+${certHtml}
+${achieveHtml}
+${leaderHtml}
+</div>
+</body>
+</html>`;
+
+
+    // ── STEP 3: Puppeteer → PDF ──────────────────────────────────────────
     const browser = await puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.executablePath(CHROMIUM_URL),
       headless: true,
     });
-
     const browserPage = await browser.newPage();
-    // Set viewport to A4 width so getBoundingClientRect() matches print dimensions
     await browserPage.setViewport({ width: 794, height: 1122 });
     await browserPage.emulateMediaType("print");
     await browserPage.setContent(rawHtml, { waitUntil: "load" });
-
-    // ── Fix page 2: if right column ends before left column, move overflow to full-width ──
-    await browserPage.evaluate(() => {
-      const left = document.querySelector(".left");
-      const right = document.querySelector(".right");
-      const pageDiv = document.querySelector(".page");
-      if (!left || !right || !pageDiv) return;
-
-      const rightBottom = right.getBoundingClientRect().bottom;
-      const leftBottom  = left.getBoundingClientRect().bottom;
-
-      // Only restructure if left column is significantly taller than right column
-      if (leftBottom <= rightBottom + 80) return;
-
-      // Find all direct children of .left that start at or after the right column bottom
-      const overflowEls: Element[] = [];
-      Array.from(left.children).forEach((child) => {
-        const top = child.getBoundingClientRect().top;
-        if (top >= rightBottom - 10) {
-          overflowEls.push(child);
-        }
-      });
-
-      if (overflowEls.length === 0) return;
-
-      // Create a full-width container for overflow content
-      const fullSection = document.createElement("div");
-      fullSection.setAttribute(
-        "style",
-        "width:100% !important; display:block !important; flex:none !important; " +
-        "max-width:100% !important; margin-top:8px; box-sizing:border-box;"
-      );
-
-      // Move overflow elements out of .left into the full-width section
-      overflowEls.forEach((el) => {
-        left.removeChild(el);
-        fullSection.appendChild(el);
-      });
-
-      // Append after the two-column .body div
-      pageDiv.appendChild(fullSection);
-    });
-
     const pdfBuffer = await browserPage.pdf({
       format: "A4",
       printBackground: true,
       displayHeaderFooter: false,
       margin: { top: "40px", bottom: "40px", left: "32px", right: "32px" },
     });
-
     await browser.close();
 
     // ── Build download filename ────────────────────────────────────
-    const cvNameRaw  = rawHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i)?.[1]
-      ?.replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-") || "CV";
+    const cvNameRaw  = (cvData.name || "").replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-") || "CV";
     const roleSlug   = jobRole.split("/")[0].trim().replace(/[^a-zA-Z0-9\s]/g, "").trim().replace(/\s+/g, "-");
     const downloadFilename = `${cvNameRaw}-${roleSlug}-CV.pdf`;
 

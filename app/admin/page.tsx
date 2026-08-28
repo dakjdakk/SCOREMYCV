@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-type AtsCheck  = { id: string; created_at: string; job_role: string; score: number; email?: string };
+type AtsCheck  = { id: string; created_at: string; job_role: string; score: number; email?: string; device?: string; upgrade_clicked?: boolean };
 type CvRewrite = {
   id: string; created_at: string; job_role: string; score_before: number;
   email: string; payment_id: string; original_pdf_url: string; rewritten_pdf_url: string;
@@ -42,9 +42,9 @@ export default function AdminPage() {
       const res = await fetch(`/api/admin/data?password=${password}`);
       if (!res.ok) { setError("Wrong password"); setLoading(false); return; }
       const data = await res.json();
-      setAtsChecks(data.atsChecks || []);
-      setRewrites(data.rewrites || []);
-      setReviews(data.reviews || []);
+      setAtsChecks(Array.isArray(data.atsChecks) ? data.atsChecks : []);
+      setRewrites(Array.isArray(data.rewrites) ? data.rewrites : []);
+      setReviews(Array.isArray(data.reviews) ? data.reviews : []);
       sessionStorage.setItem("adminPwd", password);
       setAuthed(true);
     } catch {
@@ -61,9 +61,9 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/admin/data?password=${password}`);
       const data = await res.json();
-      setAtsChecks(data.atsChecks || []);
-      setRewrites(data.rewrites || []);
-      setReviews(data.reviews || []);
+      setAtsChecks(Array.isArray(data.atsChecks) ? data.atsChecks : []);
+      setRewrites(Array.isArray(data.rewrites) ? data.rewrites : []);
+      setReviews(Array.isArray(data.reviews) ? data.reviews : []);
     } catch {}
     setLoading(false);
   }
@@ -106,6 +106,9 @@ export default function AdminPage() {
     return d >= filterFrom && d <= filterTo;
   });
 
+  const upgradeClicks = filteredChecks.filter(c => c.upgrade_clicked).length;
+  const convRate = filteredChecks.length > 0 ? Math.round((upgradeClicks / filteredChecks.length) * 100) : 0;
+
   return (
     <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -113,10 +116,16 @@ export default function AdminPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-extrabold text-slate-800">ScoreMyCV Admin</h1>
-          <button onClick={refresh} disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 disabled:opacity-50">
-            {loading ? "Refreshing..." : "↻ Refresh"}
-          </button>
+          <div className="flex gap-3">
+            <a href="/admin/test-rewrite"
+              className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-700">
+              🧪 Test Rewrite
+            </a>
+            <button onClick={refresh} disabled={loading}
+              className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 disabled:opacity-50">
+              {loading ? "Refreshing..." : "↻ Refresh"}
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -180,6 +189,8 @@ export default function AdminPage() {
                     <th className="pb-2 pr-4">Date (IST)</th>
                     <th className="pb-2 pr-4">Job Role</th>
                     <th className="pb-2 pr-4">Score</th>
+                    <th className="pb-2 pr-4">Dev</th>
+                    <th className="pb-2 pr-4">Conv</th>
                     <th className="pb-2">Email</th>
                   </tr>
                 </thead>
@@ -192,6 +203,12 @@ export default function AdminPage() {
                         <span className={`font-bold px-2 py-1 rounded-full text-xs ${c.score < 50 ? "bg-red-100 text-red-600" : c.score < 70 ? "bg-yellow-100 text-yellow-600" : "bg-green-100 text-green-600"}`}>
                           {c.score}/100
                         </span>
+                      </td>
+                      <td className="py-2 pr-4"><span className={`font-bold text-xs px-1.5 py-0.5 rounded ${c.device === "M" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{c.device || "—"}</span></td>
+                      <td className="py-2 pr-4">
+                        {c.upgrade_clicked
+                          ? <span className="font-bold text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700">✓</span>
+                          : <span className="text-slate-300 text-xs">—</span>}
                       </td>
                       <td className="py-2 text-slate-600">{c.email || <span className="text-slate-300">—</span>}</td>
                     </tr>

@@ -5655,6 +5655,22 @@ function renderDay(dayNum) {
       ${dayNum > 1 ? `<button class="nav-btn" onclick="goDay(${dayNum-1})">← Day ${dayNum-1}</button>` : ''}
       ${dayNum < 30 ? `<button class="nav-btn primary" onclick="goDay(${dayNum+1})">Day ${dayNum+1} →</button>` : ''}
     </div>
+
+    ${(dayNum === 30 || (IS_DEMO && dayNum === 7)) ? `
+    <div style="margin-top:28px;background:linear-gradient(135deg,#1e3a5f,#0f172a);border-radius:16px;padding:36px;text-align:center;color:#fff;">
+      <div style="font-size:36px;margin-bottom:10px;">🏆</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#93c5fd;margin-bottom:8px;">Certificate of Completion</div>
+      ${dayNum === 30 ? `
+        <div style="font-size:20px;font-weight:900;color:#f1f5f9;margin-bottom:8px;">You've reached Day 30!</div>
+        <p style="color:#94a3b8;font-size:14px;line-height:1.7;max-width:420px;margin:0 auto 20px;">Mark all 30 days complete to unlock your personalised Certificate of Completion — download it as PDF and share on LinkedIn.</p>
+        <button onclick="showCertificatePrompt()" style="background:#60a5fa;color:#0f172a;border:none;border-radius:10px;padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;">🏆 Get My Certificate</button>
+      ` : `
+        <div style="font-size:20px;font-weight:900;color:#f1f5f9;margin-bottom:8px;">You've completed the Demo!</div>
+        <p style="color:#94a3b8;font-size:14px;line-height:1.7;max-width:420px;margin:0 auto 20px;">Complete all 30 days and earn a personalised Certificate of Completion with your name — downloadable as PDF.</p>
+        <a href="/sql-prep/" style="display:inline-block;background:#3b82f6;color:#fff;border-radius:10px;padding:13px 28px;font-size:15px;font-weight:800;text-decoration:none;">Buy Full Access to Earn Certificate →</a>
+      `}
+    </div>
+    ` : ''}
   `;
 }
 

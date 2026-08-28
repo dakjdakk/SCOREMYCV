@@ -223,7 +223,17 @@ async function createBuyer() {
   });
 
   if (result && result[0]) {
-    okEl.textContent = `✓ Account created for "${username}"`;
+    // Show credentials box with plain-text password for copying
+    okEl.innerHTML = `
+      ✓ Account created! Share these credentials with the buyer:<br><br>
+      <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px;font-family:monospace;font-size:13px;line-height:2;margin-top:6px;">
+        Username: <strong style="color:#60a5fa;">${username}</strong><br>
+        Password: <strong style="color:#60a5fa;">${password}</strong><br>
+        Login: <strong style="color:#60a5fa;">https://www.scoremycv.in/login.html</strong>
+      </div>
+      <button onclick="copyCredentials('${username}','${password}')" style="margin-top:10px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;">📋 Copy Credentials</button>
+      ${email ? `<button onclick="mailCredentials('${username}','${password}','${email}')" style="margin-top:10px;margin-left:8px;background:#22c55e;color:#0f172a;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;">📧 Open Email</button>` : ''}
+    `;
     okEl.style.display = 'block';
     document.getElementById('new-username').value = '';
     document.getElementById('new-password').value = '';
@@ -268,6 +278,17 @@ async function loadBuyers() {
       </tr>
     `;
   }).join('');
+}
+
+function copyCredentials(username, password) {
+  const text = `Username: ${username}\nPassword: ${password}\nLogin: https://www.scoremycv.in/login.html`;
+  navigator.clipboard.writeText(text).then(() => alert('Credentials copied to clipboard!')).catch(() => alert('Copy failed — please copy manually from the box above.'));
+}
+
+function mailCredentials(username, password, email) {
+  const subject = encodeURIComponent('Your SQL Interview Prep Portal Access');
+  const body = encodeURIComponent(`Hi,\n\nYour access to the 30-Day SQL Interview Prep portal is ready!\n\nUsername: ${username}\nPassword: ${password}\nLogin here: https://www.scoremycv.in/login.html\n\nGood luck with your prep!\n\nAkshay`);
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
 }
 
 function showCreds(username, email) {

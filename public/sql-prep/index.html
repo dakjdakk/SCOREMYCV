@@ -399,15 +399,146 @@ hr { border: none; border-top: 1px solid #e2e8f0; }
   </div>
 </div>
 
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- Payment Modal -->
+<div id="pay-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:36px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <h2 style="font-size:20px;font-weight:900;color:#0f172a;margin-bottom:6px;">Buy Full Access</h2>
+    <p style="font-size:13px;color:#64748b;margin-bottom:24px;">Enter your details — your login credentials will be sent to your email after payment.</p>
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Full Name</label>
+      <input id="pay-name" type="text" placeholder="Your full name" style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:11px 14px;font-size:14px;outline:none;color:#0f172a;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Email Address</label>
+      <input id="pay-email" type="email" placeholder="you@email.com" style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:11px 14px;font-size:14px;outline:none;color:#0f172a;">
+    </div>
+    <div style="background:#eff6ff;border-radius:10px;padding:14px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;color:#1e293b;font-weight:600;">30-Day SQL Prep · 1 Year Access</span>
+      <span style="font-size:20px;font-weight:900;color:#1d4ed8;">₹199</span>
+    </div>
+    <div id="pay-error" style="color:#ef4444;font-size:13px;margin-bottom:12px;display:none;"></div>
+    <button id="pay-btn" onclick="startPayment()" style="width:100%;background:#1d4ed8;color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:800;cursor:pointer;">Pay ₹199 Securely →</button>
+    <button onclick="document.getElementById('pay-modal').style.display='none'" style="width:100%;background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;margin-top:12px;">Cancel</button>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="success-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+    <h2 style="font-size:22px;font-weight:900;color:#0f172a;margin-bottom:10px;">Payment Successful!</h2>
+    <p style="font-size:14px;color:#475569;line-height:1.7;margin-bottom:20px;">Your login credentials will be sent to <strong id="success-email"></strong> within a few hours.</p>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:20px;font-size:13px;color:#166534;line-height:1.7;">
+      While you wait, you can explore <strong>Week 1 for free</strong> using the demo.
+    </div>
+    <a href="/sql-prep-portal.html?demo=1" style="display:block;background:#1d4ed8;color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:800;text-decoration:none;margin-bottom:10px;">▶ Start Demo — Week 1 Free</a>
+    <button onclick="document.getElementById('success-modal').style.display='none'" style="background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;">Close</button>
+  </div>
+</div>
+
 <script>
+const RAZORPAY_KEY = 'rzp_live_T1QjMJ9vytylcI';
+
+function openPayModal() {
+  document.getElementById('pay-modal').style.display = 'flex';
+}
+
+// Wire all buy buttons to open pay modal
+document.querySelectorAll('#buy-btn, a[href="#pricing"]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    openPayModal();
+  });
+});
+
+async function startPayment() {
+  const name = document.getElementById('pay-name').value.trim();
+  const email = document.getElementById('pay-email').value.trim();
+  const errEl = document.getElementById('pay-error');
+  const btn = document.getElementById('pay-btn');
+
+  errEl.style.display = 'none';
+  if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating order...';
+
+  try {
+    const orderRes = await fetch('/api/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 19900, currency: 'INR', receipt: 'sql_prep_' + Date.now() })
+    });
+    const order = await orderRes.json();
+    if (!order.order_id) throw new Error('Order creation failed');
+
+    const options = {
+      key: RAZORPAY_KEY,
+      amount: order.amount,
+      currency: order.currency,
+      order_id: order.order_id,
+      name: 'SQL Interview Prep',
+      description: '30-Day SQL Interview Prep — 1 Year Access',
+      theme: { color: '#1d4ed8' },
+      prefill: { name, email },
+      handler: async function(response) {
+        // Verify payment
+        const verifyRes = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
+        const verify = await verifyRes.json();
+        if (verify.success) {
+          document.getElementById('pay-modal').style.display = 'none';
+          document.getElementById('success-email').textContent = email;
+          document.getElementById('success-modal').style.display = 'flex';
+        } else {
+          alert('Payment verification failed. Please contact us with your payment ID: ' + response.razorpay_payment_id);
+        }
+      },
+      modal: { ondismiss: function() {
+        btn.disabled = false;
+        btn.textContent = 'Pay ₹199 Securely →';
+      }}
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function(r) {
+      errEl.textContent = 'Payment failed: ' + (r.error.description || 'Please try again.');
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Pay ₹199 Securely →';
+    });
+    rzp.open();
+
+  } catch(e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Pay ₹199 Securely →';
+  }
+}
+
 function toggleFaq(el) {
   el.parentElement.classList.toggle('open');
 }
+
 document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const target = document.querySelector(a.getAttribute('href'));
-    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  });
+  if (a.getAttribute('href') !== '#pricing') {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  }
 });
 </script>
 </body>

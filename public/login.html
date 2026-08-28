@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — SQL Interview Prep</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f172a; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.login-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+.logo { text-align: center; margin-bottom: 32px; }
+.logo .icon { font-size: 42px; margin-bottom: 10px; }
+.logo h1 { font-size: 22px; font-weight: 800; color: #f1f5f9; }
+.logo p { color: #64748b; font-size: 13px; margin-top: 6px; }
+.form-group { margin-bottom: 20px; }
+label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 13px 14px; color: #f1f5f9; font-size: 15px; outline: none; transition: border-color 0.2s; }
+input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.login-btn { width: 100%; background: #3b82f6; color: #fff; border: none; border-radius: 8px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 8px; letter-spacing: 0.02em; }
+.login-btn:hover { background: #2563eb; }
+.login-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+.error { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; color: #fca5a5; border-radius: 8px; padding: 11px 14px; font-size: 13px; margin-bottom: 18px; display: none; }
+.footer-note { text-align: center; margin-top: 24px; font-size: 12px; color: #475569; }
+
+/* Name modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 36px; width: 100%; max-width: 400px; }
+.modal-box h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.modal-box p { color: #64748b; font-size: 13px; margin-bottom: 24px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="logo">
+    <div class="icon">🎯</div>
+    <h1>SQL Interview Prep</h1>
+    <p>Sign in to access your 30-day course</p>
+  </div>
+
+  <div class="error" id="error-msg"></div>
+
+  <div class="form-group">
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+  </div>
+  <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+
+  <div class="footer-note">Problems signing in? Contact your instructor.</div>
+</div>
+
+<!-- First-login: name capture for certificate -->
+<div class="modal-overlay" id="name-modal">
+  <div class="modal-box">
+    <h2>🎓 One quick thing!</h2>
+    <p>Enter your full name — it will appear on your <strong>Certificate of Completion</strong> when you finish all 30 days.</p>
+    <div class="form-group">
+      <label>Your Full Name</label>
+      <input type="text" id="full-name-input" placeholder="e.g. Rahul Sharma">
+    </div>
+    <button class="login-btn" onclick="saveName()">Continue to Course →</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgotnmqwajljounzbpvk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4wdxmVaapFWYZ8R-48T5IA_iL4chaWe';
+
+let loggedInUser = null;
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function sbFetch(path, opts = {}) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    ...(opts.headers || {})
+  };
+  if (opts.method === 'PATCH') headers['Prefer'] = 'return=minimal';
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers });
+  if (res.status === 204 || res.status === 200 && res.headers.get('content-length') === '0') return null;
+  try { return await res.json(); } catch { return null; }
+}
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('error-msg');
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  errEl.style.display = 'none';
+  if (!username || !password) { showError('Please enter your username and password.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    const hash = await sha256(password);
+    const data = await sbFetch(
+      `portal_users?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(hash)}&select=id,username,full_name,email`
+    );
+
+    if (!data || data.length === 0) {
+      showError('Incorrect username or password. Please try again.');
+      btn.disabled = false; btn.textContent = 'Sign In →';
+      return;
+    }
+
+    loggedInUser = data[0];
+    localStorage.setItem('sql30_user', JSON.stringify({
+      id: loggedInUser.id,
+      username: loggedInUser.username,
+      fullName: loggedInUser.full_name || '',
+      email: loggedInUser.email || ''
+    }));
+
+    if (!loggedInUser.full_name) {
+      document.getElementById('name-modal').classList.add('show');
+    } else {
+      window.location.href = 'sql-prep-portal.html';
+    }
+  } catch(e) {
+    showError('Connection error. Check your internet and try again.');
+    btn.disabled = false; btn.textContent = 'Sign In →';
+  }
+}
+
+async function saveName() {
+  const name = document.getElementById('full-name-input').value.trim();
+  if (!name) { alert('Please enter your full name.'); return; }
+
+  await sbFetch(`portal_users?id=eq.${loggedInUser.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ full_name: name })
+  });
+
+  const stored = JSON.parse(localStorage.getItem('sql30_user') || '{}');
+  stored.fullName = name;
+  localStorage.setItem('sql30_user', JSON.stringify(stored));
+  window.location.href = 'sql-prep-portal.html';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('name-modal').classList.contains('show')) doLogin();
+});
+
+// If already logged in, redirect
+if (localStorage.getItem('sql30_user')) {
+  window.location.href = 'sql-prep-portal.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Management — SQL Prep Admin</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; min-height: 100vh; }
+
+/* Login gate */
+#gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.gate-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 36px; width: 100%; max-width: 380px; }
+.gate-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.gate-card p { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px; color: #f1f5f9; font-size: 14px; outline: none; }
+input:focus { border-color: #3b82f6; }
+.btn { border: none; border-radius: 8px; padding: 11px 22px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.btn-primary { background: #3b82f6; color: #fff; width: 100%; margin-top: 12px; }
+.btn-primary:hover { background: #2563eb; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-green { background: #22c55e; color: #0f172a; }
+.btn-green:hover { background: #16a34a; }
+.btn-red { background: #ef4444; color: #fff; }
+.btn-red:hover { background: #dc2626; }
+.btn-indigo { background: #6366f1; color: #fff; }
+.btn-indigo:hover { background: #4f46e5; }
+
+/* Main panel */
+#panel { display: none; }
+.topbar { background: #1e293b; border-bottom: 1px solid #334155; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+.topbar h1 { font-size: 17px; font-weight: 800; }
+.back-link { color: #64748b; font-size: 13px; text-decoration: none; }
+.back-link:hover { color: #e2e8f0; }
+
+.main { max-width: 860px; margin: 0 auto; padding: 28px 20px; }
+
+/* Create form */
+.create-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+.create-card h2 { font-size: 14px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 18px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; align-items: end; }
+.form-group label { display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.gen-btn { background: #334155; color: #94a3b8; border: none; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; margin-top: 4px; }
+.gen-btn:hover { background: #475569; color: #e2e8f0; }
+.pwd-wrap { position: relative; }
+.pwd-wrap input { padding-right: 60px; }
+.toggle-pwd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; cursor: pointer; font-size: 12px; }
+.error-msg { color: #f87171; font-size: 12px; margin-top: 8px; display: none; }
+.success-msg { color: #4ade80; font-size: 12px; margin-top: 8px; display: none; }
+
+/* Buyers table */
+.buyers-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.buyers-header h2 { font-size: 15px; font-weight: 700; }
+.count-pill { background: #334155; color: #94a3b8; border-radius: 20px; padding: 3px 12px; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+th { background: #0f172a; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+td { padding: 13px 16px; font-size: 13px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.actions { display: flex; gap: 8px; }
+.empty-row td { text-align: center; color: #475569; padding: 40px; }
+.loading-row td { text-align: center; color: #475569; padding: 30px; }
+
+/* Credentials modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 30px; width: 100%; max-width: 480px; }
+.modal-box h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+.modal-box p { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+.cred-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; white-space: pre; color: #e2e8f0; margin-bottom: 16px; line-height: 1.8; }
+.modal-actions { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Admin gate -->
+<div id="gate">
+  <div class="gate-card">
+    <h2>🔐 Admin Access</h2>
+    <p>Enter admin password to manage buyer accounts.</p>
+    <div class="form-group">
+      <label>Admin Password</label>
+      <input type="password" id="gate-pwd" placeholder="Enter password">
+    </div>
+    <button class="btn btn-primary" onclick="checkGate()">Enter →</button>
+    <div class="error-msg" id="gate-error" style="display:block;margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- Main panel -->
+<div id="panel">
+  <div class="topbar">
+    <h1>👥 Buyer Account Management</h1>
+    <a href="sql-prep-portal.html" class="back-link">← Back to Portal</a>
+  </div>
+
+  <div class="main">
+    <!-- Create buyer -->
+    <div class="create-card">
+      <h2>➕ Create New Buyer</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="new-username" placeholder="e.g. rahul123">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="pwd-wrap">
+            <input type="text" id="new-password" placeholder="Enter password">
+          </div>
+          <button class="gen-btn" onclick="generatePassword()">⚡ Auto-generate</button>
+        </div>
+        <div class="form-group">
+          <label>Buyer Email</label>
+          <input type="email" id="new-email" placeholder="buyer@email.com">
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-green" style="width:100%;" onclick="createBuyer()">Create Account</button>
+        </div>
+      </div>
+      <div class="error-msg" id="create-error"></div>
+      <div class="success-msg" id="create-success"></div>
+    </div>
+
+    <!-- Buyers list -->
+    <div class="buyers-header">
+      <h2>All Buyers <span class="count-pill" id="buyer-count">...</span></h2>
+      <button class="btn btn-sm" onclick="loadBuyers()" style="background:#334155;color:#e2e8f0;">↻ Refresh</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="buyers-tbody">
+        <tr class="loading-row"><td colspan="5">Loading buyers...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Credentials modal -->
+<div class="modal-overlay" id="cred-modal">
+  <div class="modal-box">
+    <h3>📧 Send Credentials</h3>
+    <p>Review and click "Open Email" — your email client will open with everything pre-filled.</p>
+    <div class="cred-box" id="cred-preview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-indigo" onclick="openEmail()">📬 Open Email Client</button>
+      <button class="btn" style="background:#334155;color:#e2e8f0;" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgotnmqwajljounzbpvk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4wdxmVaapFWYZ8R-48T5IA_iL4chaWe';
+const ADMIN_PWD = '25227';
+
+let credData = {};
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function sbFetch(path, opts = {}) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    ...(opts.headers || {})
+  };
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers });
+  if (res.status === 204) return null;
+  try { return await res.json(); } catch { return null; }
+}
+
+function checkGate() {
+  const pwd = document.getElementById('gate-pwd').value;
+  if (pwd === ADMIN_PWD) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    loadBuyers();
+  } else {
+    document.getElementById('gate-error').textContent = 'Incorrect password.';
+  }
+}
+document.getElementById('gate-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') checkGate(); });
+
+function generatePassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let pwd = '';
+  for (let i = 0; i < 8; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('new-password').value = pwd;
+}
+
+async function createBuyer() {
+  const username = document.getElementById('new-username').value.trim();
+  const password = document.getElementById('new-password').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+
+  const errEl = document.getElementById('create-error');
+  const okEl = document.getElementById('create-success');
+  errEl.style.display = 'none';
+  okEl.style.display = 'none';
+
+  if (!username || !password) { errEl.textContent = 'Username and password are required.'; errEl.style.display = 'block'; return; }
+  if (username.includes(' ')) { errEl.textContent = 'Username cannot have spaces.'; errEl.style.display = 'block'; return; }
+
+  const hash = await sha256(password);
+
+  const result = await sbFetch('portal_users', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({ username, password: hash, email: email || null })
+  });
+
+  if (result && result[0]) {
+    okEl.textContent = `✓ Account created for "${username}"`;
+    okEl.style.display = 'block';
+    document.getElementById('new-username').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('new-email').value = '';
+    loadBuyers();
+  } else if (result && result.code === '23505') {
+    errEl.textContent = 'Username already exists. Choose another.';
+    errEl.style.display = 'block';
+  } else {
+    errEl.textContent = 'Failed to create account. Try again.';
+    errEl.style.display = 'block';
+  }
+}
+
+async function loadBuyers() {
+  const tbody = document.getElementById('buyers-tbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Loading...</td></tr>';
+
+  const buyers = await sbFetch('portal_users?select=id,username,full_name,email,created_at&order=created_at.desc');
+
+  if (!buyers || buyers.length === 0) {
+    document.getElementById('buyer-count').textContent = '0';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No buyers yet. Create the first one above.</td></tr>';
+    return;
+  }
+
+  document.getElementById('buyer-count').textContent = buyers.length;
+  tbody.innerHTML = buyers.map(b => {
+    const date = new Date(b.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    return `
+      <tr>
+        <td><strong>${escHtml(b.username)}</strong></td>
+        <td>${escHtml(b.full_name || '—')}</td>
+        <td>${escHtml(b.email || '—')}</td>
+        <td>${date}</td>
+        <td>
+          <div class="actions">
+            ${b.email ? `<button class="btn btn-sm btn-indigo" onclick="showCreds('${escHtml(b.username)}','${escHtml(b.email)}')">📧 Email</button>` : ''}
+            <button class="btn btn-sm btn-red" onclick="deleteBuyer('${b.id}','${escHtml(b.username)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function showCreds(username, email) {
+  credData = { username, email };
+  const text = `Username: ${username}\nPassword: [the password you set — check your records]\n\nLogin here: ${window.location.origin}/login.html`;
+  document.getElementById('cred-preview').textContent = text;
+  document.getElementById('cred-modal').classList.add('show');
+}
+
+function openEmail() {
+  const subject = encodeURIComponent('Your SQL Interview Prep Portal Access');
+  const body = encodeURIComponent(
+    `Hi there,\n\nYour access to the 30-Day SQL Interview Prep portal is ready!\n\nUsername: ${credData.username}\nPassword: [your password]\n\nLogin here: ${window.location.origin}/login.html\n\nGood luck with your prep!\n\nAkshay`
+  );
+  window.location.href = `mailto:${credData.email}?subject=${subject}&body=${body}`;
+}
+
+function closeModal() {
+  document.getElementById('cred-modal').classList.remove('show');
+}
+
+async function deleteBuyer(id, username) {
+  if (!confirm(`Delete buyer "${username}"? They will lose access immediately.`)) return;
+  await sbFetch(`portal_users?id=eq.${id}`, { method: 'DELETE' });
+  loadBuyers();
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

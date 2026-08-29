@@ -14,20 +14,26 @@ body { background: #f8fafc; color: #1e293b; font-family: 'Inter', system-ui, san
 .logo p { color: #64748b; font-size: 13px; margin-top: 6px; }
 .form-group { margin-bottom: 20px; }
 label { display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-input { width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 13px 14px; color: #0f172a; font-size: 15px; outline: none; transition: border-color 0.2s; }
-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29,78,216,0.08); }
+input, select { width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 13px 14px; color: #0f172a; font-size: 15px; outline: none; transition: border-color 0.2s; font-family: inherit; }
+input:focus, select:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29,78,216,0.08); }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
 .login-btn { width: 100%; background: #1d4ed8; color: #fff; border: none; border-radius: 8px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 8px; letter-spacing: 0.02em; }
 .login-btn:hover { background: #1e40af; }
 .login-btn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
 .error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; border-radius: 8px; padding: 11px 14px; font-size: 13px; margin-bottom: 18px; display: none; }
+.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 8px; padding: 11px 14px; font-size: 13px; margin-bottom: 18px; display: none; }
 .footer-note { text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8; }
+.forgot-link { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: #1d4ed8; cursor: pointer; text-decoration: none; }
+.forgot-link:hover { text-decoration: underline; }
 
-/* Name modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+/* Modals */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
 .modal-overlay.show { display: flex; }
-.modal-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 36px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+.modal-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 36px; width: 100%; max-width: 440px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
 .modal-box h2 { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
 .modal-box p { color: #64748b; font-size: 13px; margin-bottom: 24px; line-height: 1.6; }
+.modal-error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+.step-indicator { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -50,20 +56,105 @@ input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29,78,216,0.08);
     <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
   </div>
   <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+  <a class="forgot-link" onclick="showForgot()">Forgot Password?</a>
 
   <div class="footer-note">Problems signing in? Contact your instructor.</div>
 </div>
 
-<!-- First-login: name capture for certificate -->
+<!-- MODAL 1: First-login — capture full name -->
 <div class="modal-overlay" id="name-modal">
   <div class="modal-box">
+    <div class="step-indicator">Step 1 of 2</div>
     <h2>🎓 One quick thing!</h2>
     <p>Enter your full name — it will appear on your <strong>Certificate of Completion</strong> when you finish all 30 days.</p>
     <div class="form-group">
       <label>Your Full Name</label>
       <input type="text" id="full-name-input" placeholder="e.g. Rahul Sharma">
     </div>
-    <button class="login-btn" onclick="saveName()">Continue to Course →</button>
+    <button class="login-btn" onclick="saveName()">Next →</button>
+  </div>
+</div>
+
+<!-- MODAL 2: First-login — set secret question -->
+<div class="modal-overlay" id="secret-setup-modal">
+  <div class="modal-box">
+    <div class="step-indicator">Step 2 of 2</div>
+    <h2>🔐 Set Security Question</h2>
+    <p>This helps you reset your password if you forget it. Choose a question only you know the answer to.</p>
+    <div class="form-group">
+      <label>Security Question</label>
+      <select id="secret-question-select">
+        <option value="">— Choose a question —</option>
+        <option>What is your mother's maiden name?</option>
+        <option>What was the name of your first pet?</option>
+        <option>What city were you born in?</option>
+        <option>What was the name of your first school?</option>
+        <option>What is your favourite movie?</option>
+        <option>What was your childhood nickname?</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Your Answer</label>
+      <input type="text" id="secret-answer-input" placeholder="Type your answer (not case-sensitive)">
+    </div>
+    <button class="login-btn" onclick="saveSecretQuestion()">Continue to Course →</button>
+  </div>
+</div>
+
+<!-- MODAL 3: Forgot Password flow -->
+<div class="modal-overlay" id="forgot-modal">
+  <div class="modal-box">
+
+    <!-- Step A: Enter username -->
+    <div id="forgot-step-a">
+      <h2>🔑 Reset Password</h2>
+      <p>Enter your username and we'll show you your security question.</p>
+      <div class="modal-error" id="forgot-err-a"></div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="forgot-username" placeholder="Enter your username">
+      </div>
+      <button class="login-btn" onclick="forgotStep1()">Continue →</button>
+      <a class="forgot-link" onclick="closeForgot()">← Back to Login</a>
+    </div>
+
+    <!-- Step B: Answer secret question -->
+    <div id="forgot-step-b" style="display:none;">
+      <h2>🔑 Security Question</h2>
+      <p id="forgot-question-text" style="font-weight:600; color:#0f172a; margin-bottom:8px;"></p>
+      <div class="modal-error" id="forgot-err-b"></div>
+      <div class="form-group" style="margin-top:16px;">
+        <label>Your Answer</label>
+        <input type="text" id="forgot-answer" placeholder="Enter your answer">
+      </div>
+      <button class="login-btn" onclick="forgotStep2()">Verify →</button>
+      <a class="forgot-link" onclick="showForgotStepA()">← Back</a>
+    </div>
+
+    <!-- Step C: Set new password -->
+    <div id="forgot-step-c" style="display:none;">
+      <h2>✅ Set New Password</h2>
+      <p>Your answer was correct! Choose a new password.</p>
+      <div class="modal-error" id="forgot-err-c"></div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="new-password" placeholder="Enter new password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="confirm-password" placeholder="Re-enter new password">
+      </div>
+      <button class="login-btn" onclick="forgotStep3()">Save Password →</button>
+    </div>
+
+    <!-- Step D: Success -->
+    <div id="forgot-step-d" style="display:none; text-align:center; padding: 20px 0;">
+      <div style="font-size:48px; margin-bottom:16px;">🎉</div>
+      <h2 style="margin-bottom:12px;">Password Changed!</h2>
+      <p style="margin-bottom:24px;">Your password has been updated. You can now sign in with your new password.</p>
+      <button class="login-btn" onclick="closeForgot()">Go to Login →</button>
+    </div>
+
   </div>
 </div>
 
@@ -72,9 +163,10 @@ const SUPABASE_URL = 'https://qgotnmqwajljounzbpvk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4wdxmVaapFWYZ8R-48T5IA_iL4chaWe';
 
 let loggedInUser = null;
+let forgotUserId = null;
 
 async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str.toLowerCase().trim()));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
@@ -87,9 +179,11 @@ async function sbFetch(path, opts = {}) {
   };
   if (opts.method === 'PATCH') headers['Prefer'] = 'return=minimal';
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers });
-  if (res.status === 204 || res.status === 200 && res.headers.get('content-length') === '0') return null;
+  if (res.status === 204 || (res.status === 200 && res.headers.get('content-length') === '0')) return null;
   try { return await res.json(); } catch { return null; }
 }
+
+// ─── Login ───────────────────────────────────────────────────────────────────
 
 async function doLogin() {
   const btn = document.getElementById('login-btn');
@@ -106,7 +200,7 @@ async function doLogin() {
   try {
     const hash = await sha256(password);
     const data = await sbFetch(
-      `portal_users?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(hash)}&select=id,username,full_name,email`
+      `portal_users?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(hash)}&select=id,username,full_name,email,secret_question`
     );
 
     if (!data || data.length === 0) {
@@ -117,7 +211,7 @@ async function doLogin() {
 
     loggedInUser = data[0];
 
-    // Generate unique session token and save to Supabase
+    // Generate unique session token
     const sessionToken = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36);
     await sbFetch(`portal_users?id=eq.${loggedInUser.id}`, {
       method: 'PATCH',
@@ -133,15 +227,22 @@ async function doLogin() {
     }));
 
     if (!loggedInUser.full_name) {
+      // First login — show name modal
       document.getElementById('name-modal').classList.add('show');
+    } else if (!loggedInUser.secret_question) {
+      // Has name but no secret question yet — show secret setup
+      document.getElementById('secret-setup-modal').classList.add('show');
     } else {
       window.location.href = 'sql-prep-portal.html';
     }
+
   } catch(e) {
     showError('Connection error. Check your internet and try again.');
     btn.disabled = false; btn.textContent = 'Sign In →';
   }
 }
+
+// ─── First-login: Name ────────────────────────────────────────────────────────
 
 async function saveName() {
   const name = document.getElementById('full-name-input').value.trim();
@@ -155,7 +256,127 @@ async function saveName() {
   const stored = JSON.parse(localStorage.getItem('sql30_user') || '{}');
   stored.fullName = name;
   localStorage.setItem('sql30_user', JSON.stringify(stored));
+
+  // Proceed to secret question setup
+  document.getElementById('name-modal').classList.remove('show');
+  document.getElementById('secret-setup-modal').classList.add('show');
+}
+
+// ─── First-login: Secret Question ────────────────────────────────────────────
+
+async function saveSecretQuestion() {
+  const question = document.getElementById('secret-question-select').value;
+  const answer = document.getElementById('secret-answer-input').value.trim();
+
+  if (!question) { alert('Please choose a security question.'); return; }
+  if (!answer) { alert('Please enter your answer.'); return; }
+
+  const answerHash = await sha256(answer);
+
+  await sbFetch(`portal_users?id=eq.${loggedInUser.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ secret_question: question, secret_answer: answerHash })
+  });
+
   window.location.href = 'sql-prep-portal.html';
+}
+
+// ─── Forgot Password ──────────────────────────────────────────────────────────
+
+function showForgot() {
+  document.getElementById('forgot-modal').classList.add('show');
+  showForgotStepA();
+}
+
+function closeForgot() {
+  document.getElementById('forgot-modal').classList.remove('show');
+}
+
+function showForgotStepA() {
+  document.getElementById('forgot-step-a').style.display = 'block';
+  document.getElementById('forgot-step-b').style.display = 'none';
+  document.getElementById('forgot-step-c').style.display = 'none';
+  document.getElementById('forgot-step-d').style.display = 'none';
+}
+
+async function forgotStep1() {
+  const username = document.getElementById('forgot-username').value.trim();
+  const errEl = document.getElementById('forgot-err-a');
+  errEl.style.display = 'none';
+
+  if (!username) { errEl.textContent = 'Please enter your username.'; errEl.style.display = 'block'; return; }
+
+  const data = await sbFetch(
+    `portal_users?username=eq.${encodeURIComponent(username)}&select=id,secret_question`
+  );
+
+  if (!data || data.length === 0) {
+    errEl.textContent = 'Username not found. Please check and try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (!data[0].secret_question) {
+    errEl.textContent = 'No security question set for this account. Please contact your instructor.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  forgotUserId = data[0].id;
+  document.getElementById('forgot-question-text').textContent = data[0].secret_question;
+  document.getElementById('forgot-step-a').style.display = 'none';
+  document.getElementById('forgot-step-b').style.display = 'block';
+}
+
+async function forgotStep2() {
+  const answer = document.getElementById('forgot-answer').value.trim();
+  const errEl = document.getElementById('forgot-err-b');
+  errEl.style.display = 'none';
+
+  if (!answer) { errEl.textContent = 'Please enter your answer.'; errEl.style.display = 'block'; return; }
+
+  const answerHash = await sha256(answer);
+
+  const data = await sbFetch(
+    `portal_users?id=eq.${forgotUserId}&secret_answer=eq.${encodeURIComponent(answerHash)}&select=id`
+  );
+
+  if (!data || data.length === 0) {
+    errEl.textContent = 'Incorrect answer. Please try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  document.getElementById('forgot-step-b').style.display = 'none';
+  document.getElementById('forgot-step-c').style.display = 'block';
+}
+
+async function forgotStep3() {
+  const newPwd = document.getElementById('new-password').value;
+  const confirmPwd = document.getElementById('confirm-password').value;
+  const errEl = document.getElementById('forgot-err-c');
+  errEl.style.display = 'none';
+
+  if (!newPwd || newPwd.length < 4) {
+    errEl.textContent = 'Password must be at least 4 characters.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (newPwd !== confirmPwd) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const newHash = await sha256(newPwd);
+
+  await sbFetch(`portal_users?id=eq.${forgotUserId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ password: newHash })
+  });
+
+  document.getElementById('forgot-step-c').style.display = 'none';
+  document.getElementById('forgot-step-d').style.display = 'block';
 }
 
 function showError(msg) {
@@ -166,7 +387,12 @@ function showError(msg) {
 
 // Enter key support
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !document.getElementById('name-modal').classList.contains('show')) doLogin();
+  if (e.key === 'Enter') {
+    if (document.getElementById('name-modal').classList.contains('show')) { saveName(); return; }
+    if (document.getElementById('secret-setup-modal').classList.contains('show')) { saveSecretQuestion(); return; }
+    if (document.getElementById('forgot-modal').classList.contains('show')) return;
+    doLogin();
+  }
 });
 
 // If already logged in, redirect

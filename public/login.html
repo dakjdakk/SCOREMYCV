@@ -116,11 +116,20 @@ async function doLogin() {
     }
 
     loggedInUser = data[0];
+
+    // Generate unique session token and save to Supabase
+    const sessionToken = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36);
+    await sbFetch(`portal_users?id=eq.${loggedInUser.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ session_token: sessionToken })
+    });
+
     localStorage.setItem('sql30_user', JSON.stringify({
       id: loggedInUser.id,
       username: loggedInUser.username,
       fullName: loggedInUser.full_name || '',
-      email: loggedInUser.email || ''
+      email: loggedInUser.email || '',
+      sessionToken
     }));
 
     if (!loggedInUser.full_name) {

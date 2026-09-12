@@ -421,7 +421,7 @@ ${cvText}`;
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               contents: [{ parts: [{ text: extractPrompt }] }],
-              generationConfig: { temperature: 0, maxOutputTokens: 8192, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } },
+              generationConfig: { temperature: 0, maxOutputTokens: 16384, responseMimeType: "application/json" },
             }),
           },
         );
@@ -936,7 +936,7 @@ ${cvText}`;
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               contents: [{ parts: [{ text: extractPrompt }] }],
-              generationConfig: { temperature: 0, maxOutputTokens: 16384, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } },
+              generationConfig: { temperature: 0, maxOutputTokens: 16384, responseMimeType: "application/json" },
             }),
           },
         );

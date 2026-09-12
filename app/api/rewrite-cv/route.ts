@@ -346,7 +346,7 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         } catch { return u.replace(/https?:\/\//, "").split("/")[0]; }
       };
       // contactParts assembled after Gemini call — location comes from cvData.location
-      const contactPartsBase = { phoneNorm, emailMatch, linkedinUrl, githubUrl, portfolioUrl, relocateMatch, mentionsLinkedin, mentionsGithub, mentionsPortfolio, allExtractedUrls, locationMatch };
+      const contactPartsBase = { phoneNorm, emailMatch, linkedinUrl, githubUrl, portfolioUrl, relocateMatch, mentionsLinkedin, mentionsGithub, mentionsPortfolio, allExtractedUrls, locationMatch, imageExtRe, getDomainLabel };
       console.log("[OPT] contactPartsBase ready, awaiting Gemini location");
 
       // ── STEP 1: Ask Gemini for structured JSON only ───────────────
@@ -597,12 +597,8 @@ ${cvText}`;
       // ── Build contactParts now that cvData.location is available ──
       const { phoneNorm: pn, emailMatch: em, linkedinUrl: lu, githubUrl: gu, portfolioUrl: pu,
               relocateMatch: rm, mentionsLinkedin: ml, mentionsGithub: mg, mentionsPortfolio: mp,
-              allExtractedUrls: aeu, locationMatch: lm } = contactPartsBase;
-      const imageExtRe = /\.(png|jpg|jpeg|gif|svg|webp|ico|bmp|tiff?)(\?.*)?$/i;
-      const getDomainLabel = (u: string) => {
-        try { const h = new URL(u).hostname.replace(/^www\./, ""); const d = h.split(".")[0]; return d.charAt(0).toUpperCase() + d.slice(1); }
-        catch { return u.replace(/https?:\/\//, "").split("/")[0]; }
-      };
+              allExtractedUrls: aeu, locationMatch: lm,
+              imageExtRe: imgRe, getDomainLabel: getDL } = contactPartsBase;
       const contactParts: string[] = [];
       // Location: prefer Gemini-extracted, fallback to regex
       const geminiLocation = (cvData.location || "").trim();
@@ -617,9 +613,9 @@ ${cvText}`;
       if (pu)        contactParts.push(`<a href="${pu}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
       else if (mp && !lu && !gu) contactParts.push("Portfolio");
       if (rm) contactParts.push("Open to Relocate");
-      aeu.filter(u => u !== pu && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imageExtRe.test(u))
+      aeu.filter(u => u !== pu && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imgRe.test(u))
          .slice(0, 2)
-         .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDomainLabel(u)}</a>`));
+         .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDL(u)}</a>`));
       console.log("[OPT] contactParts:", contactParts, "geminiLocation:", geminiLocation);
 
       // Candidate name and designation (from JSON, fallback to CV text scan)

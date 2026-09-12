@@ -936,15 +936,17 @@ ${cvText}`;
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               contents: [{ parts: [{ text: extractPrompt }] }],
-              generationConfig: { temperature: 0, maxOutputTokens: 8192, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } },
+              generationConfig: { temperature: 0, maxOutputTokens: 16384, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } },
             }),
           },
         );
         if (!res.ok) return { ok: false, rawJson: "", status: res.status };
         const data = await res.json();
         const pts = data?.candidates?.[0]?.content?.parts ?? [];
-        const text = pts.find((p: any) => !p.thought && p.text)?.text ?? pts[0]?.text ?? "";
-        return { ok: true, rawJson: text };
+        const rawText = pts.find((p: any) => !p.thought && p.text)?.text ?? pts[0]?.text ?? "";
+        // If empty, log finish reason to help debug
+        if (!rawText) console.error("[OPT5] empty text from Gemini. finishReason:", data?.candidates?.[0]?.finishReason, "full resp:", JSON.stringify(data).slice(0, 500));
+        return { ok: true, rawJson: rawText };
       };
       const tryParseJson5 = (raw: string): any | null => {
         const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();

@@ -221,11 +221,12 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
 
       // ── Build contact line server-side (before Gemini call) ──────────
       const emailMatch   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-      const phoneRaw     = cvText.match(/(\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
+      const phoneRaw     = cvText.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
       const phoneNorm = (() => {
         if (!phoneRaw) return "";
         const digits = phoneRaw.replace(/\D/g, "");
-        if (phoneRaw.startsWith("+91")) return phoneRaw;
+        if (phoneRaw.startsWith("+91") || phoneRaw.startsWith("(+91")) return phoneRaw;
+        if ((phoneRaw.startsWith("+") || phoneRaw.startsWith("(+")) && !digits.startsWith("91")) return phoneRaw; // keep foreign numbers as-is
         if (digits.startsWith("91") && digits.length === 12) return `+91-${digits.slice(2)}`;
         if (digits.length === 10) return `+91-${digits}`;
         return phoneRaw;
@@ -344,22 +345,9 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
           return domain.charAt(0).toUpperCase() + domain.slice(1);
         } catch { return u.replace(/https?:\/\//, "").split("/")[0]; }
       };
-      const contactParts: string[] = [];
-      if (locationMatch) contactParts.push(locationMatch[1].trim());
-      if (phoneNorm)     contactParts.push(phoneNorm);
-      if (emailMatch)    contactParts.push(`<a href="mailto:${emailMatch[0]}" style="color:inherit;text-decoration:none;">${emailMatch[0]}</a>`);
-      if (linkedinUrl)         contactParts.push(`<a href="${linkedinUrl}" style="color:inherit;text-decoration:none;">LinkedIn</a>`);
-      else if (mentionsLinkedin) contactParts.push("LinkedIn");
-      if (githubUrl)           contactParts.push(`<a href="${githubUrl}" style="color:inherit;text-decoration:none;">GitHub</a>`);
-      else if (mentionsGithub)   contactParts.push("GitHub");
-      if (portfolioUrl)        contactParts.push(`<a href="${portfolioUrl}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
-      else if (mentionsPortfolio && !linkedinUrl && !githubUrl) contactParts.push("Portfolio");
-      if (relocateMatch) contactParts.push("Open to Relocate");
-      allExtractedUrls
-        .filter(u => u !== portfolioUrl && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imageExtRe.test(u))
-        .slice(0, 2)
-        .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDomainLabel(u)}</a>`));
-      console.log("[OPT] contactParts:", contactParts);
+      // contactParts assembled after Gemini call — location comes from cvData.location
+      const contactPartsBase = { phoneNorm, emailMatch, linkedinUrl, githubUrl, portfolioUrl, relocateMatch, mentionsLinkedin, mentionsGithub, mentionsPortfolio, allExtractedUrls, locationMatch };
+      console.log("[OPT] contactPartsBase ready, awaiting Gemini location");
 
       // ── STEP 1: Ask Gemini for structured JSON only ───────────────
       const extractPrompt = `You are a CV data extractor. Extract the resume content below into valid JSON matching this exact schema. Output ONLY valid JSON — no markdown, no code fences, no explanation.
@@ -372,6 +360,7 @@ Rules:
 - SKILLS GROUPING: If the CV lists skills without sub-categories (e.g. a flat list under "Core Competencies", "Technical Skills", "Skills"), you MUST intelligently group them into standard categories. Use these category names where applicable: "Programming Languages", "Frameworks & Libraries", "Databases", "Cloud & DevOps", "Machine Learning & AI", "Data & Visualization Tools", "Tools & Platforms". Only use categories that have at least one skill. Do NOT use vague names like "Core Competencies" or "Technical Skills" as category names.
 - For bullets: extract actual content, lightly improve phrasing for ATS but never fabricate facts.
 - "achievements": bullets from ANY section named "Coding Practices", "Achievements", "Awards", "Key Achievements". IMPORTANT: Strip any section-name prefix — if bullet says "Coding Practices: Solved 100+ problems..." just extract "Solved 100+ problems...". Never include the section name as a prefix inside the bullet text.
+- "location": The candidate's current city and country (e.g. "Dublin, Ireland" or "Dubai, UAE" or "Bangalore, India"). Extract from the header/contact section. Use empty string if not found.
 - "leadership": items from "Leadership", "Extracurricular", "Activities" sections.
 - If a section does not exist in the CV, use null or empty array [].
 - certifications[].issuer may be empty string if not mentioned.
@@ -380,6 +369,7 @@ Rules:
 JSON Schema (output this exact structure):
 {
   "name": "string",
+  "location": "string",
   "designation": "string",
   "summary": "string",
   "skills": [{"category": "string", "items": "string"}],
@@ -603,6 +593,34 @@ ${cvText}`;
           ).join("\n")}</ul>`
         : "";
       const leaderHtml = sec("Leadership & Activities", leaderInner);
+
+      // ── Build contactParts now that cvData.location is available ──
+      const { phoneNorm: pn, emailMatch: em, linkedinUrl: lu, githubUrl: gu, portfolioUrl: pu,
+              relocateMatch: rm, mentionsLinkedin: ml, mentionsGithub: mg, mentionsPortfolio: mp,
+              allExtractedUrls: aeu, locationMatch: lm } = contactPartsBase;
+      const imageExtRe = /\.(png|jpg|jpeg|gif|svg|webp|ico|bmp|tiff?)(\?.*)?$/i;
+      const getDomainLabel = (u: string) => {
+        try { const h = new URL(u).hostname.replace(/^www\./, ""); const d = h.split(".")[0]; return d.charAt(0).toUpperCase() + d.slice(1); }
+        catch { return u.replace(/https?:\/\//, "").split("/")[0]; }
+      };
+      const contactParts: string[] = [];
+      // Location: prefer Gemini-extracted, fallback to regex
+      const geminiLocation = (cvData.location || "").trim();
+      if (geminiLocation)      contactParts.push(geminiLocation);
+      else if (lm)             contactParts.push(lm[1].trim());
+      if (pn)  contactParts.push(pn);
+      if (em)  contactParts.push(`<a href="mailto:${em[0]}" style="color:inherit;text-decoration:none;">${em[0]}</a>`);
+      if (lu)        contactParts.push(`<a href="${lu}" style="color:inherit;text-decoration:none;">LinkedIn</a>`);
+      else if (ml)   contactParts.push("LinkedIn");
+      if (gu)        contactParts.push(`<a href="${gu}" style="color:inherit;text-decoration:none;">GitHub</a>`);
+      else if (mg)   contactParts.push("GitHub");
+      if (pu)        contactParts.push(`<a href="${pu}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
+      else if (mp && !lu && !gu) contactParts.push("Portfolio");
+      if (rm) contactParts.push("Open to Relocate");
+      aeu.filter(u => u !== pu && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imageExtRe.test(u))
+         .slice(0, 2)
+         .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDomainLabel(u)}</a>`));
+      console.log("[OPT] contactParts:", contactParts, "geminiLocation:", geminiLocation);
 
       // Candidate name and designation (from JSON, fallback to CV text scan)
       const candidateName = esc(

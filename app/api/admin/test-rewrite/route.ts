@@ -271,11 +271,12 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
 
       // ── Build contact line server-side (before Gemini call) ──────────
       const emailMatch4   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-      const phoneRaw4     = cvText.match(/(\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
+      const phoneRaw4     = cvText.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
       const phoneNorm4 = (() => {
         if (!phoneRaw4) return "";
         const digits = phoneRaw4.replace(/\D/g, "");
-        if (phoneRaw4.startsWith("+91")) return phoneRaw4;
+        if (phoneRaw4.startsWith("+91") || phoneRaw4.startsWith("(+91")) return phoneRaw4;
+        if ((phoneRaw4.startsWith("+") || phoneRaw4.startsWith("(+")) && !digits.startsWith("91")) return phoneRaw4;
         if (digits.startsWith("91") && digits.length === 12) return `+91-${digits.slice(2)}`;
         if (digits.length === 10) return `+91-${digits}`;
         return phoneRaw4;
@@ -795,11 +796,12 @@ Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
 
       // ── Build contact line server-side (before Gemini call) ──────────
       const emailMatch5   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-      const phoneRaw5     = cvText.match(/(\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
+      const phoneRaw5     = cvText.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
       const phoneNorm5 = (() => {
         if (!phoneRaw5) return "";
         const digits = phoneRaw5.replace(/\D/g, "");
-        if (phoneRaw5.startsWith("+91")) return phoneRaw5;
+        if (phoneRaw5.startsWith("+91") || phoneRaw5.startsWith("(+91")) return phoneRaw5;
+        if ((phoneRaw5.startsWith("+") || phoneRaw5.startsWith("(+")) && !digits.startsWith("91")) return phoneRaw5;
         if (digits.startsWith("91") && digits.length === 12) return `+91-${digits.slice(2)}`;
         if (digits.length === 10) return `+91-${digits}`;
         return phoneRaw5;
@@ -881,8 +883,8 @@ Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
           return domain.charAt(0).toUpperCase() + domain.slice(1);
         } catch { return u.replace(/https?:\/\//, "").split("/")[0]; }
       };
+      // contactParts location will be injected after Gemini call using cvData.location
       const contactParts: string[] = [];
-      if (locationMatch5) contactParts.push(locationMatch5[1].trim());
       if (phoneNorm5)     contactParts.push(phoneNorm5);
       if (emailMatch5)    contactParts.push(`<a href="mailto:${emailMatch5[0]}" style="color:inherit;text-decoration:none;">${emailMatch5[0]}</a>`);
       if (linkedinUrl)         contactParts.push(`<a href="${linkedinUrl}" style="color:inherit;text-decoration:none;">LinkedIn</a>`);
@@ -909,6 +911,7 @@ Rules:
 - SKILLS GROUPING: If the CV lists skills without sub-categories (e.g. a flat list under "Core Competencies", "Technical Skills", "Skills"), you MUST intelligently group them into standard categories. Use these category names where applicable: "Programming Languages", "Frameworks & Libraries", "Databases", "Cloud & DevOps", "Machine Learning & AI", "Data & Visualization Tools", "Tools & Platforms". Only use categories that have at least one skill. Do NOT use vague names like "Core Competencies" or "Technical Skills" as category names.
 - For bullets: extract actual content, lightly improve phrasing for ATS but never fabricate facts.
 - "achievements": bullets from ANY section named "Coding Practices", "Achievements", "Awards", "Key Achievements". IMPORTANT: Strip any section-name prefix — if bullet says "Coding Practices: Solved 100+ problems..." just extract "Solved 100+ problems...". Never include the section name as a prefix inside the bullet text.
+- "location": The candidate's current city and country (e.g. "Dublin, Ireland" or "Dubai, UAE" or "Bangalore, India"). Extract from the header/contact section. Use empty string if not found.
 - "leadership": items from "Leadership", "Extracurricular", "Activities" sections.
 - If a section does not exist in the CV, use null or empty array [].
 - certifications[].issuer may be empty string if not mentioned.
@@ -917,6 +920,7 @@ Rules:
 JSON Schema (output this exact structure):
 {
   "name": "string",
+  "location": "string",
   "designation": "string",
   "summary": "string",
   "skills": [{"category": "string", "items": "string"}],
@@ -1127,6 +1131,12 @@ ${cvText}`;
           ).join("\n")}</ul>`
         : "";
       const leaderHtml5 = sec("Leadership & Activities", leaderInner5);
+
+      // Inject location from Gemini at front of contactParts (fallback to regex)
+      const geminiLocation5 = (cvData.location || "").trim();
+      if (geminiLocation5)        contactParts.unshift(geminiLocation5);
+      else if (locationMatch5)    contactParts.unshift(locationMatch5[1].trim());
+      console.log("[OPT5] contactParts:", contactParts, "geminiLocation:", geminiLocation5);
 
       // Candidate name and designation (from JSON, fallback to CV text scan)
       const candidateName5 = esc(

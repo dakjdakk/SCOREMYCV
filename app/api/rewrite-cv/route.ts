@@ -296,14 +296,20 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         "Remote","Hybrid"
       ]);
       const locationMatch = (() => {
-        // Match "Word Word, State" patterns in the header, but only accept if first word is a known city
-        const m = headerLines.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*India)?)\b/g);
+        // Match "Word Word, State/Country" patterns in the header
+        const m = headerLines.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*[A-Za-z]{2,20})?)\b/g);
         if (!m) return null;
-        const valid = m.find(loc => {
+        // First try: prefer Indian cities (exact whitelist match)
+        const indian = m.find(loc => {
           const firstWord = loc.split(/[\s,]+/)[0];
           return INDIAN_CITIES.has(firstWord);
         });
-        return valid ? [null, valid] : null;
+        if (indian) return [null, indian];
+        // Fallback: accept any "City, Country" or "City, XX" pattern from the header
+        // Exclude obvious non-locations (email domains, tech terms, etc.)
+        const NON_LOCATION = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker/i;
+        const fallback = m.find(loc => !NON_LOCATION.test(loc));
+        return fallback ? [null, fallback] : null;
       })();
       const relocateMatch = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
       const headerText   = cvText.split("\n").slice(0, 10).join(" ");

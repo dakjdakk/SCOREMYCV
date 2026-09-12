@@ -325,18 +325,21 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         "Vasco","Margao","Remote","Hybrid"
       ]);
       const locationMatch4 = (() => {
+        const FOREIGN_COUNTRIES4 = new Set(["Ireland","United Kingdom","England","Scotland","Wales","UAE","United Arab Emirates","Singapore","Australia","Canada","Germany","Netherlands","France","Switzerland","Sweden","Norway","Denmark","Finland","Austria","Belgium","Spain","Italy","Portugal","New Zealand","Japan","South Korea","Malaysia","Qatar","Bahrain","Kuwait","Oman","Saudi Arabia","Saudi","Jordan","Egypt","South Africa","Kenya","Nigeria","Ghana","USA","United States","America","Poland","Czech Republic","Hungary","Romania","Croatia","Serbia","Greece","Israel","Turkey","Pakistan","Bangladesh","Sri Lanka","Nepal","Philippines","Indonesia","Thailand","Vietnam","China","Hong Kong","Taiwan"]);
         const searchText4 = cvText.split("\n").slice(0, 15).join("\n");
-        const anyLocPattern4 = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*[A-Za-z][A-Za-z\s]{1,25}/g;
+        const anyLocPattern4 = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*([A-Za-z][A-Za-z\s]{1,30})/g;
         let m4: RegExpExecArray | null;
         while ((m4 = anyLocPattern4.exec(searchText4)) !== null) {
-          const city4 = m4[1].trim();
-          const cityTitle4 = city4.charAt(0).toUpperCase() + city4.slice(1).toLowerCase();
-          if (INDIAN_CITIES4.has(city4) || INDIAN_CITIES4.has(cityTitle4)) return [null, m4[0].trim()];
+          const city4 = m4[1].trim(); const ct4 = city4.charAt(0).toUpperCase() + city4.slice(1).toLowerCase();
+          if (INDIAN_CITIES4.has(city4) || INDIAN_CITIES4.has(ct4)) return [null, m4[0].trim()];
+        }
+        anyLocPattern4.lastIndex = 0;
+        while ((m4 = anyLocPattern4.exec(searchText4)) !== null) {
+          if (FOREIGN_COUNTRIES4.has(m4[2].trim())) return [null, m4[0].trim()];
         }
         const foreignPattern4 = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
         while ((m4 = foreignPattern4.exec(searchText4)) !== null) {
-          const code4 = m4[2];
-          if (/^(AM|PM|CV|HR|IT|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code4)) continue;
+          if (/^(AM|PM|CV|HR|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(m4[2])) continue;
           return [null, m4[0].trim()];
         }
         return null;
@@ -846,18 +849,21 @@ Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
         "Vasco","Margao","Remote","Hybrid"
       ]);
       const locationMatch5 = (() => {
+        const FOREIGN_COUNTRIES5 = new Set(["Ireland","United Kingdom","England","Scotland","Wales","UAE","United Arab Emirates","Singapore","Australia","Canada","Germany","Netherlands","France","Switzerland","Sweden","Norway","Denmark","Finland","Austria","Belgium","Spain","Italy","Portugal","New Zealand","Japan","South Korea","Malaysia","Qatar","Bahrain","Kuwait","Oman","Saudi Arabia","Saudi","Jordan","Egypt","South Africa","Kenya","Nigeria","Ghana","USA","United States","America","Poland","Czech Republic","Hungary","Romania","Croatia","Serbia","Greece","Israel","Turkey","Pakistan","Bangladesh","Sri Lanka","Nepal","Philippines","Indonesia","Thailand","Vietnam","China","Hong Kong","Taiwan"]);
         const searchText5 = cvText.split("\n").slice(0, 15).join("\n");
-        const anyLocPattern5 = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*[A-Za-z][A-Za-z\s]{1,25}/g;
+        const anyLocPattern5 = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*([A-Za-z][A-Za-z\s]{1,30})/g;
         let m5: RegExpExecArray | null;
         while ((m5 = anyLocPattern5.exec(searchText5)) !== null) {
-          const city5 = m5[1].trim();
-          const cityTitle5 = city5.charAt(0).toUpperCase() + city5.slice(1).toLowerCase();
-          if (INDIAN_CITIES5.has(city5) || INDIAN_CITIES5.has(cityTitle5)) return [null, m5[0].trim()];
+          const city5 = m5[1].trim(); const ct5 = city5.charAt(0).toUpperCase() + city5.slice(1).toLowerCase();
+          if (INDIAN_CITIES5.has(city5) || INDIAN_CITIES5.has(ct5)) return [null, m5[0].trim()];
+        }
+        anyLocPattern5.lastIndex = 0;
+        while ((m5 = anyLocPattern5.exec(searchText5)) !== null) {
+          if (FOREIGN_COUNTRIES5.has(m5[2].trim())) return [null, m5[0].trim()];
         }
         const foreignPattern5 = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
         while ((m5 = foreignPattern5.exec(searchText5)) !== null) {
-          const code5 = m5[2];
-          if (/^(AM|PM|CV|HR|IT|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code5)) continue;
+          if (/^(AM|PM|CV|HR|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(m5[2])) continue;
           return [null, m5[0].trim()];
         }
         return null;

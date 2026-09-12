@@ -297,25 +297,37 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       ]);
       const locationMatch = (() => {
         const searchText = cvText.split("\n").slice(0, 15).join("\n");
-        // Pass 1: Indian city from whitelist (any separator)
-        const anyLocPattern = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*[A-Za-z][A-Za-z\s]{1,25}/g;
+        // Known foreign countries (full names)
+        const FOREIGN_COUNTRIES = new Set([
+          "Ireland","United Kingdom","England","Scotland","Wales","UAE","United Arab Emirates",
+          "Singapore","Australia","Canada","Germany","Netherlands","France","Switzerland",
+          "Sweden","Norway","Denmark","Finland","Austria","Belgium","Spain","Italy","Portugal",
+          "New Zealand","Japan","South Korea","Malaysia","Qatar","Bahrain","Kuwait","Oman",
+          "Saudi Arabia","Saudi","Bahrain","Jordan","Egypt","South Africa","Kenya","Nigeria",
+          "Ghana","USA","United States","America","Poland","Czech Republic","Hungary","Romania",
+          "Croatia","Serbia","Greece","Israel","Turkey","Pakistan","Bangladesh","Sri Lanka",
+          "Nepal","Philippines","Indonesia","Thailand","Vietnam","China","Hong Kong","Taiwan"
+        ]);
+        // Pass 1: Indian city from whitelist
+        const anyLocPattern = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*([A-Za-z][A-Za-z\s]{1,30})/g;
         let m: RegExpExecArray | null;
         while ((m = anyLocPattern.exec(searchText)) !== null) {
           const city = m[1].trim();
           const cityTitle = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
-          if (INDIAN_CITIES.has(city) || INDIAN_CITIES.has(cityTitle)) {
-            return [null, m[0].trim()];
-          }
+          if (INDIAN_CITIES.has(city) || INDIAN_CITIES.has(cityTitle)) return [null, m[0].trim()];
         }
-        // Pass 2: non-Indian city — second part MUST be 2-3 letter ALL-CAPS country/state code
-        // e.g. "Dublin, IE" / "Dubai, UAE" / "London, UK" / "New York, NY"
+        // Pass 2: City + known foreign country name (e.g. "Dublin, Ireland")
+        anyLocPattern.lastIndex = 0;
+        while ((m = anyLocPattern.exec(searchText)) !== null) {
+          const country = m[2].trim();
+          if (FOREIGN_COUNTRIES.has(country)) return [null, m[0].trim()];
+        }
+        // Pass 3: City + 2-3 letter ALL-CAPS country code (e.g. "Dubai, UAE" / "London, UK")
         const foreignPattern = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
         while ((m = foreignPattern.exec(searchText)) !== null) {
-          const full = m[0].trim();
           const code = m[2];
-          // Skip common false positives
-          if (/^(AM|PM|CV|HR|IT|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code)) continue;
-          return [null, full];
+          if (/^(AM|PM|CV|HR|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code)) continue;
+          return [null, m[0].trim()];
         }
         return null;
       })();

@@ -325,13 +325,22 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         "Vasco","Margao","Remote","Hybrid"
       ]);
       const locationMatch4 = (() => {
-        const m = headerLines4.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*[A-Za-z]{2,20})?)\b/g);
-        if (!m) return null;
-        const indian = m.find(loc => { const firstWord = loc.split(/[\s,]+/)[0]; return INDIAN_CITIES4.has(firstWord); });
-        if (indian) return [null, indian];
-        const NON_LOCATION4 = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker/i;
-        const fallback = m.find(loc => !NON_LOCATION4.test(loc));
-        return fallback ? [null, fallback] : null;
+        const NON_LOCATION4 = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker|university|college|institute|school|engineer|analyst|developer|manager|intern/i;
+        // Search full header (first 15 lines) for any location-like pattern
+        const searchText4 = cvText.split("\n").slice(0, 15).join("\n");
+        // Pattern 1: "City, Country" or "City, ST" — mixed or all-caps
+        const p1 = searchText4.match(/\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?\s*[,|–\-]\s*(?:[A-Z]{2,3}|[A-Za-z][A-Za-z]{1,20}))\b/g) || [];
+        for (const loc of p1) {
+          if (NON_LOCATION4.test(loc)) continue;
+          const firstWord = loc.split(/[\s,|–\-]+/)[0];
+          // Prefer Indian cities
+          if (INDIAN_CITIES4.has(firstWord) || INDIAN_CITIES4.has(firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase())) return [null, loc];
+        }
+        // Fallback: any non-Indian city pattern
+        for (const loc of p1) {
+          if (!NON_LOCATION4.test(loc)) return [null, loc];
+        }
+        return null;
       })();
       const relocateMatch4 = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
       const headerText4   = cvText.split("\n").slice(0, 10).join(" ");
@@ -838,13 +847,18 @@ Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
         "Vasco","Margao","Remote","Hybrid"
       ]);
       const locationMatch5 = (() => {
-        const m = headerLines5.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*[A-Za-z]{2,20})?)\b/g);
-        if (!m) return null;
-        const indian5 = m.find(loc => { const firstWord = loc.split(/[\s,]+/)[0]; return INDIAN_CITIES5.has(firstWord); });
-        if (indian5) return [null, indian5];
-        const NON_LOCATION5 = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker/i;
-        const fallback5 = m.find(loc => !NON_LOCATION5.test(loc));
-        return fallback5 ? [null, fallback5] : null;
+        const NON_LOCATION5 = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker|university|college|institute|school|engineer|analyst|developer|manager|intern/i;
+        const searchText5 = cvText.split("\n").slice(0, 15).join("\n");
+        const p1 = searchText5.match(/\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?\s*[,|–\-]\s*(?:[A-Z]{2,3}|[A-Za-z][A-Za-z]{1,20}))\b/g) || [];
+        for (const loc of p1) {
+          if (NON_LOCATION5.test(loc)) continue;
+          const firstWord = loc.split(/[\s,|–\-]+/)[0];
+          if (INDIAN_CITIES5.has(firstWord) || INDIAN_CITIES5.has(firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase())) return [null, loc];
+        }
+        for (const loc of p1) {
+          if (!NON_LOCATION5.test(loc)) return [null, loc];
+        }
+        return null;
       })();
       const relocateMatch5 = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
       const headerText5   = cvText.split("\n").slice(0, 10).join(" ");

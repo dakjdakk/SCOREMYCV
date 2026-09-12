@@ -296,20 +296,21 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         "Remote","Hybrid"
       ]);
       const locationMatch = (() => {
-        // Match "Word Word, State/Country" patterns in the header
-        const m = headerLines.match(/\b([A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?,\s*(?:[A-Z]{2,3}|[A-Z][a-z]{1,15}(?:\s[A-Z][a-z]{1,15})?)(?:,\s*[A-Za-z]{2,20})?)\b/g);
-        if (!m) return null;
-        // First try: prefer Indian cities (exact whitelist match)
-        const indian = m.find(loc => {
-          const firstWord = loc.split(/[\s,]+/)[0];
-          return INDIAN_CITIES.has(firstWord);
-        });
-        if (indian) return [null, indian];
-        // Fallback: accept any "City, Country" or "City, XX" pattern from the header
-        // Exclude obvious non-locations (email domains, tech terms, etc.)
-        const NON_LOCATION = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker/i;
-        const fallback = m.find(loc => !NON_LOCATION.test(loc));
-        return fallback ? [null, fallback] : null;
+        const NON_LOCATION = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker|university|college|institute|school|engineer|analyst|developer|manager|intern/i;
+        // Search first 15 lines for any location-like pattern (handles all caps, pipes, dashes)
+        const searchText = cvText.split("\n").slice(0, 15).join("\n");
+        const p1 = searchText.match(/\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?\s*[,|–\-]\s*(?:[A-Z]{2,3}|[A-Za-z][A-Za-z]{1,20}))\b/g) || [];
+        // First pass: prefer Indian cities
+        for (const loc of p1) {
+          if (NON_LOCATION.test(loc)) continue;
+          const firstWord = loc.split(/[\s,|–\-]+/)[0];
+          if (INDIAN_CITIES.has(firstWord) || INDIAN_CITIES.has(firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase())) return [null, loc];
+        }
+        // Second pass: any valid non-Indian location
+        for (const loc of p1) {
+          if (!NON_LOCATION.test(loc)) return [null, loc];
+        }
+        return null;
       })();
       const relocateMatch = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
       const headerText   = cvText.split("\n").slice(0, 10).join(" ");

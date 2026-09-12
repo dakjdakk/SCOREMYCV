@@ -296,19 +296,26 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         "Remote","Hybrid"
       ]);
       const locationMatch = (() => {
-        const NON_LOCATION = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker|university|college|institute|school|engineer|analyst|developer|manager|intern/i;
-        // Search first 15 lines for any location-like pattern (handles all caps, pipes, dashes)
         const searchText = cvText.split("\n").slice(0, 15).join("\n");
-        const p1 = searchText.match(/\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?\s*[,|–\-]\s*(?:[A-Z]{2,3}|[A-Za-z][A-Za-z]{1,20}))\b/g) || [];
-        // First pass: prefer Indian cities
-        for (const loc of p1) {
-          if (NON_LOCATION.test(loc)) continue;
-          const firstWord = loc.split(/[\s,|–\-]+/)[0];
-          if (INDIAN_CITIES.has(firstWord) || INDIAN_CITIES.has(firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase())) return [null, loc];
+        // Pass 1: Indian city from whitelist (any separator)
+        const anyLocPattern = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*[A-Za-z][A-Za-z\s]{1,25}/g;
+        let m: RegExpExecArray | null;
+        while ((m = anyLocPattern.exec(searchText)) !== null) {
+          const city = m[1].trim();
+          const cityTitle = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+          if (INDIAN_CITIES.has(city) || INDIAN_CITIES.has(cityTitle)) {
+            return [null, m[0].trim()];
+          }
         }
-        // Second pass: any valid non-Indian location
-        for (const loc of p1) {
-          if (!NON_LOCATION.test(loc)) return [null, loc];
+        // Pass 2: non-Indian city — second part MUST be 2-3 letter ALL-CAPS country/state code
+        // e.g. "Dublin, IE" / "Dubai, UAE" / "London, UK" / "New York, NY"
+        const foreignPattern = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
+        while ((m = foreignPattern.exec(searchText)) !== null) {
+          const full = m[0].trim();
+          const code = m[2];
+          // Skip common false positives
+          if (/^(AM|PM|CV|HR|IT|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code)) continue;
+          return [null, full];
         }
         return null;
       })();

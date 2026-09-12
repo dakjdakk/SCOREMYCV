@@ -325,20 +325,19 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         "Vasco","Margao","Remote","Hybrid"
       ]);
       const locationMatch4 = (() => {
-        const NON_LOCATION4 = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker|university|college|institute|school|engineer|analyst|developer|manager|intern/i;
-        // Search full header (first 15 lines) for any location-like pattern
         const searchText4 = cvText.split("\n").slice(0, 15).join("\n");
-        // Pattern 1: "City, Country" or "City, ST" — mixed or all-caps
-        const p1 = searchText4.match(/\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?\s*[,|–\-]\s*(?:[A-Z]{2,3}|[A-Za-z][A-Za-z]{1,20}))\b/g) || [];
-        for (const loc of p1) {
-          if (NON_LOCATION4.test(loc)) continue;
-          const firstWord = loc.split(/[\s,|–\-]+/)[0];
-          // Prefer Indian cities
-          if (INDIAN_CITIES4.has(firstWord) || INDIAN_CITIES4.has(firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase())) return [null, loc];
+        const anyLocPattern4 = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*[A-Za-z][A-Za-z\s]{1,25}/g;
+        let m4: RegExpExecArray | null;
+        while ((m4 = anyLocPattern4.exec(searchText4)) !== null) {
+          const city4 = m4[1].trim();
+          const cityTitle4 = city4.charAt(0).toUpperCase() + city4.slice(1).toLowerCase();
+          if (INDIAN_CITIES4.has(city4) || INDIAN_CITIES4.has(cityTitle4)) return [null, m4[0].trim()];
         }
-        // Fallback: any non-Indian city pattern
-        for (const loc of p1) {
-          if (!NON_LOCATION4.test(loc)) return [null, loc];
+        const foreignPattern4 = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
+        while ((m4 = foreignPattern4.exec(searchText4)) !== null) {
+          const code4 = m4[2];
+          if (/^(AM|PM|CV|HR|IT|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code4)) continue;
+          return [null, m4[0].trim()];
         }
         return null;
       })();
@@ -847,16 +846,19 @@ Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
         "Vasco","Margao","Remote","Hybrid"
       ]);
       const locationMatch5 = (() => {
-        const NON_LOCATION5 = /gmail|yahoo|outlook|hotmail|linkedin|github|\.com|\.in|\.io|\.org|javascript|python|java|react|node|sql|html|css|aws|azure|gcp|docker|university|college|institute|school|engineer|analyst|developer|manager|intern/i;
         const searchText5 = cvText.split("\n").slice(0, 15).join("\n");
-        const p1 = searchText5.match(/\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?\s*[,|–\-]\s*(?:[A-Z]{2,3}|[A-Za-z][A-Za-z]{1,20}))\b/g) || [];
-        for (const loc of p1) {
-          if (NON_LOCATION5.test(loc)) continue;
-          const firstWord = loc.split(/[\s,|–\-]+/)[0];
-          if (INDIAN_CITIES5.has(firstWord) || INDIAN_CITIES5.has(firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase())) return [null, loc];
+        const anyLocPattern5 = /\b([A-Za-z][A-Za-z]{1,15}(?:\s[A-Za-z][A-Za-z]{1,15})?)\s*[,|–\-]\s*[A-Za-z][A-Za-z\s]{1,25}/g;
+        let m5: RegExpExecArray | null;
+        while ((m5 = anyLocPattern5.exec(searchText5)) !== null) {
+          const city5 = m5[1].trim();
+          const cityTitle5 = city5.charAt(0).toUpperCase() + city5.slice(1).toLowerCase();
+          if (INDIAN_CITIES5.has(city5) || INDIAN_CITIES5.has(cityTitle5)) return [null, m5[0].trim()];
         }
-        for (const loc of p1) {
-          if (!NON_LOCATION5.test(loc)) return [null, loc];
+        const foreignPattern5 = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
+        while ((m5 = foreignPattern5.exec(searchText5)) !== null) {
+          const code5 = m5[2];
+          if (/^(AM|PM|CV|HR|IT|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code5)) continue;
+          return [null, m5[0].trim()];
         }
         return null;
       })();

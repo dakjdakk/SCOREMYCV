@@ -1,0 +1,16 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#EDE9FE"/>
+  <rect x="0" y="0" width="1080" height="12" fill="#7C3AED"/>
+  <rect x="0" y="1068" width="1080" height="12" fill="#7C3AED"/>
+  <text x="540" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#7C3AED" letter-spacing="4">STEP 1</text>
+  <text x="540" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" fill="#7C3AED">📤</text>
+  <text x="540" y="470" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900" fill="#4C1D95">You Apply on</text>
+  <text x="540" y="555" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900" fill="#4C1D95">Naukri / LinkedIn</text>
+  <rect x="140" y="590" width="800" height="3" fill="#C4B5FD"/>
+  <text x="540" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#5B21B6">You upload your resume</text>
+  <text x="540" y="725" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#5B21B6">and hit Apply.</text>
+  <text x="540" y="810" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#5B21B6">You think a recruiter</text>
+  <text x="540" y="865" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#5B21B6">will read it next...</text>
+  <text x="540" y="960" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="52" font-weight="900" fill="#7C3AED">But that's not what happens.</text>
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#7C3AED" opacity="0.4">2 / 5</text>
+</svg>

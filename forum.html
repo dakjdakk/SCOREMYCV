@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q&A Forum — SQL Interview Prep</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+
+/* Nav */
+.topnav { background: #1e293b; border-bottom: 1px solid #334155; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+.topnav h1 { font-size: 17px; font-weight: 800; color: #f1f5f9; }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.nav-btn { background: #334155; color: #e2e8f0; border: none; border-radius: 7px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: background 0.15s; }
+.nav-btn:hover { background: #475569; }
+.user-chip { background: #1e3a5f; border: 1px solid #1d4ed8; color: #93c5fd; border-radius: 20px; padding: 5px 14px; font-size: 13px; font-weight: 600; }
+
+/* Container */
+.container { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* Post box */
+.post-box { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 22px; margin-bottom: 28px; }
+.post-box h2 { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+textarea { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px; color: #f1f5f9; font-size: 14px; min-height: 90px; resize: vertical; outline: none; font-family: inherit; line-height: 1.6; transition: border-color 0.2s; }
+textarea:focus { border-color: #3b82f6; }
+.post-btn { background: #3b82f6; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.15s; }
+.post-btn:hover { background: #2563eb; }
+.post-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+.login-prompt { padding: 18px; color: #64748b; font-size: 14px; text-align: center; }
+.login-prompt a { color: #3b82f6; text-decoration: none; font-weight: 600; }
+.login-prompt a:hover { text-decoration: underline; }
+
+/* Questions */
+.section-header { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.count-badge { background: #334155; color: #94a3b8; border-radius: 20px; padding: 2px 10px; font-size: 12px; }
+
+.q-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+.q-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.q-avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.q-username { font-size: 13px; font-weight: 700; color: #60a5fa; }
+.q-date { font-size: 11px; color: #475569; }
+.q-text { font-size: 15px; color: #e2e8f0; line-height: 1.65; }
+
+/* Answers */
+.answers-wrap { margin-top: 16px; border-top: 1px solid #1e3a5f; padding-top: 16px; }
+.answer-card { background: #0c1929; border-left: 3px solid #22c55e; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 10px; }
+.answer-label { font-size: 11px; font-weight: 700; color: #22c55e; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.answer-text { font-size: 14px; color: #cbd5e1; line-height: 1.7; white-space: pre-wrap; }
+
+/* Admin reply */
+.admin-toggle-btn { margin-top: 14px; background: none; border: 1px dashed #334155; color: #475569; border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.admin-toggle-btn:hover { border-color: #22c55e; color: #22c55e; }
+.admin-reply-form { margin-top: 12px; display: none; background: #0f172a; border-radius: 8px; padding: 14px; border: 1px solid #1e3a5f; }
+.admin-reply-form textarea { min-height: 80px; margin-bottom: 0; }
+.submit-reply-btn { background: #22c55e; color: #0f172a; border: none; border-radius: 7px; padding: 9px 20px; font-size: 13px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: background 0.15s; }
+.submit-reply-btn:hover { background: #16a34a; }
+
+/* States */
+.empty-state { text-align: center; padding: 60px 20px; color: #475569; }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; }
+.loading { text-align: center; padding: 40px; color: #475569; font-size: 14px; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #334155; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <h1>💬 Q&A Forum</h1>
+  <div class="nav-right">
+    <a href="sql-prep-portal.html" class="nav-btn">← Back to Course</a>
+    <span class="user-chip" id="user-chip" style="display:none;"></span>
+    <button class="nav-btn" id="logout-btn" onclick="logout()" style="display:none;">Logout</button>
+    <a href="login.html" class="nav-btn" id="login-nav-btn" style="display:none;">Sign In</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Post question box -->
+  <div class="post-box">
+    <h2>💬 Ask a Question</h2>
+    <div id="post-area"></div>
+  </div>
+
+  <!-- Questions list -->
+  <div class="section-header">
+    All Questions <span class="count-badge" id="q-count">...</span>
+  </div>
+  <div id="questions-list"><div class="loading"><span class="spinner"></span>Loading questions...</div></div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgotnmqwajljounzbpvk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4wdxmVaapFWYZ8R-48T5IA_iL4chaWe';
+const ADMIN_PWD = '25227';
+
+let currentUser = null;
+let adminVerified = false;
+
+async function sbFetch(path, opts = {}) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    ...(opts.headers || {})
+  };
+  if (opts.method === 'POST') headers['Prefer'] = 'return=representation';
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers });
+  if (res.status === 204) return null;
+  try { return await res.json(); } catch { return null; }
+}
+
+function init() {
+  const stored = localStorage.getItem('sql30_user');
+  if (stored) {
+    currentUser = JSON.parse(stored);
+    document.getElementById('user-chip').textContent = '👤 ' + currentUser.username;
+    document.getElementById('user-chip').style.display = 'inline-block';
+    document.getElementById('logout-btn').style.display = 'inline-block';
+    document.getElementById('post-area').innerHTML = `
+      <textarea id="q-textarea" placeholder="Type your SQL question in detail...&#10;&#10;e.g. What is the difference between WHERE and HAVING?"></textarea>
+      <br>
+      <button class="post-btn" id="post-q-btn" onclick="postQuestion()">Post Question →</button>
+    `;
+  } else {
+    document.getElementById('login-nav-btn').style.display = 'inline-flex';
+    document.getElementById('post-area').innerHTML = `
+      <div class="login-prompt">
+        <a href="login.html">Sign in</a> to post a question — questions and answers are visible to everyone.
+      </div>
+    `;
+  }
+  loadQuestions();
+}
+
+async function postQuestion() {
+  const btn = document.getElementById('post-q-btn');
+  const text = document.getElementById('q-textarea').value.trim();
+  if (!text) { alert('Please enter your question.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Posting...';
+
+  try {
+    await sbFetch('forum_questions', {
+      method: 'POST',
+      body: JSON.stringify({ username: currentUser.username, question: text })
+    });
+    document.getElementById('q-textarea').value = '';
+    await loadQuestions();
+  } catch(e) {
+    alert('Failed to post. Please try again.');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Post Question →';
+}
+
+async function loadQuestions() {
+  try {
+    const questions = await sbFetch(
+      'forum_questions?select=id,username,question,created_at,forum_answers(id,answer,created_at)&order=created_at.desc'
+    );
+
+    if (!questions || questions.length === 0) {
+      document.getElementById('q-count').textContent = '0';
+      document.getElementById('questions-list').innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🤔</div>
+          <p>No questions yet. Be the first to ask!</p>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('q-count').textContent = questions.length;
+    document.getElementById('questions-list').innerHTML = questions.map(q => renderQ(q)).join('');
+  } catch(e) {
+    document.getElementById('questions-list').innerHTML = '<div class="loading">Failed to load. Please refresh.</div>';
+  }
+}
+
+function renderQ(q) {
+  const answers = q.forum_answers || [];
+  const date = new Date(q.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  const initials = q.username.substring(0,2).toUpperCase();
+
+  const answersHtml = answers.length > 0 ? `
+    <div class="answers-wrap">
+      ${answers.map(a => `
+        <div class="answer-card">
+          <div class="answer-label">✅ Admin Answer</div>
+          <div class="answer-text">${escHtml(a.answer)}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  return `
+    <div class="q-card" id="q-${q.id}">
+      <div class="q-meta">
+        <div class="q-avatar">${initials}</div>
+        <div>
+          <div class="q-username">${escHtml(q.username)}</div>
+          <div class="q-date">${date}</div>
+        </div>
+      </div>
+      <div class="q-text">${escHtml(q.question)}</div>
+      ${answersHtml}
+      <button class="admin-toggle-btn" onclick="toggleAdminReply('${q.id}')">🔑 Admin Reply</button>
+      <div class="admin-reply-form" id="reply-form-${q.id}">
+        <textarea id="reply-text-${q.id}" placeholder="Write your answer here..."></textarea>
+        <br>
+        <button class="submit-reply-btn" onclick="submitReply('${q.id}')">Post Answer ✓</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleAdminReply(qId) {
+  const form = document.getElementById(`reply-form-${qId}`);
+  if (form.style.display === 'block') { form.style.display = 'none'; return; }
+
+  if (!adminVerified) {
+    const pwd = prompt('Enter admin password:');
+    if (pwd !== ADMIN_PWD) { alert('Incorrect password.'); return; }
+    adminVerified = true;
+  }
+  form.style.display = 'block';
+  document.getElementById(`reply-text-${qId}`).focus();
+}
+
+async function submitReply(qId) {
+  const text = document.getElementById(`reply-text-${qId}`).value.trim();
+  if (!text) { alert('Please enter your answer.'); return; }
+
+  const btn = document.querySelector(`#reply-form-${qId} .submit-reply-btn`);
+  btn.disabled = true;
+  btn.textContent = 'Posting...';
+
+  try {
+    await sbFetch('forum_answers', {
+      method: 'POST',
+      body: JSON.stringify({ question_id: qId, answer: text })
+    });
+    await loadQuestions();
+  } catch(e) {
+    alert('Failed to post answer. Try again.');
+    btn.disabled = false;
+    btn.textContent = 'Post Answer ✓';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('sql30_user');
+  window.location.reload();
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+}
+
+init();
+</script>
+</body>
+</html>

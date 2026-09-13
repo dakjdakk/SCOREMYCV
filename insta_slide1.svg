@@ -1,0 +1,13 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#1D4ED8"/>
+  <circle cx="900" cy="150" r="200" fill="#2563EB" opacity="0.4"/>
+  <circle cx="150" cy="900" r="180" fill="#2563EB" opacity="0.3"/>
+  <text x="540" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="90" fill="white">📄</text>
+  <text x="540" y="460" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="white">5 Reasons Your</text>
+  <text x="540" y="550" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="white">Resume Gets</text>
+  <text x="540" y="640" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="white">Rejected in</text>
+  <text x="540" y="730" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#FCD34D">6 Seconds</text>
+  <text x="540" y="840" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#BFDBFE">Most freshers never find out why 😶</text>
+  <text x="540" y="1020" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="white" opacity="0.6">scoremycv.in</text>
+  <text x="1040" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="white" opacity="0.5" transform="rotate(90,1040,540)">1 / 6  →  swipe</text>
+</svg>

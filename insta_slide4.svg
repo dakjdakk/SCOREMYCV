@@ -1,0 +1,17 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#FEFCE8"/>
+  <rect x="0" y="0" width="1080" height="12" fill="#CA8A04"/>
+  <rect x="0" y="1068" width="1080" height="12" fill="#CA8A04"/>
+  <text x="540" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#CA8A04" letter-spacing="4">MISTAKE #3</text>
+  <text x="540" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="100" fill="#CA8A04">📝</text>
+  <text x="540" y="440" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900" fill="#92400E">Weak Action Verbs</text>
+  <text x="540" y="520" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900" fill="#92400E">Like "Did" &amp; "Helped"</text>
+  <rect x="140" y="560" width="800" height="3" fill="#FDE68A"/>
+  <text x="540" y="630" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#78350F">❌  "Helped with project"</text>
+  <text x="540" y="690" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#15803D">✅  "Led a team of 4 to deliver..."</text>
+  <text x="540" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#78350F">❌  "Did data analysis"</text>
+  <text x="540" y="820" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#15803D">✅  "Analysed 50K rows to reduce..."</text>
+  <rect x="290" y="890" width="500" height="80" rx="40" fill="#CA8A04"/>
+  <text x="540" y="942" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="white">Fix this at scoremycv.in</text>
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#CA8A04" opacity="0.5">4 / 6</text>
+</svg>

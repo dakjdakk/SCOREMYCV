@@ -1,0 +1,17 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#1D4ED8"/>
+  <circle cx="900" cy="180" r="220" fill="#2563EB" opacity="0.4"/>
+  <circle cx="150" cy="880" r="200" fill="#2563EB" opacity="0.3"/>
+  <text x="540" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="90" fill="white">🚀</text>
+  <text x="540" y="360" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900" fill="white">Know Your</text>
+  <text x="540" y="450" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900" fill="#FCD34D">ATS Score</text>
+  <text x="540" y="540" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900" fill="white">for FREE</text>
+  <rect x="140" y="580" width="800" height="3" fill="white" opacity="0.2"/>
+  <text x="540" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#BFDBFE">Find out exactly what's wrong</text>
+  <text x="540" y="705" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#BFDBFE">with your resume in 30 seconds.</text>
+  <text x="540" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#BFDBFE">No signup. Completely free.</text>
+  <rect x="190" y="820" width="700" height="100" rx="50" fill="white"/>
+  <text x="540" y="884" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="46" font-weight="900" fill="#1D4ED8">scoremycv.in</text>
+  <text x="540" y="1000" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="white" opacity="0.6">Link in bio 👆</text>
+  <text x="540" y="1050" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="white" opacity="0.4">6 / 6</text>
+</svg>

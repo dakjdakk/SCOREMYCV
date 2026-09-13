@@ -1,10 +1,8 @@
-Restore my website to stable-v1
+Restore my website to v1.0-stable
 
-just give this above prompt to restore website to how it was on June 17-06-2026 (Claude)
+just give this above prompt to restore website to how it was on June 16-07-2026 (Claude)
 
-GitHub Path: https://github.https://github.com/dakjdakk/SCOREMYCV/tree/stable-v1
+GitHub Path: https://github.com/dakjdakk/SCOREMYCV/releases/tag/v1.0-stable
 
 
-Restore my website to stable-v2
-just give this above prompt to restore website to how it was on June 24-06-2026 (Claude)
-GitHub Path: https://github.https://github.com/dakjdakk/SCOREMYCV/tree/stable-v2        
+      --above is final structure

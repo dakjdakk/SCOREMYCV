@@ -1,0 +1,37 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#064E3B"/>
+  <circle cx="950" cy="150" r="280" fill="#065F46" opacity="0.5"/>
+  <circle cx="100" cy="950" r="240" fill="#065F46" opacity="0.4"/>
+
+  <text x="540" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#6EE7B7" letter-spacing="5">SUCCESS STORY 🙏</text>
+
+  <rect x="80" y="150" width="920" height="440" rx="20" fill="rgba(255,255,255,0.06)"/>
+  <rect x="80" y="150" width="8" height="440" rx="4" fill="#34D399"/>
+
+  <text x="540" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-style="italic">"I was a fresher with a Data Science</text>
+  <text x="540" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-style="italic">certification. Applied everywhere.</text>
+  <text x="540" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-style="italic">Zero calls for 3 months.</text>
+  <text x="540" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-style="italic">My ATS score was 49.</text>
+  <text x="540" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-style="italic">Fixed it to 76. Got 2 interview</text>
+  <text x="540" y="490" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-style="italic">calls within 2 weeks."</text>
+  <text x="540" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#6EE7B7">— Data Science Fresher, Pune</text>
+
+  <rect x="80" y="630" width="920" height="2" fill="rgba(255,255,255,0.1)"/>
+
+  <rect x="200" y="670" width="200" height="130" rx="16" fill="rgba(239,68,68,0.15)"/>
+  <text x="300" y="740" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#EF4444">49</text>
+  <text x="300" y="785" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#FCA5A5">Before</text>
+
+  <text x="540" y="748" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="60" font-weight="900" fill="#6EE7B7">→</text>
+
+  <rect x="680" y="670" width="200" height="130" rx="16" fill="rgba(52,211,153,0.15)"/>
+  <text x="780" y="740" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#34D399">76</text>
+  <text x="780" y="785" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6EE7B7">After</text>
+
+  <rect x="80" y="840" width="920" height="2" fill="rgba(255,255,255,0.1)"/>
+
+  <text x="540" y="910" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="46" font-weight="900" fill="white">It's not just your skills that matter.</text>
+  <text x="540" y="965" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="46" font-weight="900" fill="#FCD34D">It's HOW you show them. 💡</text>
+
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#6EE7B7" opacity="0.7">scoremycv.in — link in bio 👆</text>
+</svg>

@@ -1,0 +1,18 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#F0FDFA"/>
+  <rect x="0" y="0" width="1080" height="16" fill="#0D9488"/>
+  <rect x="0" y="1064" width="1080" height="16" fill="#0D9488"/>
+  <rect x="0" y="0" width="16" height="1080" fill="#0D9488"/>
+  <rect x="1064" y="0" width="16" height="1080" fill="#0D9488"/>
+  <text x="540" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="140" fill="#0D9488">🚀</text>
+  <text x="540" y="380" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#134E4A">Does your resume</text>
+  <text x="540" y="465" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#134E4A">have all 7?</text>
+  <rect x="140" y="500" width="800" height="4" fill="#99F6E4"/>
+  <text x="540" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#0F766E">Check your ATS score for FREE.</text>
+  <text x="540" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#0F766E">Find missing keywords instantly.</text>
+  <text x="540" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#0F766E">Takes 30 seconds. No signup.</text>
+  <rect x="240" y="780" width="600" height="100" rx="50" fill="#0F766E"/>
+  <text x="540" y="844" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="48" font-weight="900" fill="white">scoremycv.in</text>
+  <text x="540" y="960" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#0D9488">Link in bio 👆</text>
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#0D9488" opacity="0.4">9 / 9</text>
+</svg>

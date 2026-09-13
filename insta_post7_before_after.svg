@@ -1,0 +1,41 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#0F172A"/>
+  <circle cx="950" cy="100" r="260" fill="#1E293B" opacity="0.6"/>
+  <circle cx="100" cy="980" r="220" fill="#1E293B" opacity="0.5"/>
+
+  <text x="540" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#475569" letter-spacing="5">SAME PERSON. SAME SKILLS.</text>
+
+  <!-- BEFORE box -->
+  <rect x="60" y="130" width="420" height="520" rx="20" fill="#1E293B"/>
+  <rect x="60" y="130" width="420" height="520" rx="20" fill="none" stroke="#EF4444" stroke-width="3"/>
+  <text x="270" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#EF4444" letter-spacing="3">BEFORE</text>
+  <text x="270" y="330" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="140" font-weight="900" fill="#EF4444">44</text>
+  <text x="270" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#64748B">ATS Score</text>
+  <text x="270" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">❌ Generic resume</text>
+  <text x="270" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">❌ Missing keywords</text>
+  <text x="270" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">❌ Zero callbacks</text>
+  <text x="270" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">❌ 3 months waiting</text>
+
+  <!-- Arrow -->
+  <text x="540" y="420" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="70" font-weight="900" fill="#6EE7B7">→</text>
+
+  <!-- AFTER box -->
+  <rect x="600" y="130" width="420" height="520" rx="20" fill="#1E293B"/>
+  <rect x="600" y="130" width="420" height="520" rx="20" fill="none" stroke="#22C55E" stroke-width="3"/>
+  <text x="810" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#22C55E" letter-spacing="3">AFTER</text>
+  <text x="810" y="330" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="140" font-weight="900" fill="#22C55E">82</text>
+  <text x="810" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#64748B">ATS Score</text>
+  <text x="810" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">✅ ATS optimised</text>
+  <text x="810" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">✅ Keywords added</text>
+  <text x="810" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">✅ 2 interview calls</text>
+  <text x="810" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#94A3B8">✅ In 3 weeks</text>
+
+  <rect x="60" y="690" width="960" height="3" fill="#1E293B"/>
+
+  <text x="540" y="790" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" fill="white">Nothing changed except</text>
+  <text x="540" y="860" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="56" font-weight="900" fill="#FCD34D">the resume. 💡</text>
+
+  <text x="540" y="960" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#94A3B8">Check your score FREE 👉 link in bio</text>
+
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#475569">scoremycv.in</text>
+</svg>

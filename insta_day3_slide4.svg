@@ -1,0 +1,16 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#FFF7ED"/>
+  <rect x="0" y="0" width="1080" height="12" fill="#F97316"/>
+  <rect x="0" y="1068" width="1080" height="12" fill="#F97316"/>
+  <text x="540" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#F97316" letter-spacing="4">STEP 3 — THE SCARY PART</text>
+  <text x="540" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" fill="#F97316">❌</text>
+  <text x="540" y="450" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="110" font-weight="900" fill="#EF4444">75%</text>
+  <text x="540" y="540" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="62" font-weight="900" fill="#C2410C">Resumes Get</text>
+  <text x="540" y="618" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="62" font-weight="900" fill="#C2410C">Rejected Here</text>
+  <rect x="140" y="650" width="800" height="3" fill="#FED7AA"/>
+  <text x="540" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">Wrong format, missing keywords</text>
+  <text x="540" y="785" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">= auto rejected.</text>
+  <text x="540" y="860" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">The recruiter never even</text>
+  <text x="540" y="915" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">sees your name. 😶</text>
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#F97316" opacity="0.4">4 / 5</text>
+</svg>

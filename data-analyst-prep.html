@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day Data Analyst Interview Prep</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  #sidebar {
+    width: 260px; min-width: 260px; background: #1e293b; color: #fff;
+    height: 100vh; position: sticky; top: 0; overflow-y: auto; display: flex; flex-direction: column;
+  }
+  #sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #334155; }
+  #sidebar-header h2 { font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+  #sidebar-header p { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .progress-bar-wrap { margin: 10px 16px 0; background: #334155; border-radius: 20px; height: 6px; }
+  .progress-bar-fill { height: 6px; border-radius: 20px; background: linear-gradient(90deg,#6366f1,#06b6d4); transition: width .4s; }
+  .progress-label { font-size: 11px; color: #64748b; padding: 4px 16px 10px; }
+
+  .section-label {
+    padding: 10px 16px 4px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .sql-label { color: #60a5fa; }
+  .python-label { color: #4ade80; }
+  .powerbi-label { color: #fb923c; }
+
+  .day-btn {
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer;
+    border: none; background: transparent; color: #cbd5e1; width: 100%; text-align: left;
+    font-size: 13px; transition: background .15s; border-radius: 0;
+  }
+  .day-btn:hover { background: #334155; }
+  .day-btn.active { background: #334155; color: #fff; font-weight: 600; }
+  .day-num {
+    width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .sql-num { background: #1d4ed8; color: #fff; }
+  .python-num { background: #166534; color: #fff; }
+  .powerbi-num { background: #9a3412; color: #fff; }
+  .day-btn.done .day-num { background: #15803d !important; }
+  .day-btn.done .day-num::after { content: '✓'; }
+  .day-btn.done .day-text { text-decoration: line-through; color: #64748b; }
+
+  /* Main */
+  #main { flex: 1; padding: 28px; max-width: 900px; }
+
+  .card {
+    background: #fff; border-radius: 16px; padding: 28px; margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+
+  .day-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .day-badge {
+    padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .badge-sql { background: #dbeafe; color: #1d4ed8; }
+  .badge-python { background: #dcfce7; color: #166534; }
+  .badge-powerbi { background: #ffedd5; color: #9a3412; }
+  .day-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+  .day-sub { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+  .section-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+    color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap-6px;
+  }
+  .concept-text { font-size: 15px; color: #334155; line-height: 1.7; }
+  .concept-text b { color: #0f172a; }
+
+  .code-block {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 18px;
+    font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7;
+    overflow-x: auto; margin: 12px 0; white-space: pre;
+  }
+  .code-block .kw { color: #93c5fd; }
+  .code-block .fn { color: #86efac; }
+  .code-block .str { color: #fcd34d; }
+  .code-block .cm { color: #64748b; }
+  .code-block .num { color: #f9a8d4; }
+
+  .output-block {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;
+    font-family: monospace; font-size: 13px; color: #334155; margin-top: -4px; white-space: pre;
+  }
+
+  .qs-list { list-style: none; counter-reset: q; }
+  .qs-list li { counter-increment: q; padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: #334155; display: flex; gap: 10px; }
+  .qs-list li::before { content: "Q" counter(q); font-weight: 700; color: #6366f1; flex-shrink: 0; font-size: 12px; padding-top: 1px; }
+
+  .mark-btn {
+    margin-top: 16px; padding: 10px 24px; border-radius: 10px; border: none; cursor: pointer;
+    font-weight: 700; font-size: 14px; transition: all .2s;
+  }
+  .mark-btn.pending { background: #6366f1; color: #fff; }
+  .mark-btn.pending:hover { background: #4f46e5; }
+  .mark-btn.done { background: #dcfce7; color: #166534; }
+
+  .nav-btns { display: flex; gap: 10px; margin-top: 8px; }
+  .nav-btn {
+    padding: 9px 20px; border-radius: 10px; border: 1.5px solid #e2e8f0; background: #fff;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all .2s;
+  }
+  .nav-btn:hover { border-color: #6366f1; color: #6366f1; }
+
+  .tip-box { background: #fefce8; border: 1px solid #fef08a; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #713f12; margin-top: 12px; }
+  .tip-box b { color: #92400e; }
+
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; height: auto; position: relative; }
+    #main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h2>📊 Data Analyst Prep</h2>
+    <p>30-Day Interview Kit</p>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="progress-label" id="prog-label">0 / 30 completed</div>
+  <div id="day-list"></div>
+</div>
+
+<div id="main">
+  <div id="content"></div>
+</div>
+
+<script>
+const days = [
+  // ── SQL ──────────────────────────────────────────────────────────────
+  {
+    topic: 'sql', title: 'SELECT, WHERE & ORDER BY',
+    sub: 'The foundation of every SQL query',
+    concept: `<b>SELECT</b> retrieves columns from a table. <b>WHERE</b> filters rows based on conditions. <b>ORDER BY</b> sorts the result set.<br><br>
+These three clauses form the backbone of data retrieval. In interviews, you'll almost always start here — the key is writing clean, readable queries and knowing operator precedence (<b>AND</b> before <b>OR</b>).`,
+    code: `<span class="cm">-- Find employees earning above 50000 in Sales dept, sorted by salary</span>
+<span class="kw">SELECT</span> employee_id, name, salary, department
+<span class="kw">FROM</span> employees
+<span class="kw">WHERE</span> salary > <span class="num">50000</span>
+  <span class="kw">AND</span> department = <span class="str">'Sales'</span>
+<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>;`,
+    output: `employee_id | name       | salary  | department
+-----------+------------+---------+-----------
+       105 | Priya S    |  92000  | Sales
+       102 | Rahul M    |  75000  | Sales
+       108 | Anita K    |  55000  | Sales`,
+    qs: [
+      'What is the difference between WHERE and HAVING?',
+      'How does ORDER BY handle NULL values by default?',
+      'Can you use column aliases in a WHERE clause? Why or why not?'
+    ],
+    tip: 'WHERE filters BEFORE aggregation. HAVING filters AFTER. This is the most common interview trick question.'
+  },
+  {
+    topic: 'sql', title: 'GROUP BY & Aggregate Functions',
+    sub: 'Summarizing data across groups',
+    concept: `<b>GROUP BY</b> collapses rows with the same value into a single row so aggregate functions like <b>COUNT</b>, <b>SUM</b>, <b>AVG</b>, <b>MAX</b>, <b>MIN</b> can be applied to each group.<br><br>
+Every column in SELECT that is not inside an aggregate function must appear in GROUP BY. This is a strict rule that catches many beginners off guard.`,
+    code: `<span class="cm">-- Total sales and average order value by region</span>
+<span class="kw">SELECT</span>
+  region,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_orders,
+  <span class="fn">SUM</span>(order_amount) <span class="kw">AS</span> total_revenue,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(order_amount), <span class="num">2</span>) <span class="kw">AS</span> avg_order_value
+<span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> status = <span class="str">'Completed'</span>
+<span class="kw">GROUP BY</span> region
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(order_amount) > <span class="num">100000</span>
+<span class="kw">ORDER BY</span> total_revenue <span class="kw">DESC</span>;`,
+    output: `region  | total_orders | total_revenue | avg_order_value
+--------+--------------+---------------+----------------
+South   |          342 |      4,82,000 |         1409.36
+North   |          289 |      3,91,500 |         1354.67
+West    |          201 |      1,23,750 |          615.67`,
+    qs: [
+      'What is the difference between COUNT(*) and COUNT(column_name)?',
+      'Can you GROUP BY a column that is not in the SELECT list?',
+      'Write a query to find departments with more than 5 employees earning above ₹60,000.'
+    ],
+    tip: 'COUNT(*) counts all rows including NULLs. COUNT(col) counts only non-NULL values in that column.'
+  },
+  {
+    topic: 'sql', title: 'JOINs — INNER, LEFT, RIGHT, FULL',
+    sub: 'Combining data from multiple tables',
+    concept: `<b>INNER JOIN</b> returns only matching rows from both tables. <b>LEFT JOIN</b> returns all rows from the left table plus matches from right (NULLs where no match). <b>RIGHT JOIN</b> is the reverse. <b>FULL OUTER JOIN</b> returns everything from both tables.<br><br>
+In data analyst interviews, LEFT JOIN questions are extremely common — especially "find all customers who never placed an order."`,
+    code: `<span class="cm">-- Customers who never placed an order (classic interview question)</span>
+<span class="kw">SELECT</span> c.customer_id, c.name, c.email
+<span class="kw">FROM</span> customers c
+<span class="kw">LEFT JOIN</span> orders o <span class="kw">ON</span> c.customer_id = o.customer_id
+<span class="kw">WHERE</span> o.customer_id <span class="kw">IS NULL</span>;
+
+<span class="cm">-- Employees with their department names (INNER JOIN)</span>
+<span class="kw">SELECT</span> e.name, e.salary, d.department_name
+<span class="kw">FROM</span> employees e
+<span class="kw">INNER JOIN</span> departments d <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    output: `customer_id | name       | email
+-----------+------------+------------------
+       201 | Sneha R    | sneha@email.com
+       305 | Mohan P    | mohan@email.com`,
+    qs: [
+      'What is the difference between INNER JOIN and LEFT JOIN?',
+      'How would you find records in Table A that do NOT exist in Table B?',
+      'What is a CROSS JOIN and when would you use it?'
+    ],
+    tip: 'To find non-matching rows: use LEFT JOIN and filter WHERE right_table.key IS NULL. This is faster than NOT IN with subquery.'
+  },
+  {
+    topic: 'sql', title: 'Subqueries & CTEs',
+    sub: 'Writing readable, modular SQL',
+    concept: `A <b>subquery</b> is a query nested inside another query. A <b>CTE (Common Table Expression)</b> uses the WITH keyword to name a subquery so it can be reused. CTEs make complex queries readable and are preferred in interviews for clarity.<br><br>
+Correlated subqueries reference the outer query — they run once per row and can be slow, but are sometimes unavoidable.`,
+    code: `<span class="cm">-- CTE: Find employees earning above their department average</span>
+<span class="kw">WITH</span> dept_avg <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> dept_id, <span class="fn">AVG</span>(salary) <span class="kw">AS</span> avg_salary
+  <span class="kw">FROM</span> employees
+  <span class="kw">GROUP BY</span> dept_id
+)
+<span class="kw">SELECT</span> e.name, e.salary, d.avg_salary, e.dept_id
+<span class="kw">FROM</span> employees e
+<span class="kw">JOIN</span> dept_avg d <span class="kw">ON</span> e.dept_id = d.dept_id
+<span class="kw">WHERE</span> e.salary > d.avg_salary
+<span class="kw">ORDER BY</span> e.dept_id, e.salary <span class="kw">DESC</span>;`,
+    output: `name       | salary | avg_salary | dept_id
+-----------+--------+------------+--------
+Rajesh K   |  95000 |    71500.0 |       1
+Priya S    |  82000 |    71500.0 |       1
+Anil T     |  78000 |    62000.0 |       2`,
+    qs: [
+      'What is the difference between a subquery and a CTE?',
+      'What is a correlated subquery? Give an example.',
+      'Can you reference a CTE multiple times in the same query?'
+    ],
+    tip: 'Always prefer CTEs over nested subqueries in interviews — they show you write maintainable, readable code.'
+  },
+  {
+    topic: 'sql', title: 'Window Functions — ROW_NUMBER, RANK, DENSE_RANK',
+    sub: 'Ranking rows without collapsing groups',
+    concept: `Window functions perform calculations across a set of rows related to the current row, <b>without collapsing them</b> like GROUP BY does. They use the OVER() clause with optional PARTITION BY and ORDER BY.<br><br>
+<b>ROW_NUMBER</b>: unique sequential number even for ties. <b>RANK</b>: same rank for ties, skips next number. <b>DENSE_RANK</b>: same rank for ties, does NOT skip. These are extremely popular interview questions.`,
+    code: `<span class="cm">-- Rank employees by salary within each department</span>
+<span class="kw">SELECT</span>
+  name, department, salary,
+  <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> department <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>) <span class="kw">AS</span> row_num,
+  <span class="fn">RANK</span>()       <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> department <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>) <span class="kw">AS</span> rnk,
+  <span class="fn">DENSE_RANK</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> department <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>) <span class="kw">AS</span> dense_rnk
+<span class="kw">FROM</span> employees;`,
+    output: `name     | department | salary | row_num | rnk | dense_rnk
+---------+------------+--------+---------+-----+-----------
+Priya S  | Sales      |  92000 |       1 |   1 |         1
+Rahul M  | Sales      |  75000 |       2 |   2 |         2
+Anita K  | Sales      |  75000 |       3 |   2 |         2
+Neha P   | Sales      |  55000 |       4 |   4 |         3`,
+    qs: [
+      'What is the difference between RANK and DENSE_RANK?',
+      'How would you find the top 3 products by sales in each category?',
+      'Can you use window functions in a WHERE clause?'
+    ],
+    tip: 'You CANNOT use window functions directly in WHERE. Wrap your query in a CTE or subquery, then filter on the rank.'
+  },
+  {
+    topic: 'sql', title: 'Window Functions — LAG, LEAD, Running Totals',
+    sub: 'Comparing rows and cumulative calculations',
+    concept: `<b>LAG(col, n)</b> accesses the value from n rows before the current row. <b>LEAD(col, n)</b> accesses n rows ahead. These are perfect for month-over-month comparisons.<br><br>
+<b>SUM() OVER(ORDER BY ...)</b> creates a running/cumulative total. <b>ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</b> is the frame clause that controls which rows are included.`,
+    code: `<span class="cm">-- Month-over-month revenue comparison</span>
+<span class="kw">SELECT</span>
+  month, revenue,
+  <span class="fn">LAG</span>(revenue, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> prev_month_revenue,
+  revenue - <span class="fn">LAG</span>(revenue, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> month_change,
+  <span class="fn">SUM</span>(revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month
+    <span class="kw">ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</span>) <span class="kw">AS</span> cumulative_revenue
+<span class="kw">FROM</span> monthly_sales;`,
+    output: `month   | revenue | prev_month | month_change | cumulative
+--------+---------+------------+--------------+-----------
+2024-01 |  120000 |       NULL |         NULL |    120000
+2024-02 |  145000 |     120000 |        25000 |    265000
+2024-03 |  132000 |     145000 |       -13000 |    397000
+2024-04 |  168000 |     132000 |        36000 |    565000`,
+    qs: [
+      'What does LAG() return for the first row in a partition?',
+      'How would you calculate a 3-month moving average using window functions?',
+      'What is the difference between ROWS and RANGE in window frame clauses?'
+    ],
+    tip: 'LAG/LEAD return NULL by default for the first/last rows. Use the 3rd argument as a default: LAG(revenue, 1, 0).'
+  },
+  {
+    topic: 'sql', title: 'String & Date Functions',
+    sub: 'Manipulating text and working with dates',
+    concept: `String functions transform text data — <b>UPPER/LOWER</b>, <b>TRIM</b>, <b>SUBSTRING</b>, <b>CONCAT</b>, <b>REPLACE</b>, <b>LENGTH</b>. Date functions are equally important — <b>DATEADD</b>, <b>DATEDIFF</b>, <b>FORMAT</b>, <b>YEAR/MONTH/DAY</b>, <b>NOW()/GETDATE()</b>.<br><br>
+Syntax varies slightly between MySQL, PostgreSQL, and SQL Server but the concepts are the same.`,
+    code: `<span class="cm">-- String operations</span>
+<span class="kw">SELECT</span>
+  <span class="fn">UPPER</span>(name) <span class="kw">AS</span> name_upper,
+  <span class="fn">LENGTH</span>(email) <span class="kw">AS</span> email_len,
+  <span class="fn">SUBSTRING</span>(phone, <span class="num">1</span>, <span class="num">3</span>) <span class="kw">AS</span> area_code,
+  <span class="fn">CONCAT</span>(first_name, <span class="str">' '</span>, last_name) <span class="kw">AS</span> full_name
+<span class="kw">FROM</span> customers;
+
+<span class="cm">-- Date operations</span>
+<span class="kw">SELECT</span>
+  order_date,
+  <span class="fn">YEAR</span>(order_date) <span class="kw">AS</span> order_year,
+  <span class="fn">DATEDIFF</span>(<span class="fn">NOW</span>(), order_date) <span class="kw">AS</span> days_since_order,
+  <span class="fn">DATE_FORMAT</span>(order_date, <span class="str">'%b %Y'</span>) <span class="kw">AS</span> month_year
+<span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> order_date >= <span class="fn">DATE_SUB</span>(<span class="fn">NOW</span>(), <span class="kw">INTERVAL</span> <span class="num">30</span> <span class="kw">DAY</span>);`,
+    output: `order_date  | order_year | days_since_order | month_year
+-----------+------------+------------------+----------
+2024-07-15  |       2024 |              373 | Jul 2024
+2024-08-01  |       2024 |              356 | Aug 2024`,
+    qs: [
+      'How do you extract just the month from a date in SQL?',
+      'How would you find all orders placed in the last 7 days?',
+      'What is the difference between CHAR_LENGTH and LENGTH in MySQL?'
+    ],
+    tip: 'DATEDIFF syntax differs: MySQL DATEDIFF(end,start), SQL Server DATEDIFF(unit,start,end). Always clarify which DB you\'re using in interviews.'
+  },
+  {
+    topic: 'sql', title: 'CASE WHEN, COALESCE & NULL Handling',
+    sub: 'Conditional logic and handling missing data',
+    concept: `<b>CASE WHEN</b> adds conditional logic (like IF-ELSE) inside SQL. <b>COALESCE(a, b, c)</b> returns the first non-NULL value — perfect for replacing NULLs with defaults. <b>NULLIF(a, b)</b> returns NULL if a equals b (useful for avoiding divide-by-zero).<br><br>
+NULL handling is a common trap — NULL is not equal to anything, not even NULL. Use IS NULL / IS NOT NULL.`,
+    code: `<span class="cm">-- Categorize employees by salary band + handle NULL bonus</span>
+<span class="kw">SELECT</span>
+  name, salary,
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> salary >= <span class="num">90000</span> <span class="kw">THEN</span> <span class="str">'Senior'</span>
+    <span class="kw">WHEN</span> salary >= <span class="num">60000</span> <span class="kw">THEN</span> <span class="str">'Mid-Level'</span>
+    <span class="kw">ELSE</span>                       <span class="str">'Junior'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> salary_band,
+  <span class="fn">COALESCE</span>(bonus, <span class="num">0</span>) <span class="kw">AS</span> bonus_safe,
+  salary / <span class="fn">NULLIF</span>(years_exp, <span class="num">0</span>) <span class="kw">AS</span> salary_per_year
+<span class="kw">FROM</span> employees;`,
+    output: `name     | salary | salary_band | bonus_safe | salary_per_year
+---------+--------+-------------+------------+----------------
+Priya S  |  92000 | Senior      |       5000 |           9200
+Rahul M  |  75000 | Mid-Level   |          0 |           6818
+Anil T   |  42000 | Junior      |       1000 |           NULL`,
+    qs: [
+      'What does NULL = NULL evaluate to in SQL?',
+      'What is the difference between COALESCE and ISNULL/NVL?',
+      'How would you replace NULL values with the average of the column?'
+    ],
+    tip: 'NULL = NULL is UNKNOWN (not TRUE). Always use IS NULL. COALESCE is ANSI standard and works across all databases; ISNULL is SQL Server-specific.'
+  },
+  {
+    topic: 'sql', title: 'Indexes & Query Optimization',
+    sub: 'Writing fast SQL that scales',
+    concept: `<b>Indexes</b> are data structures that speed up data retrieval. A <b>clustered index</b> determines the physical sort order of table data (one per table). A <b>non-clustered index</b> is a separate structure pointing back to the data (multiple allowed).<br><br>
+Common optimization tips: avoid SELECT *, use indexes on JOIN/WHERE/ORDER BY columns, avoid functions on indexed columns in WHERE clause, use EXPLAIN/EXPLAIN PLAN to analyze queries.`,
+    code: `<span class="cm">-- BAD: Function on indexed column kills the index</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">WHERE</span> <span class="fn">YEAR</span>(order_date) = <span class="num">2024</span>;
+
+<span class="cm">-- GOOD: Range comparison uses the index</span>
+<span class="kw">SELECT</span> order_id, customer_id, amount
+<span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> order_date >= <span class="str">'2024-01-01'</span>
+  <span class="kw">AND</span> order_date <  <span class="str">'2025-01-01'</span>;
+
+<span class="cm">-- Create an index</span>
+<span class="kw">CREATE INDEX</span> idx_orders_date <span class="kw">ON</span> orders(order_date);
+<span class="kw">CREATE INDEX</span> idx_emp_dept    <span class="kw">ON</span> employees(dept_id, salary);
+
+<span class="cm">-- Check query plan</span>
+<span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">WHERE</span> customer_id = <span class="num">101</span>;`,
+    output: `id | select_type | table  | type | key              | rows  | Extra
+---+-------------+--------+------+------------------+-------+-------
+ 1 | SIMPLE      | orders | ref  | idx_customer_id  |    12 | NULL`,
+    qs: [
+      'What is the difference between a clustered and non-clustered index?',
+      'Why does putting a function on a WHERE column hurt performance?',
+      'What does the EXPLAIN output tell you about a query?'
+    ],
+    tip: 'Composite index column ORDER matters: an index on (dept_id, salary) helps queries filtering by dept_id, but NOT queries filtering only by salary.'
+  },
+  {
+    topic: 'sql', title: 'Real Interview Problems',
+    sub: 'Top SQL problems asked in data analyst interviews',
+    concept: `These are the most frequently asked SQL interview questions at companies like Swiggy, Flipkart, Amazon, and Infosys. Master these patterns: <b>Nth highest value</b>, <b>duplicate detection</b>, <b>consecutive records</b>, and <b>self-joins</b>.`,
+    code: `<span class="cm">-- 1. Find the 2nd highest salary</span>
+<span class="kw">SELECT</span> <span class="fn">MAX</span>(salary) <span class="kw">AS</span> second_highest
+<span class="kw">FROM</span> employees
+<span class="kw">WHERE</span> salary < (<span class="kw">SELECT</span> <span class="fn">MAX</span>(salary) <span class="kw">FROM</span> employees);
+
+<span class="cm">-- 2. Find duplicate emails</span>
+<span class="kw">SELECT</span> email, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> cnt
+<span class="kw">FROM</span> customers
+<span class="kw">GROUP BY</span> email
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">1</span>;
+
+<span class="cm">-- 3. Delete duplicates, keep latest</span>
+<span class="kw">DELETE FROM</span> customers
+<span class="kw">WHERE</span> id <span class="kw">NOT IN</span> (
+  <span class="kw">SELECT</span> <span class="fn">MAX</span>(id)
+  <span class="kw">FROM</span> customers
+  <span class="kw">GROUP BY</span> email
+);
+
+<span class="cm">-- 4. Employees who earn more than their manager</span>
+<span class="kw">SELECT</span> e.name <span class="kw">AS</span> employee, m.name <span class="kw">AS</span> manager
+<span class="kw">FROM</span> employees e
+<span class="kw">JOIN</span> employees m <span class="kw">ON</span> e.manager_id = m.employee_id
+<span class="kw">WHERE</span> e.salary > m.salary;`,
+    output: `second_highest: 92000
+
+Duplicate emails:
+email              | cnt
+-------------------+----
+test@example.com   |   2`,
+    qs: [
+      'Write a query to find the Nth highest salary without using LIMIT/TOP.',
+      'How would you find customers who placed orders in January but NOT in February?',
+      'Write a query to transpose rows into columns (pivot).'
+    ],
+    tip: 'Self-join (joining a table to itself) is the standard way to compare rows within the same table — like employees vs their managers.'
+  },
+
+  // ── PYTHON ──────────────────────────────────────────────────────────
+  {
+    topic: 'python', title: 'Pandas Basics — Reading & Exploring Data',
+    sub: 'Your first step with any dataset',
+    concept: `<b>Pandas</b> is the core Python library for data analysis. A <b>DataFrame</b> is a 2D table (like Excel). You'll use <b>read_csv()</b> to load data, then immediately explore it with <b>head()</b>, <b>info()</b>, <b>shape</b>, and <b>describe()</b> to understand what you're working with.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Load data</span>
+df = pd.<span class="fn">read_csv</span>(<span class="str">'sales_data.csv'</span>)
+
+<span class="cm"># Quick exploration</span>
+<span class="fn">print</span>(df.<span class="fn">head</span>(<span class="num">3</span>))        <span class="cm"># first 3 rows</span>
+<span class="fn">print</span>(df.shape)          <span class="cm"># (rows, columns)</span>
+<span class="fn">print</span>(df.<span class="fn">info</span>())         <span class="cm"># dtypes + null counts</span>
+<span class="fn">print</span>(df.<span class="fn">describe</span>())     <span class="cm"># stats for numeric cols</span>
+<span class="fn">print</span>(df.columns.<span class="fn">tolist</span>())
+<span class="fn">print</span>(df.dtypes)`,
+    output: `   order_id  customer_id  amount  region
+0       101          201    4500   South
+1       102          305    8200   North
+2       103          201    1200   West
+
+Shape: (1500, 8)
+
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 1500 entries
+Data columns: order_id, customer_id, amount, region...
+dtypes: int64(3), object(2), float64(3)`,
+    qs: [
+      'What is the difference between a Pandas Series and a DataFrame?',
+      'How do you check the number of missing values in each column?',
+      'What does df.info() tell you that df.describe() does not?'
+    ],
+    tip: 'Always run df.info() first — it shows dtypes and null counts at a glance. A column that should be numeric but shows "object" dtype means there are mixed values or formatting issues.'
+  },
+  {
+    topic: 'python', title: 'Data Cleaning — Handling Nulls & Duplicates',
+    sub: 'Real data is messy — this is your toolkit',
+    concept: `Data cleaning is 70-80% of a data analyst's real job. Key operations: <b>isnull()</b> to detect missing values, <b>dropna()</b> to remove rows/columns with NULLs, <b>fillna()</b> to replace NULLs, <b>drop_duplicates()</b> to remove duplicate rows, and <b>astype()</b> to fix data types.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Check missing values</span>
+<span class="fn">print</span>(df.<span class="fn">isnull</span>().<span class="fn">sum</span>())
+
+<span class="cm"># Fill nulls with different strategies</span>
+df[<span class="str">'salary'</span>] = df[<span class="str">'salary'</span>].<span class="fn">fillna</span>(df[<span class="str">'salary'</span>].<span class="fn">median</span>())
+df[<span class="str">'city'</span>]   = df[<span class="str">'city'</span>].<span class="fn">fillna</span>(<span class="str">'Unknown'</span>)
+df[<span class="str">'date'</span>]   = df[<span class="str">'date'</span>].<span class="fn">fillna</span>(<span class="kw">method</span>=<span class="str">'ffill'</span>)  <span class="cm"># forward fill</span>
+
+<span class="cm"># Drop rows where critical columns are null</span>
+df = df.<span class="fn">dropna</span>(<span class="kw">subset</span>=[<span class="str">'customer_id'</span>, <span class="str">'order_date'</span>])
+
+<span class="cm"># Remove duplicates</span>
+df = df.<span class="fn">drop_duplicates</span>()
+df = df.<span class="fn">drop_duplicates</span>(<span class="kw">subset</span>=[<span class="str">'email'</span>], <span class="kw">keep</span>=<span class="str">'last'</span>)
+
+<span class="cm"># Fix data types</span>
+df[<span class="str">'order_date'</span>] = pd.<span class="fn">to_datetime</span>(df[<span class="str">'order_date'</span>])
+df[<span class="str">'amount'</span>]     = df[<span class="str">'amount'</span>].<span class="fn">astype</span>(<span class="str">'float'</span>)`,
+    output: `Missing values:
+customer_id      0
+salary          45
+city            12
+order_date       3
+dtype: int64
+
+After cleaning: 1455 rows, 0 duplicates`,
+    qs: [
+      'What is the difference between dropna() and fillna()?',
+      'When would you use forward fill vs. filling with the mean?',
+      'How would you remove duplicates but keep the first occurrence?'
+    ],
+    tip: 'Never fill numerical nulls with mean without checking for outliers first — median is safer and more robust to skewed data.'
+  },
+  {
+    topic: 'python', title: 'Filtering, Sorting & GroupBy',
+    sub: 'The Pandas equivalent of SQL WHERE and GROUP BY',
+    concept: `<b>Boolean indexing</b> filters rows based on conditions. <b>sort_values()</b> sorts the DataFrame. <b>groupby()</b> splits the data, applies a function, and combines results — the pandas equivalent of SQL GROUP BY.<br><br>
+The <b>agg()</b> method lets you apply multiple aggregations at once — very powerful in interviews.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Filtering</span>
+high_earners = df[df[<span class="str">'salary'</span>] > <span class="num">70000</span>]
+sales_team   = df[(df[<span class="str">'dept'</span>] == <span class="str">'Sales'</span>) & (df[<span class="str">'active'</span>] == <span class="kw">True</span>)]
+
+<span class="cm"># Sorting</span>
+df_sorted = df.<span class="fn">sort_values</span>(<span class="str">'salary'</span>, <span class="kw">ascending</span>=<span class="kw">False</span>)
+df_multi  = df.<span class="fn">sort_values</span>([<span class="str">'dept'</span>, <span class="str">'salary'</span>], <span class="kw">ascending</span>=[<span class="kw">True</span>, <span class="kw">False</span>])
+
+<span class="cm"># GroupBy with multiple aggregations</span>
+summary = df.<span class="fn">groupby</span>(<span class="str">'region'</span>).<span class="fn">agg</span>(
+  total_orders = (<span class="str">'order_id'</span>,  <span class="str">'count'</span>),
+  total_revenue= (<span class="str">'amount'</span>,    <span class="str">'sum'</span>),
+  avg_amount   = (<span class="str">'amount'</span>,    <span class="str">'mean'</span>),
+  max_order    = (<span class="str">'amount'</span>,    <span class="str">'max'</span>)
+).<span class="fn">reset_index</span>()
+<span class="fn">print</span>(summary)`,
+    output: `  region  total_orders  total_revenue  avg_amount  max_order
+0  North           289         391500     1354.67      45000
+1  South           342         482000     1409.36      52000
+2   West           201         123750      615.67      18000`,
+    qs: [
+      'What does reset_index() do after a groupby operation?',
+      'How do you filter a DataFrame to keep rows where a column value is in a list?',
+      'What is the difference between groupby().agg() and groupby().transform()?'
+    ],
+    tip: 'Use df[df["col"].isin(["a","b","c"])] to filter by multiple values — much cleaner than chaining multiple OR conditions.'
+  },
+  {
+    topic: 'python', title: 'Merging & Joining DataFrames',
+    sub: 'Combining datasets — Pandas SQL JOINs',
+    concept: `<b>merge()</b> joins two DataFrames on a key column — equivalent to SQL JOINs. <b>concat()</b> stacks DataFrames vertically (append rows) or horizontally (append columns). The <b>how</b> parameter controls the join type: inner, left, right, outer.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># INNER join (only matching rows)</span>
+merged = pd.<span class="fn">merge</span>(orders, customers,
+                 <span class="kw">on</span>=<span class="str">'customer_id'</span>, <span class="kw">how</span>=<span class="str">'inner'</span>)
+
+<span class="cm"># LEFT join (all orders, customer info if available)</span>
+left_merged = pd.<span class="fn">merge</span>(orders, customers,
+                       <span class="kw">on</span>=<span class="str">'customer_id'</span>, <span class="kw">how</span>=<span class="str">'left'</span>)
+
+<span class="cm"># Merge on different column names</span>
+merged2 = pd.<span class="fn">merge</span>(orders, products,
+                   <span class="kw">left_on</span>=<span class="str">'prod_id'</span>, <span class="kw">right_on</span>=<span class="str">'product_id'</span>)
+
+<span class="cm"># Stack DataFrames vertically (same columns)</span>
+all_orders = pd.<span class="fn">concat</span>([orders_2023, orders_2024], <span class="kw">ignore_index</span>=<span class="kw">True</span>)
+
+<span class="cm"># Find customers with no orders (LEFT JOIN + filter)</span>
+no_orders = left_merged[left_merged[<span class="str">'order_id'</span>].<span class="fn">isnull</span>()]`,
+    output: `Inner merge: 1350 rows (matched orders)
+Left merge:  1500 rows (all orders, 150 with NaN customer info)
+No-order customers: 45 rows`,
+    qs: [
+      'What is the difference between merge() and join() in Pandas?',
+      'What happens when you merge on a column that has duplicate values in both DataFrames?',
+      'How would you append new rows to an existing DataFrame?'
+    ],
+    tip: 'After a merge, always check the row count. If it increased unexpectedly, you have duplicate keys — use df.duplicated(subset=["key"]) to investigate.'
+  },
+  {
+    topic: 'python', title: 'Apply, Lambda & Map Functions',
+    sub: 'Applying custom logic to rows and columns',
+    concept: `<b>apply()</b> applies a function to each row or column. <b>map()</b> applies a function to each element of a Series. <b>lambda</b> creates small, anonymous functions inline. These let you write custom transformations without explicit loops — which are slow in Pandas.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Lambda with apply on a column</span>
+df[<span class="str">'salary_band'</span>] = df[<span class="str">'salary'</span>].<span class="fn">apply</span>(<span class="kw">lambda</span> x:
+  <span class="str">'High'</span>   <span class="kw">if</span> x >= <span class="num">90000</span> <span class="kw">else</span>
+  <span class="str">'Medium'</span> <span class="kw">if</span> x >= <span class="num">60000</span> <span class="kw">else</span> <span class="str">'Low'</span>)
+
+<span class="cm"># Custom function with apply on rows (axis=1)</span>
+<span class="kw">def</span> <span class="fn">full_name</span>(row):
+  <span class="kw">return</span> row[<span class="str">'first_name'</span>] + <span class="str">' '</span> + row[<span class="str">'last_name'</span>]
+
+df[<span class="str">'full_name'</span>] = df.<span class="fn">apply</span>(full_name, <span class="kw">axis</span>=<span class="num">1</span>)
+
+<span class="cm"># map() — replace values using a dictionary</span>
+region_map = {<span class="str">'N'</span>: <span class="str">'North'</span>, <span class="str">'S'</span>: <span class="str">'South'</span>, <span class="str">'W'</span>: <span class="str">'West'</span>}
+df[<span class="str">'region_full'</span>] = df[<span class="str">'region_code'</span>].<span class="fn">map</span>(region_map)
+
+<span class="cm"># np.where — vectorized if-else (FASTER than apply)</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+df[<span class="str">'high_value'</span>] = np.<span class="fn">where</span>(df[<span class="str">'amount'</span>] > <span class="num">10000</span>, <span class="str">'Yes'</span>, <span class="str">'No'</span>)`,
+    output: `salary_band: High(42), Medium(198), Low(315)
+full_name: ['Rahul Mehta', 'Priya Sharma', ...]
+region_full: North, South, West (no NaN - all codes mapped)`,
+    qs: [
+      'What is the difference between apply(), map(), and applymap()?',
+      'Why is np.where faster than apply() for simple conditions?',
+      'When would you use axis=0 vs axis=1 in apply()?'
+    ],
+    tip: 'For simple if-else conditions, always prefer np.where over apply(lambda...) — it runs in C-level vectorized operations and is 10-100x faster.'
+  },
+  {
+    topic: 'python', title: 'Data Visualization — Matplotlib & Seaborn',
+    sub: 'Communicating insights through charts',
+    concept: `<b>Matplotlib</b> is the base plotting library — highly customizable but verbose. <b>Seaborn</b> builds on Matplotlib with a simpler interface and better default aesthetics. As a data analyst, you need to know which chart type fits which insight: bar→comparisons, line→trends, scatter→correlations, histogram→distributions, heatmap→correlations between columns.`,
+    code: `<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns
+
+<span class="cm"># Line chart — revenue trend</span>
+plt.<span class="fn">figure</span>(<span class="kw">figsize</span>=(<span class="num">10</span>,<span class="num">4</span>))
+plt.<span class="fn">plot</span>(df[<span class="str">'month'</span>], df[<span class="str">'revenue'</span>], <span class="kw">marker</span>=<span class="str">'o'</span>, <span class="kw">color</span>=<span class="str">'#4f46e5'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Monthly Revenue Trend'</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'Month'</span>); plt.<span class="fn">ylabel</span>(<span class="str">'Revenue (₹)'</span>)
+plt.<span class="fn">tight_layout</span>(); plt.<span class="fn">show</span>()
+
+<span class="cm"># Bar chart — sales by region</span>
+sns.<span class="fn">barplot</span>(<span class="kw">data</span>=df, <span class="kw">x</span>=<span class="str">'region'</span>, <span class="kw">y</span>=<span class="str">'sales'</span>, <span class="kw">palette</span>=<span class="str">'Blues_d'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Sales by Region'</span>); plt.<span class="fn">show</span>()
+
+<span class="cm"># Correlation heatmap</span>
+plt.<span class="fn">figure</span>(<span class="kw">figsize</span>=(<span class="num">8</span>,<span class="num">6</span>))
+sns.<span class="fn">heatmap</span>(df.<span class="fn">corr</span>(), <span class="kw">annot</span>=<span class="kw">True</span>, <span class="kw">cmap</span>=<span class="str">'coolwarm'</span>, <span class="kw">fmt</span>=<span class="str">'.2f'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Feature Correlation Matrix'</span>); plt.<span class="fn">show</span>()`,
+    output: `[Line chart showing revenue from Jan-Dec]
+[Bar chart showing South > North > West]
+[Heatmap showing correlation coefficients]`,
+    qs: [
+      'When would you use a bar chart vs a line chart?',
+      'What does a correlation coefficient of -0.85 mean?',
+      'How would you add annotations to specific data points in Matplotlib?'
+    ],
+    tip: 'In interviews, explain WHY you chose a particular chart type. Stakeholders care about insight clarity — the wrong chart type can mislead even with correct data.'
+  },
+  {
+    topic: 'python', title: 'NumPy for Data Analysis',
+    sub: 'Fast array operations that power Pandas',
+    concept: `<b>NumPy</b> is the foundation of the Python data science stack — Pandas is built on top of it. NumPy arrays (ndarrays) are faster than Python lists for numerical operations because they're stored in contiguous memory and operations are vectorized (run in C).<br><br>
+Key concepts: array creation, broadcasting, boolean indexing, statistical functions.`,
+    code: `<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Create arrays</span>
+arr = np.<span class="fn">array</span>([<span class="num">10</span>, <span class="num">25</span>, <span class="num">45</span>, <span class="num">12</span>, <span class="num">67</span>, <span class="num">89</span>, <span class="num">34</span>])
+
+<span class="cm"># Statistical operations</span>
+<span class="fn">print</span>(np.<span class="fn">mean</span>(arr))    <span class="cm"># 40.28</span>
+<span class="fn">print</span>(np.<span class="fn">median</span>(arr))  <span class="cm"># 34.0</span>
+<span class="fn">print</span>(np.<span class="fn">std</span>(arr))     <span class="cm"># 28.07</span>
+<span class="fn">print</span>(np.<span class="fn">percentile</span>(arr, <span class="num">75</span>))  <span class="cm"># 75th percentile: 56.0</span>
+
+<span class="cm"># Boolean indexing (much faster than list comprehension)</span>
+high = arr[arr > <span class="num">40</span>]  <span class="cm"># array([45, 67, 89])</span>
+
+<span class="cm"># Broadcasting — no loops needed</span>
+scores = np.<span class="fn">array</span>([<span class="num">55</span>, <span class="num">72</span>, <span class="num">89</span>, <span class="num">43</span>])
+normalized = (scores - scores.<span class="fn">min</span>()) / (scores.<span class="fn">max</span>() - scores.<span class="fn">min</span>())
+<span class="fn">print</span>(normalized)  <span class="cm"># [0.26 0.63 1.0 0.0]</span>
+
+<span class="cm"># Detect and handle outliers using IQR</span>
+Q1, Q3 = np.<span class="fn">percentile</span>(arr, [<span class="num">25</span>, <span class="num">75</span>])
+IQR = Q3 - Q1
+outliers = arr[(arr < Q1 - <span class="num">1.5</span>*IQR) | (arr > Q3 + <span class="num">1.5</span>*IQR)]`,
+    output: `mean: 40.28, median: 34.0, std: 28.07
+75th percentile: 56.0
+High values: [45 67 89]
+Normalized: [0.26 0.63 1.0  0.0]
+Outliers: []`,
+    qs: [
+      'What is broadcasting in NumPy?',
+      'What is the difference between np.mean() and np.median() — when is each preferred?',
+      'How do you detect outliers using the IQR method?'
+    ],
+    tip: 'Use median instead of mean when data has outliers — median is robust to extreme values, mean is not. This comes up a lot in salary/income analysis questions.'
+  },
+  {
+    topic: 'python', title: 'String Operations in Pandas',
+    sub: 'Cleaning and extracting text data',
+    concept: `Pandas provides <b>.str accessor</b> for vectorized string operations on Series. These are equivalent to Python string methods but work on entire columns without loops. Essential for cleaning names, emails, phone numbers, and extracting information from text fields.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Basic string cleaning</span>
+df[<span class="str">'name'</span>]  = df[<span class="str">'name'</span>].<span class="fn">str.strip</span>().<span class="fn">str.title</span>()
+df[<span class="str">'email'</span>] = df[<span class="str">'email'</span>].<span class="fn">str.lower</span>().<span class="fn">str.strip</span>()
+
+<span class="cm"># Extract domain from email</span>
+df[<span class="str">'domain'</span>] = df[<span class="str">'email'</span>].<span class="fn">str.split</span>(<span class="str">'@'</span>).<span class="fn">str</span>[<span class="num">1</span>]
+
+<span class="cm"># Filter rows containing a substring</span>
+gmail_users = df[df[<span class="str">'email'</span>].<span class="fn">str.contains</span>(<span class="str">'gmail'</span>, <span class="kw">na</span>=<span class="kw">False</span>)]
+
+<span class="cm"># Extract numbers from a string column</span>
+df[<span class="str">'year'</span>] = df[<span class="str">'date_str'</span>].<span class="fn">str.extract</span>(<span class="str">r'(\d{4})'</span>)
+
+<span class="cm"># Replace and clean</span>
+df[<span class="str">'phone'</span>] = df[<span class="str">'phone'</span>].<span class="fn">str.replace</span>(<span class="str">r'[^0-9]'</span>, <span class="str">''</span>, <span class="kw">regex</span>=<span class="kw">True</span>)
+df[<span class="str">'city'</span>]  = df[<span class="str">'city'</span>].<span class="fn">str.replace</span>(<span class="str">'Bengaluru'</span>, <span class="str">'Bangalore'</span>)
+
+<span class="cm"># Check string length</span>
+df[<span class="str">'name_len'</span>] = df[<span class="str">'name'</span>].<span class="fn">str.len</span>()`,
+    output: `name: ['Rahul Mehta', 'Priya Sharma'] (stripped + title case)
+domain: ['gmail.com', 'yahoo.com', 'company.com']
+Gmail users: 423 rows
+phone (cleaned): ['9876543210', '8123456789']`,
+    qs: [
+      'How do you handle NaN values when using str.contains()?',
+      'What is the difference between str.replace() and str.sub()?',
+      'How would you split a "First Last" column into two separate columns?'
+    ],
+    tip: 'Always pass na=False to str.contains() — without it, NaN values will throw an error or propagate NaN into your boolean mask.'
+  },
+  {
+    topic: 'python', title: 'Date & Time in Pandas',
+    sub: 'Time series analysis basics',
+    concept: `Time-based analysis is critical for business data. <b>pd.to_datetime()</b> converts strings to datetime. Once converted, the <b>.dt accessor</b> unlocks year, month, day, weekday, hour extraction. <b>resample()</b> aggregates data by time period — very powerful for trend analysis.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Convert to datetime</span>
+df[<span class="str">'order_date'</span>] = pd.<span class="fn">to_datetime</span>(df[<span class="str">'order_date'</span>])
+
+<span class="cm"># Extract date parts</span>
+df[<span class="str">'year'</span>]    = df[<span class="str">'order_date'</span>].dt.year
+df[<span class="str">'month'</span>]   = df[<span class="str">'order_date'</span>].dt.month
+df[<span class="str">'weekday'</span>] = df[<span class="str">'order_date'</span>].dt.day_name()
+df[<span class="str">'quarter'</span>] = df[<span class="str">'order_date'</span>].dt.quarter
+
+<span class="cm"># Date arithmetic</span>
+df[<span class="str">'days_since'</span>] = (pd.<span class="fn">Timestamp</span>(<span class="str">'today'</span>) - df[<span class="str">'order_date'</span>]).dt.days
+
+<span class="cm"># Filter by date range</span>
+recent = df[(df[<span class="str">'order_date'</span>] >= <span class="str">'2024-01-01'</span>) &
+            (df[<span class="str">'order_date'</span>] <= <span class="str">'2024-12-31'</span>)]
+
+<span class="cm"># Resample — monthly revenue</span>
+df.<span class="fn">set_index</span>(<span class="str">'order_date'</span>, <span class="kw">inplace</span>=<span class="kw">True</span>)
+monthly = df[<span class="str">'amount'</span>].<span class="fn">resample</span>(<span class="str">'ME'</span>).<span class="fn">sum</span>()
+<span class="fn">print</span>(monthly)`,
+    output: `year: 2024, month: 7, weekday: Monday, quarter: 3
+days_since: 42
+
+order_date
+2024-01-31     482000
+2024-02-29     391500
+2024-03-31     523000
+Freq: ME, Name: amount, dtype: int64`,
+    qs: [
+      'How do you find all orders placed on a Monday?',
+      'What does resample("W").sum() do?',
+      'How would you calculate the number of business days between two dates?'
+    ],
+    tip: 'resample() requires the datetime column to be the index. Always do df.set_index("date_col") before resampling. Use "ME" for month-end, "W" for week, "Q" for quarter.'
+  },
+  {
+    topic: 'python', title: 'Real Python Interview Problems',
+    sub: 'Common data analyst Python challenges',
+    concept: `These are real Python/Pandas problems asked in data analyst interviews. Practice recognizing the pattern and writing clean, efficient code. Focus on: <b>finding top-N</b>, <b>cohort analysis basics</b>, <b>outlier detection</b>, and <b>churn calculation</b>.`,
+    code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># 1. Top 3 products by revenue per category</span>
+top3 = (df.<span class="fn">groupby</span>([<span class="str">'category'</span>, <span class="str">'product'</span>])[<span class="str">'revenue'</span>]
+          .<span class="fn">sum</span>()
+          .<span class="fn">reset_index</span>()
+          .<span class="fn">sort_values</span>([<span class="str">'category'</span>, <span class="str">'revenue'</span>], <span class="kw">ascending</span>=[<span class="kw">True</span>, <span class="kw">False</span>])
+          .<span class="fn">groupby</span>(<span class="str">'category'</span>)
+          .<span class="fn">head</span>(<span class="num">3</span>))
+
+<span class="cm"># 2. Month-over-month growth rate</span>
+monthly = df.<span class="fn">resample</span>(<span class="str">'ME'</span>)[<span class="str">'revenue'</span>].<span class="fn">sum</span>()
+monthly_df = monthly.<span class="fn">reset_index</span>()
+monthly_df[<span class="str">'prev'</span>] = monthly_df[<span class="str">'revenue'</span>].<span class="fn">shift</span>(<span class="num">1</span>)
+monthly_df[<span class="str">'growth%'</span>] = ((monthly_df[<span class="str">'revenue'</span>] - monthly_df[<span class="str">'prev'</span>])
+                          / monthly_df[<span class="str">'prev'</span>] * <span class="num">100</span>).<span class="fn">round</span>(<span class="num">2</span>)
+
+<span class="cm"># 3. Cohort — first purchase month per customer</span>
+df[<span class="str">'first_purchase'</span>] = df.<span class="fn">groupby</span>(<span class="str">'customer_id'</span>)[<span class="str">'order_date'</span>].<span class="fn">transform</span>(<span class="str">'min'</span>)
+df[<span class="str">'cohort_month'</span>]   = pd.<span class="fn">to_datetime</span>(df[<span class="str">'first_purchase'</span>]).dt.<span class="fn">to_period</span>(<span class="str">'M'</span>)`,
+    output: `Top 3 per category:
+Electronics: Laptop, Phone, Tablet
+Clothing: Shirt, Jeans, Kurta
+
+MoM Growth:
+Jan: N/A | Feb: +20.4% | Mar: -9.0% | Apr: +27.3%`,
+    qs: [
+      'How would you calculate the 7-day rolling average of daily sales?',
+      'Given a DataFrame of user logins, find users who logged in for 3 or more consecutive days.',
+      'How would you pivot a long-format DataFrame to wide format?'
+    ],
+    tip: 'transform() vs agg(): agg() collapses the group (fewer rows). transform() keeps original row count and broadcasts the result back — perfect for adding group-level stats as new columns.'
+  },
+
+  // ── POWER BI ────────────────────────────────────────────────────────
+  {
+    topic: 'powerbi', title: 'Power BI Fundamentals & Data Import',
+    sub: 'Getting started with Power BI Desktop',
+    concept: `<b>Power BI Desktop</b> is the authoring tool where you build reports. <b>Power BI Service</b> is the cloud platform for sharing. The workflow is: <b>Get Data → Transform (Power Query) → Model → Visualize → Publish</b>.<br><br>
+Power BI connects to 100+ sources: Excel, CSV, SQL Server, Azure, SharePoint, REST APIs, and more. Always import only the columns you need — it keeps the model fast.`,
+    code: `<span class="cm">// Power Query M — Basic transformations after import</span>
+<span class="kw">let</span>
+  Source = Csv.Document(File.Contents(<span class="str">"C:\\data\\sales.csv"</span>)),
+  Header = Table.PromoteHeaders(Source),
+  TypedTable = Table.TransformColumnTypes(Header, {
+    {<span class="str">"OrderDate"</span>, type date},
+    {<span class="str">"Amount"</span>,    type number},
+    {<span class="str">"Region"</span>,    type text}
+  }),
+  FilteredRows = Table.SelectRows(TypedTable,
+    each [Amount] > 0 and [Region] <> null),
+  RenamedCols = Table.RenameColumns(FilteredRows, {
+    {<span class="str">"Amount"</span>, <span class="str">"OrderAmount"</span>}
+  })
+<span class="kw">in</span>
+  RenamedCols`,
+    output: `Data loaded: 1,500 rows × 8 columns
+Types set: date, number, text
+After filter: 1,455 rows (45 removed)
+Column renamed: Amount → OrderAmount`,
+    qs: [
+      'What is the difference between Power BI Desktop and Power BI Service?',
+      'What is Power Query and why is it used?',
+      'What are the three views in Power BI Desktop?'
+    ],
+    tip: 'Always apply transformations in Power Query (before loading), not in DAX calculated columns. Power Query transformations run once at refresh; DAX runs on every query — so keep heavy lifting in Power Query.'
+  },
+  {
+    topic: 'powerbi', title: 'DAX Basics — SUM, AVERAGE, COUNT',
+    sub: 'Data Analysis Expressions — the formula language of Power BI',
+    concept: `<b>DAX (Data Analysis Expressions)</b> is the formula language used to create calculated columns and measures in Power BI. <b>Measures</b> are dynamic — they calculate based on the current filter context. <b>Calculated columns</b> are computed once at data refresh and stored in the model.<br><br>
+Basic aggregation functions: SUM, AVERAGE, COUNT, COUNTA, COUNTROWS, MAX, MIN, DISTINCTCOUNT.`,
+    code: `<span class="cm">// Basic measures</span>
+Total Revenue = <span class="fn">SUM</span>(Sales[OrderAmount])
+
+Total Orders = <span class="fn">COUNTROWS</span>(Sales)
+
+Avg Order Value = <span class="fn">DIVIDE</span>(<span class="fn">SUM</span>(Sales[OrderAmount]),
+                          <span class="fn">COUNTROWS</span>(Sales))
+
+Unique Customers = <span class="fn">DISTINCTCOUNT</span>(Sales[CustomerID])
+
+<span class="cm">// Calculated column (row-level, stored in model)</span>
+Sales[Profit] = Sales[Revenue] - Sales[Cost]
+
+Sales[SalesTax] = Sales[OrderAmount] * <span class="num">0.18</span>
+
+<span class="cm">// Conditional calculated column</span>
+Sales[OrderSize] =
+  <span class="kw">IF</span>(Sales[OrderAmount] >= <span class="num">10000</span>, <span class="str">"Large"</span>,
+  <span class="kw">IF</span>(Sales[OrderAmount] >= <span class="num">5000</span>,  <span class="str">"Medium"</span>, <span class="str">"Small"</span>))`,
+    output: `Total Revenue:    ₹48,20,000
+Total Orders:          1,455
+Avg Order Value:      ₹3,313
+Unique Customers:        389
+OrderSize breakdown: Large(12%), Med(31%), Small(57%)`,
+    qs: [
+      'What is the difference between a measure and a calculated column in Power BI?',
+      'Why should you use DIVIDE() instead of the / operator in DAX?',
+      'When would you use COUNTROWS vs COUNT vs COUNTA?'
+    ],
+    tip: 'Always use DIVIDE(numerator, denominator, [alternate]) instead of "/" — DIVIDE returns the alternate value (default 0) when denominator is 0, preventing errors.'
+  },
+  {
+    topic: 'powerbi', title: 'DAX — CALCULATE & Filter Context',
+    sub: 'The most powerful DAX function',
+    concept: `<b>CALCULATE</b> is the most important DAX function. It evaluates an expression in a <b>modified filter context</b>. You can add, remove, or override existing filters. Understanding filter context vs row context is the key to mastering DAX — and the most common interview topic.`,
+    code: `<span class="cm">// Sales for a specific region (overrides region filter)</span>
+South Sales = <span class="fn">CALCULATE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  Sales[Region] = <span class="str">"South"</span>
+)
+
+<span class="cm">// Sales for Top 3 products regardless of current filter</span>
+Top3 Sales = <span class="fn">CALCULATE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  <span class="fn">TOPN</span>(<span class="num">3</span>, VALUES(Products[ProductName]),
+       <span class="fn">SUM</span>(Sales[Amount]))
+)
+
+<span class="cm">// Remove all filters — grand total regardless of slicers</span>
+Grand Total = <span class="fn">CALCULATE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  <span class="fn">ALL</span>(Sales)
+)
+
+<span class="cm">// % of total — classic pattern</span>
+Revenue % of Total =
+  <span class="fn">DIVIDE</span>(
+    <span class="fn">SUM</span>(Sales[Amount]),
+    <span class="fn">CALCULATE</span>(<span class="fn">SUM</span>(Sales[Amount]), <span class="fn">ALL</span>(Sales))
+  )`,
+    output: `When Region slicer = "North":
+South Sales:         ₹4,82,000  (not affected by slicer)
+Grand Total:        ₹14,80,000  (ignores all filters)
+Revenue % of Total:      32.6%  (North's share)`,
+    qs: [
+      'What is the difference between filter context and row context in DAX?',
+      'What does ALL() do in CALCULATE?',
+      'How is CALCULATE different from CALCULATETABLE?'
+    ],
+    tip: 'Think of CALCULATE as: "Give me [expression], but change the filter context to [these conditions]." Every DAX measure you write will eventually use CALCULATE — master it first.'
+  },
+  {
+    topic: 'powerbi', title: 'DAX Time Intelligence',
+    sub: 'Year-over-year, MTD, QTD comparisons',
+    concept: `<b>Time intelligence functions</b> make period-over-period comparisons easy. They require a proper Date table (continuous, with no gaps) marked as a Date table in Power BI. Common functions: <b>DATEADD</b>, <b>SAMEPERIODLASTYEAR</b>, <b>DATESYTD</b>, <b>DATESMTD</b>, <b>PREVIOUSMONTH</b>.`,
+    code: `<span class="cm">// Same period last year</span>
+Revenue LY = <span class="fn">CALCULATE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  <span class="fn">SAMEPERIODLASTYEAR</span>(DateTable[Date])
+)
+
+<span class="cm">// Year-over-year growth %</span>
+YoY Growth % = <span class="fn">DIVIDE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]) - [Revenue LY],
+  [Revenue LY]
+)
+
+<span class="cm">// Year-to-date</span>
+Revenue YTD = <span class="fn">TOTALYTD</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  DateTable[Date]
+)
+
+<span class="cm">// Month-to-date</span>
+Revenue MTD = <span class="fn">TOTALMTD</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  DateTable[Date]
+)
+
+<span class="cm">// Previous month</span>
+Prev Month Revenue = <span class="fn">CALCULATE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  <span class="fn">PREVIOUSMONTH</span>(DateTable[Date])
+)`,
+    output: `Month: Aug 2024
+Current Revenue:    ₹5,23,000
+Last Year (Aug 23): ₹4,12,000
+YoY Growth:           +26.9%
+YTD (Jan-Aug 2024): ₹38,50,000
+MTD (Aug 1-27):     ₹4,68,000`,
+    qs: [
+      'Why is a dedicated Date table required for time intelligence functions?',
+      'What is the difference between DATEADD and SAMEPERIODLASTYEAR?',
+      'How would you calculate rolling 3-month average revenue in DAX?'
+    ],
+    tip: 'Your Date table MUST: (1) have one row per day, (2) cover all dates in your fact tables, (3) have no gaps. Mark it as Date Table in Power BI. Without this, time intelligence fails silently.'
+  },
+  {
+    topic: 'powerbi', title: 'Data Modeling & Relationships',
+    sub: 'Star schema and relationship best practices',
+    concept: `Good data modeling is what separates a good Power BI developer from a great one. The <b>star schema</b> — one fact table connected to multiple dimension tables — is the gold standard. Use <b>single-direction relationships</b> where possible. <b>Many-to-many</b> relationships should be avoided or handled with bridge tables.`,
+    code: `<span class="cm">/* Star Schema structure */</span>
+
+Fact Table: Sales
+  - OrderID (PK)
+  - CustomerID (FK)
+  - ProductID (FK)
+  - DateID (FK)
+  - Amount
+  - Quantity
+
+Dimension Tables:
+  - DimCustomer (CustomerID PK, Name, City, Segment)
+  - DimProduct  (ProductID PK, Name, Category, Cost)
+  - DimDate     (DateID PK, Date, Year, Month, Quarter)
+
+Relationships:
+  Sales[CustomerID] → DimCustomer[CustomerID]  (Many-to-1)
+  Sales[ProductID]  → DimProduct[ProductID]    (Many-to-1)
+  Sales[DateID]     → DimDate[DateID]          (Many-to-1)
+
+<span class="cm">// DAX: use RELATED() to access dimension columns from fact</span>
+Sales[CustomerCity] = <span class="fn">RELATED</span>(DimCustomer[City])`,
+    output: `Star schema benefits:
+✓ Simple, intuitive structure
+✓ Fast query performance
+✓ Easy to understand for business users
+✓ Filter context flows naturally from dim→fact`,
+    qs: [
+      'What is the difference between a star schema and a snowflake schema?',
+      'What is cross-filter direction in Power BI relationships?',
+      'When would you use RELATED() vs RELATEDTABLE()?'
+    ],
+    tip: 'Always build a star schema. Never join fact tables to each other directly. If two fact tables share a dimension, connect them both to the same dimension table — this is called a "conformed dimension."'
+  },
+  {
+    topic: 'powerbi', title: 'Filters, Slicers & Interactions',
+    sub: 'Controlling what users see and how visuals interact',
+    concept: `<b>Slicers</b> let report users filter visuals dynamically. <b>Visual-level filters</b> apply to one visual. <b>Page-level filters</b> apply to all visuals on a page. <b>Report-level filters</b> apply everywhere. <b>Edit interactions</b> controls how one slicer affects other visuals — filter, highlight, or no interaction.`,
+    code: `<span class="cm">// DAX: Force a visual to ignore a specific slicer</span>
+Revenue Ignore Region = <span class="fn">CALCULATE</span>(
+  <span class="fn">SUM</span>(Sales[Amount]),
+  <span class="fn">ALL</span>(DimCustomer[Region])
+)
+
+<span class="cm">// Top N filter in DAX (dynamic)</span>
+Top N Revenue =
+<span class="kw">VAR</span> TopN = <span class="fn">SELECTEDVALUE</span>(TopNTable[N], <span class="num">5</span>)
+<span class="kw">RETURN</span>
+  <span class="fn">CALCULATE</span>(
+    <span class="fn">SUM</span>(Sales[Amount]),
+    <span class="fn">TOPN</span>(TopN, <span class="fn">ALL</span>(DimProduct[ProductName]),
+         <span class="fn">SUM</span>(Sales[Amount]))
+  )
+
+<span class="cm">// Dynamic title based on slicer selection</span>
+Chart Title = <span class="str">"Sales by "</span> &
+  <span class="fn">SELECTEDVALUE</span>(DimDate[Year], <span class="str">"All Years"</span>)`,
+    output: `Slicer: Year = 2024
+→ All visuals filtered to 2024 data
+→ Except "Revenue Ignore Region" card (uses ALL)
+
+Top N slicer = 5:
+→ Chart shows top 5 products only
+→ Title updates: "Sales by 2024"`,
+    qs: [
+      'What is the difference between a filter and a slicer in Power BI?',
+      'How do you prevent a slicer from affecting a specific visual?',
+      'What does SELECTEDVALUE() return when multiple values are selected?'
+    ],
+    tip: 'SELECTEDVALUE(col, default) returns the selected value if exactly ONE item is selected, otherwise returns the default. Perfect for dynamic titles and conditional logic.'
+  },
+  {
+    topic: 'powerbi', title: 'Visualizations — Types & When to Use',
+    sub: 'Choosing the right chart for the right insight',
+    concept: `Choosing the right visual is as important as the data itself. Power BI has 30+ built-in visuals plus thousands from AppSource. Know when to use each type and what makes a good dashboard: clear titles, no chart junk, consistent colors, actionable insights.`,
+    code: `<span class="cm">Visual Selection Guide:</span>
+
+COMPARISON
+  Bar / Column chart → Compare values across categories
+  Grouped bar       → Compare sub-categories side by side
+
+TRENDS
+  Line chart        → Values over time
+  Area chart        → Volume over time (stacked = composition)
+
+COMPOSITION
+  Pie / Donut       → Part-to-whole (max 5-6 slices)
+  Treemap           → Hierarchical part-to-whole
+  Stacked bar       → Composition AND comparison
+
+DISTRIBUTION
+  Histogram         → Frequency distribution
+  Box plot          → Spread, median, outliers
+
+RELATIONSHIPS
+  Scatter plot      → Correlation between two measures
+  Bubble chart      → 3 dimensions (x, y, size)
+
+GEOGRAPHIC
+  Map / Filled map  → Regional data
+
+KPI / CARDS
+  Card              → Single key metric
+  KPI visual        → Target vs actual
+  Gauge             → Progress toward a goal`,
+    output: `Best practices:
+✓ Max 5 colors per chart
+✓ Always label axes and add a title
+✓ Sort bar charts by value (not alphabetically)
+✓ Use consistent date formats across the report
+✗ Avoid 3D charts — they distort perception`,
+    qs: [
+      'When would you use a scatter plot instead of a bar chart?',
+      'Why is a pie chart a poor choice when you have more than 5-6 categories?',
+      'What is the purpose of a KPI visual in Power BI?'
+    ],
+    tip: 'Interviewers love this question: "When would you NOT use a pie chart?" Answer: when categories are more than 5, when values are similar in size, or when you need to compare to a baseline — use a bar chart instead.'
+  },
+  {
+    topic: 'powerbi', title: 'Power Query — M Language Basics',
+    sub: 'Data transformation before it enters the model',
+    concept: `<b>Power Query</b> (M language) handles ETL — Extract, Transform, Load — before data enters the Power BI model. It runs at refresh time, not at query time, making it more efficient than DAX calculated columns for data shaping.<br><br>
+Key operations: removing columns, filtering rows, merging queries, pivoting/unpivoting, splitting columns, conditional columns.`,
+    code: `<span class="cm">// M Language — full transformation pipeline</span>
+<span class="kw">let</span>
+  <span class="cm">// Step 1: Connect to SQL</span>
+  Source = Sql.Database(<span class="str">"server"</span>, <span class="str">"database"</span>),
+  SalesTable = Source{[Schema=<span class="str">"dbo"</span>,Item=<span class="str">"Sales"</span>]}[Data],
+
+  <span class="cm">// Step 2: Filter completed orders</span>
+  Filtered = Table.SelectRows(SalesTable,
+    each [Status] = <span class="str">"Completed"</span>),
+
+  <span class="cm">// Step 3: Remove unused columns</span>
+  Trimmed = Table.RemoveColumns(Filtered,
+    {<span class="str">"InternalNotes"</span>, <span class="str">"CreatedBy"</span>}),
+
+  <span class="cm">// Step 4: Add conditional column</span>
+  WithBand = Table.AddColumn(Trimmed, <span class="str">"SizeBand"</span>,
+    each if [Amount] >= <span class="num">10000</span> then <span class="str">"Large"</span>
+         else if [Amount] >= <span class="num">5000</span> then <span class="str">"Medium"</span>
+         else <span class="str">"Small"</span>),
+
+  <span class="cm">// Step 5: Set types</span>
+  Typed = Table.TransformColumnTypes(WithBand,
+    {{<span class="str">"OrderDate"</span>, type date}, {<span class="str">"Amount"</span>, type number}})
+<span class="kw">in</span>
+  Typed`,
+    output: `Steps applied in Power Query Editor:
+1. Source (SQL connection)
+2. Navigation (Sales table)
+3. Filtered Rows (Status = Completed)
+4. Removed Columns
+5. Added Conditional Column
+6. Changed Type`,
+    qs: [
+      'What is the difference between Power Query and DAX?',
+      'What does Table.UnpivotOtherColumns do and when is it useful?',
+      'How do you merge two queries in Power Query? What are the join kinds available?'
+    ],
+    tip: 'Unpivot is one of the most powerful Power Query operations. When months are column headers (wide format), unpivot turns them into rows (long format) — which is what Power BI needs for time intelligence.'
+  },
+  {
+    topic: 'powerbi', title: 'Row-Level Security & Publishing',
+    sub: 'Controlling data access and sharing reports',
+    concept: `<b>Row-Level Security (RLS)</b> restricts data access so different users see different rows. You define security roles in Power BI Desktop using DAX filter rules, then assign users to roles in Power BI Service.<br><br>
+Publishing: save → Publish to Power BI Service → create a workspace → share dashboard or report. Schedule refresh keeps data current automatically.`,
+    code: `<span class="cm">// RLS: Each manager sees only their region's data</span>
+
+<span class="cm">// Step 1: Create a Role in Power BI Desktop</span>
+<span class="cm">// Role: "RegionFilter"</span>
+<span class="cm">// Table: DimCustomer</span>
+<span class="cm">// DAX filter:</span>
+[Region] = <span class="fn">LOOKUPVALUE</span>(
+  UserRegions[Region],
+  UserRegions[Email],
+  <span class="fn">USERPRINCIPALNAME</span>()
+)
+
+<span class="cm">// Dynamic RLS — user sees only their own data</span>
+<span class="cm">// (simpler pattern for single-table security)</span>
+[SalesPersonEmail] = <span class="fn">USERPRINCIPALNAME</span>()
+
+<span class="cm">// Test RLS in Power BI Desktop:</span>
+<span class="cm">// Modeling tab → View As → Select Role → See what user sees</span>
+
+<span class="cm">// Publishing steps (via Power BI Service):</span>
+<span class="cm">// File → Publish → Select Workspace</span>
+<span class="cm">// Service: Security tab → Add members to roles</span>
+<span class="cm">// Schedule Refresh: Dataset settings → Refresh schedule</span>`,
+    output: `User: north_manager@company.com
+Sees only: North region data (1,289 rows)
+
+User: south_manager@company.com
+Sees only: South region data (342 rows)
+
+Admin user: all data (4,500 rows)`,
+    qs: [
+      'What is the difference between static and dynamic RLS?',
+      'What does USERPRINCIPALNAME() return?',
+      'What is the maximum refresh frequency for a dataset in Power BI Service?'
+    ],
+    tip: 'Always test RLS using "View as Role" in Power BI Desktop before publishing. Once published, use "Test as role" in Power BI Service to verify users see the correct data.'
+  },
+  {
+    topic: 'powerbi', title: 'Top 25 Interview Q&A — Final Day',
+    sub: 'The most asked Power BI + DA interview questions',
+    concept: `This is your final revision day. These are the exact questions asked in Data Analyst interviews at TCS, Infosys, Wipro, Accenture, Mu Sigma, Tiger Analytics, and startups. Study the pattern — not just the answer.`,
+    code: `<span class="cm">/* Most asked interview questions + quick answers */</span>
+
+Q: What is the difference between Import and DirectQuery mode?
+A: Import = data copied into Power BI model (fast, up to 1GB)
+   DirectQuery = live query to source on every interaction
+   (always fresh, no 1GB limit, but slower)
+
+Q: How do you handle many-to-many relationships?
+A: Use a bridge table. Example: Student→Course is M:M,
+   resolve via Enrollment table (StudentID + CourseID)
+
+Q: What is the difference between SUMX and SUM?
+A: SUM(table[col])  = aggregates entire column
+   SUMX(table, expr) = evaluates expression row by row, then sums
+
+Q: What is context transition?
+A: When CALCULATE is called inside a row context (e.g.,
+   calculated column), it converts the row context to
+   an equivalent filter context
+
+Q: How do you optimize a slow Power BI report?
+A: Use Import mode, star schema, avoid calculated columns
+   in favor of Power Query, reduce visuals per page,
+   use aggregations, check with Performance Analyzer`,
+    output: `Key topics to revise:
+✓ Import vs DirectQuery vs Live Connection
+✓ Measures vs Calculated Columns
+✓ CALCULATE + ALL + FILTER patterns
+✓ Time intelligence (YTD, LY, MTD)
+✓ Star schema design
+✓ RLS implementation
+✓ Power Query ETL
+✓ Visual best practices`,
+    qs: [
+      'Explain the entire flow from raw data to a published Power BI dashboard.',
+      'You have a report with 15 visuals and it is very slow. How do you diagnose and fix it?',
+      'A business user says the numbers in Power BI don\'t match the Excel report. How do you investigate?'
+    ],
+    tip: 'For the final interview question "Tell me about a Power BI dashboard you built" — always structure your answer as: Problem → Data Sources → Model Design → Key Measures → Insight Delivered → Business Impact.'
+  }
+];
+
+const TOPIC_LABELS = { sql: '🔷 SQL', python: '🐍 Python', powerbi: '📊 Power BI' };
+const TOPIC_CLASS  = { sql: 'sql', python: 'python', powerbi: 'powerbi' };
+
+function getCompleted() {
+  try { return JSON.parse(localStorage.getItem('da_prep_done') || '[]'); } catch { return []; }
+}
+function setCompleted(arr) {
+  localStorage.setItem('da_prep_done', JSON.stringify(arr));
+}
+
+function updateProgress() {
+  const done = getCompleted();
+  const pct = Math.round((done.length / days.length) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = done.length + ' / ' + days.length + ' completed';
+}
+
+function buildSidebar() {
+  const list = document.getElementById('day-list');
+  let curTopic = '';
+  days.forEach((d, i) => {
+    if (d.topic !== curTopic) {
+      curTopic = d.topic;
+      const lbl = document.createElement('div');
+      lbl.className = 'section-label ' + curTopic + '-label';
+      lbl.textContent = TOPIC_LABELS[curTopic];
+      list.appendChild(lbl);
+    }
+    const done = getCompleted().includes(i);
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (done ? ' done' : '') + (i === 0 ? ' active' : '');
+    btn.id = 'day-btn-' + i;
+    btn.innerHTML = `<span class="day-num ${curTopic}-num">${done ? '' : i+1}</span>
+                     <span class="day-text">Day ${i+1}: ${d.title}</span>`;
+    btn.onclick = () => showDay(i);
+    list.appendChild(btn);
+  });
+}
+
+function showDay(idx) {
+  const d = days[idx];
+  const done = getCompleted().includes(idx);
+  const topicClass = TOPIC_CLASS[d.topic];
+
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('day-btn-' + idx).classList.add('active');
+
+  const qs = d.qs.map(q => `<li>${q}</li>`).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="day-header">
+        <span class="day-badge badge-${topicClass}">${TOPIC_LABELS[d.topic]}</span>
+        <div>
+          <div class="day-title">Day ${idx+1}: ${d.title}</div>
+          <div class="day-sub">${d.sub}</div>
+        </div>
+      </div>
+
+      <div class="section-title">📖 Concept</div>
+      <div class="concept-text">${d.concept}</div>
+
+      ${d.tip ? `<div class="tip-box">💡 <b>Interview Tip:</b> ${d.tip}</div>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="section-title">💻 Code Example</div>
+      <div class="code-block">${d.code}</div>
+      <div class="section-title" style="margin-top:14px">📤 Output</div>
+      <div class="output-block">${d.output}</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🎯 Interview Questions</div>
+      <ul class="qs-list">${qs}</ul>
+      <button class="mark-btn ${done ? 'done' : 'pending'}" id="mark-btn" onclick="toggleDone(${idx})">
+        ${done ? '✓ Completed — Mark Incomplete' : 'Mark as Complete'}
+      </button>
+    </div>
+
+    <div class="nav-btns">
+      ${idx > 0 ? `<button class="nav-btn" onclick="showDay(${idx-1})">← Day ${idx}</button>` : ''}
+      ${idx < days.length-1 ? `<button class="nav-btn" onclick="showDay(${idx+1})">Day ${idx+2} →</button>` : ''}
+    </div>
+  `;
+  window.scrollTo(0, 0);
+}
+
+function toggleDone(idx) {
+  let done = getCompleted();
+  const pos = done.indexOf(idx);
+  if (pos === -1) done.push(idx); else done.splice(pos, 1);
+  setCompleted(done);
+  updateProgress();
+  const btn = document.getElementById('day-btn-' + idx);
+  const isDone = done.includes(idx);
+  btn.className = 'day-btn active' + (isDone ? ' done' : '');
+  btn.innerHTML = `<span class="day-num ${days[idx].topic}-num">${isDone ? '' : idx+1}</span>
+                   <span class="day-text">Day ${idx+1}: ${days[idx].title}</span>`;
+  document.getElementById('mark-btn').className = 'mark-btn ' + (isDone ? 'done' : 'pending');
+  document.getElementById('mark-btn').textContent = isDone ? '✓ Completed — Mark Incomplete' : 'Mark as Complete';
+}
+
+buildSidebar();
+updateProgress();
+showDay(0);
+</script>
+</body>
+</html>

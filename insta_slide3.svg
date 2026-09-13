@@ -1,0 +1,17 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1080" fill="#FFF7ED"/>
+  <rect x="0" y="0" width="1080" height="12" fill="#F97316"/>
+  <rect x="0" y="1068" width="1080" height="12" fill="#F97316"/>
+  <text x="540" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#F97316" letter-spacing="4">MISTAKE #2</text>
+  <text x="540" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="100" fill="#F97316">🔑</text>
+  <text x="540" y="450" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900" fill="#C2410C">Missing Keywords</text>
+  <text x="540" y="530" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="64" font-weight="900" fill="#C2410C">from the JD</text>
+  <rect x="140" y="570" width="800" height="3" fill="#FED7AA"/>
+  <text x="540" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">Recruiters search by keywords.</text>
+  <text x="540" y="705" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">If your resume doesn't have them,</text>
+  <text x="540" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">you're invisible — even if</text>
+  <text x="540" y="815" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#7C2D12">you're 100% qualified.</text>
+  <rect x="290" y="880" width="500" height="80" rx="40" fill="#F97316"/>
+  <text x="540" y="932" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="white">Fix this at scoremycv.in</text>
+  <text x="540" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#F97316" opacity="0.5">3 / 6</text>
+</svg>

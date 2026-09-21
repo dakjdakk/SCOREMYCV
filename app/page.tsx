@@ -50,7 +50,7 @@ const features = [
 const steps = [
   { step: "01", title: "Upload Your Resume", desc: "Upload your existing resume in PDF or Word format." },
   { step: "02", title: "Get Free ATS Score", desc: "Instantly see your score, missing keywords, and what's holding your resume back." },
-  { step: "03", title: "Pay ₹25 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
+  { step: "03", title: "Pay ₹49 Securely", desc: "One-time payment via UPI, GPay, PhonePe, or card. No subscription, no hidden charges." },
   { step: "04", title: "Download Instantly", desc: "Your rewritten, ATS-optimised CV downloads automatically — right away." },
 ];
 
@@ -60,7 +60,7 @@ const faqs = [
     a: "ATS stands for Applicant Tracking System — software companies use to automatically filter resumes before a human ever sees them. If your score is too low, your resume gets rejected instantly. Our free check tells you exactly where you stand.",
   },
   {
-    q: "What do I get for ₹25?",
+    q: "What do I get for ₹49?",
     a: "Your entire CV is professionally rewritten — better language, strong action verbs, missing keywords added, and ATS-optimised formatting. The rewritten CV is generated instantly and downloads as a clean PDF the moment payment is confirmed.",
   },
   {
@@ -457,7 +457,7 @@ function HeroSection({ onUpgrade }: {
             <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center gap-3">
               <div className="text-3xl">🔒</div>
               <p className="font-extrabold text-slate-800 text-base text-center px-4">Get your ATS-Friendly Resume — 90+ Score Guaranteed</p>
-              <p className="text-slate-500 text-xs text-center px-6">Keywords added · ATS-optimised · Instant PDF download · Just ₹25</p>
+              <p className="text-slate-500 text-xs text-center px-6">Keywords added · ATS-optimised · Instant PDF download · Just ₹49</p>
               <button onClick={() => { trackUpgrade(); file && onUpgrade({ file, jobRole, score: result?.score }); }}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-sm mt-1">
                 🚀 Build My ATS-Friendly Resume →
@@ -643,7 +643,7 @@ function PaymentModal({
       const orderRes  = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 2500, currency: "INR", receipt: orderId }),
+        body: JSON.stringify({ amount: 4900, currency: "INR", receipt: orderId }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
@@ -849,7 +849,7 @@ function PaymentModal({
                     disabled={loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Pay ₹25 & Download Instantly →</span>}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Pay ₹49 & Download Instantly →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>
@@ -935,7 +935,7 @@ function PaymentModal({
                     disabled={!canProceed || loading || !email}
                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition text-base"
                   >
-                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Pay ₹25 & Download Instantly →</span>}
+                    {loading ? loadingMsg || "⏳ Please wait..." : <span>🔒 Pay ₹49 & Download Instantly →</span>}
                   </button>
                   <p className="text-center text-slate-400 text-xs">Secured by Razorpay · GPay, PhonePe, UPI, Cards accepted</p>
                 </>

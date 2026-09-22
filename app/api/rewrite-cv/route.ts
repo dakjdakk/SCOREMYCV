@@ -355,7 +355,7 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
 Rules:
 - Extract ONLY what exists in the CV. Never invent or add information.
 - "designation": Best title for a "${jobRole}" candidate (e.g. "Data Analyst & ML Engineer").
-- "summary": Copy EXACTLY as written in the CV. Only fix grammar, punctuation, and action verbs — do NOT change the meaning, reorder sentences, or add/remove any facts.
+- "summary": Copy EXACTLY as written in the CV. Only fix grammar, punctuation, and action verbs — do NOT change the meaning, reorder sentences, or add/remove any facts. Limit to 120 words maximum — truncate at a sentence boundary if needed.
 - skills[].items: comma-separated string of skills for that category.
 - SKILLS GROUPING: If the CV lists skills without sub-categories (e.g. a flat list under "Core Competencies", "Technical Skills", "Skills"), you MUST intelligently group them into standard categories. Use these category names where applicable: "Programming Languages", "Frameworks & Libraries", "Databases", "Cloud & DevOps", "Machine Learning & AI", "Data & Visualization Tools", "Tools & Platforms". Only use categories that have at least one skill. Do NOT use vague names like "Core Competencies" or "Technical Skills" as category names.
 - For bullets: extract actual content, lightly improve phrasing for ATS but never fabricate facts.
@@ -417,7 +417,7 @@ ${cvText}`;
               contents: [{ parts: [{ text: extractPrompt }] }],
               generationConfig: {
                 temperature: 0,
-                maxOutputTokens: 8192,
+                maxOutputTokens: 16384,
                 responseMimeType: "application/json",
                 thinkingConfig: { thinkingBudget: 0 },
               },
@@ -572,12 +572,31 @@ ${cvText}`;
         : "";
       const eduHtml = sec("Education", eduInner);
 
-      // Certifications
-      const certInner = Array.isArray(cvData.certifications) && cvData.certifications.length
-        ? `<ul class="cert-list">${cvData.certifications.map((c: any) =>
-            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
-          ).join("\n")}</ul>`
-        : "";
+      // Certifications — group by issuer: "Issuer: cert1 | cert2 | cert3"
+      const certInner = (() => {
+        if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) return "";
+        // Group certs by issuer
+        const grouped: Record<string, string[]> = {};
+        const noIssuer: string[] = [];
+        for (const c of cvData.certifications) {
+          const issuer = (c.issuer || "").trim();
+          const name = (c.name || "").trim();
+          if (issuer) {
+            if (!grouped[issuer]) grouped[issuer] = [];
+            grouped[issuer].push(esc(name));
+          } else {
+            noIssuer.push(esc(name));
+          }
+        }
+        const lines: string[] = [];
+        for (const [issuer, names] of Object.entries(grouped)) {
+          lines.push(`<p style="margin:0 0 4px 0;"><strong>${esc(issuer)}:</strong> ${names.join(" | ")}</p>`);
+        }
+        if (noIssuer.length) {
+          lines.push(`<p style="margin:0 0 4px 0;">${noIssuer.join(" | ")}</p>`);
+        }
+        return lines.join("\n");
+      })();
       const certHtml = sec("Certifications", certInner);
 
       // Achievements — rendered as clean bullets, no section-name prefix ever

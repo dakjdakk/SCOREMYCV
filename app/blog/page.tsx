@@ -21,6 +21,30 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "what-is-ats-score",
+    title: "What is ATS Score? Complete Guide for Indian Job Seekers (2026)",
+    desc: "What is ATS score, how is it calculated, what is a good score, and how to check yours for free in India. Full guide for freshers and experienced professionals.",
+    tag: "ATS Guide",
+    readTime: "6 min",
+    icon: "📊",
+  },
+  {
+    slug: "ats-score-full-form",
+    title: "ATS Full Form — What Does ATS Stand For in Resume? (2026)",
+    desc: "ATS full form is Applicant Tracking System. Learn what it means, how ATS works in recruitment, which companies in India use it, and how to pass ATS screening.",
+    tag: "ATS Basics",
+    readTime: "5 min",
+    icon: "🔤",
+  },
+  {
+    slug: "how-to-improve-cv-score",
+    title: "How to Improve CV Score — 7 Proven Tips to Boost ATS Score (2026)",
+    desc: "7 proven tips to improve your CV score and pass ATS filters in India. Add missing keywords, fix formatting, use action verbs, and get more interview calls.",
+    tag: "Resume Tips",
+    readTime: "7 min",
+    icon: "⬆️",
+  },
+  {
     slug: "why-cv-gets-rejected",
     title: "Why Is My CV Getting Rejected? 7 Real Reasons (India 2026)",
     desc: "Sending 50 applications and hearing nothing? Here are the 7 real reasons your CV is being rejected — and exactly how to fix each one.",

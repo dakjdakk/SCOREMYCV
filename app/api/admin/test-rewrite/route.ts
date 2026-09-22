@@ -580,11 +580,22 @@ ${cvText}`;
       const eduHtml4 = sec("Education", eduInner4);
 
       // Certifications
-      const certInner4 = Array.isArray(cvData.certifications) && cvData.certifications.length
-        ? `<ul class="cert-list">${cvData.certifications.map((c: any) =>
-            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
-          ).join("\n")}</ul>`
-        : "";
+      const certInner4 = (() => {
+        if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) return "";
+        const grouped: Record<string, string[]> = {};
+        const noIssuer: string[] = [];
+        for (const c of cvData.certifications) {
+          const issuer = (c.issuer || "").trim();
+          const name = (c.name || "").trim();
+          if (issuer) { if (!grouped[issuer]) grouped[issuer] = []; grouped[issuer].push(esc(name)); }
+          else noIssuer.push(esc(name));
+        }
+        const lines: string[] = [];
+        for (const [issuer, names] of Object.entries(grouped))
+          lines.push(`<p style="margin:0 0 4px 0;"><strong>${esc(issuer)}:</strong> ${names.join(" | ")}</p>`);
+        if (noIssuer.length) lines.push(`<p style="margin:0 0 4px 0;">${noIssuer.join(" | ")}</p>`);
+        return `<div class="skills-block">${lines.join("\n")}</div>`;
+      })();
       const certHtml4 = sec("Certifications", certInner4);
 
       // Achievements — rendered as clean bullets, no section-name prefix ever
@@ -1111,11 +1122,22 @@ ${cvText}`;
       const eduHtml5 = sec("Education", eduInner5);
 
       // Certifications
-      const certInner5 = Array.isArray(cvData.certifications) && cvData.certifications.length
-        ? `<ul class="cert-list">${cvData.certifications.map((c: any) =>
-            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
-          ).join("\n")}</ul>`
-        : "";
+      const certInner5 = (() => {
+        if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) return "";
+        const grouped: Record<string, string[]> = {};
+        const noIssuer: string[] = [];
+        for (const c of cvData.certifications) {
+          const issuer = (c.issuer || "").trim();
+          const name = (c.name || "").trim();
+          if (issuer) { if (!grouped[issuer]) grouped[issuer] = []; grouped[issuer].push(esc(name)); }
+          else noIssuer.push(esc(name));
+        }
+        const lines: string[] = [];
+        for (const [issuer, names] of Object.entries(grouped))
+          lines.push(`<p style="margin:0 0 4px 0;"><strong>${esc(issuer)}:</strong> ${names.join(" | ")}</p>`);
+        if (noIssuer.length) lines.push(`<p style="margin:0 0 4px 0;">${noIssuer.join(" | ")}</p>`);
+        return `<div class="skills-block">${lines.join("\n")}</div>`;
+      })();
       const certHtml5 = sec("Certifications", certInner5);
 
       // Achievements — rendered as clean bullets, no section-name prefix ever

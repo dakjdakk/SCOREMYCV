@@ -595,7 +595,7 @@ ${cvText}`;
         if (noIssuer.length) {
           lines.push(`<p style="margin:0 0 4px 0;">${noIssuer.join(" | ")}</p>`);
         }
-        return lines.join("\n");
+        return `<div class="skills-block">${lines.join("\n")}</div>`;
       })();
       const certHtml = sec("Certifications", certInner);
 

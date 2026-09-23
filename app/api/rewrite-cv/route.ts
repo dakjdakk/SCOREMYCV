@@ -572,29 +572,28 @@ ${cvText}`;
         : "";
       const eduHtml = sec("Education", eduInner);
 
-      // Certifications — group by issuer: "Issuer: cert1 | cert2 | cert3"
+      // Certifications — <5 certs: bullet list; 5+ certs: grouped by issuer
       const certInner = (() => {
         if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) return "";
-        // Group certs by issuer
+        if (cvData.certifications.length < 5) {
+          // Few certs — show as individual bullets
+          return `<ul class="cert-list">${cvData.certifications.map((c: any) =>
+            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
+          ).join("\n")}</ul>`;
+        }
+        // Many certs — group by issuer on one line
         const grouped: Record<string, string[]> = {};
         const noIssuer: string[] = [];
         for (const c of cvData.certifications) {
           const issuer = (c.issuer || "").trim();
           const name = (c.name || "").trim();
-          if (issuer) {
-            if (!grouped[issuer]) grouped[issuer] = [];
-            grouped[issuer].push(esc(name));
-          } else {
-            noIssuer.push(esc(name));
-          }
+          if (issuer) { if (!grouped[issuer]) grouped[issuer] = []; grouped[issuer].push(esc(name)); }
+          else noIssuer.push(esc(name));
         }
         const lines: string[] = [];
-        for (const [issuer, names] of Object.entries(grouped)) {
+        for (const [issuer, names] of Object.entries(grouped))
           lines.push(`<p style="margin:0 0 4px 0;"><strong>${esc(issuer)}:</strong> ${names.join(" | ")}</p>`);
-        }
-        if (noIssuer.length) {
-          lines.push(`<p style="margin:0 0 4px 0;">${noIssuer.join(" | ")}</p>`);
-        }
+        if (noIssuer.length) lines.push(`<p style="margin:0 0 4px 0;">${noIssuer.join(" | ")}</p>`);
         return `<div class="skills-block">${lines.join("\n")}</div>`;
       })();
       const certHtml = sec("Certifications", certInner);

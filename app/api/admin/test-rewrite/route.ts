@@ -582,6 +582,11 @@ ${cvText}`;
       // Certifications
       const certInner4 = (() => {
         if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) return "";
+        if (cvData.certifications.length < 5) {
+          return `<ul class="cert-list">${cvData.certifications.map((c: any) =>
+            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
+          ).join("\n")}</ul>`;
+        }
         const grouped: Record<string, string[]> = {};
         const noIssuer: string[] = [];
         for (const c of cvData.certifications) {
@@ -1124,6 +1129,11 @@ ${cvText}`;
       // Certifications
       const certInner5 = (() => {
         if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) return "";
+        if (cvData.certifications.length < 5) {
+          return `<ul class="cert-list">${cvData.certifications.map((c: any) =>
+            `<li>${esc(c.name)}${c.issuer ? " — " + esc(c.issuer) : ""}</li>`
+          ).join("\n")}</ul>`;
+        }
         const grouped: Record<string, string[]> = {};
         const noIssuer: string[] = [];
         for (const c of cvData.certifications) {

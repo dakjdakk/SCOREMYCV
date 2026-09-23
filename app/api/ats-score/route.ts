@@ -212,10 +212,25 @@ export async function POST(request: Request) {
     const ua = (request.headers.get("user-agent") || "").toLowerCase();
     const device = /mobile|android|iphone|ipad|ipod/.test(ua) ? "M" : "D";
 
+    // Parse referrer into a clean source label
+    const rawReferrer = (formData.get("referrer") as string || "").trim();
+    let referrerSource = "direct";
+    if (rawReferrer && rawReferrer !== "direct") {
+      try {
+        const refHost = new URL(rawReferrer).hostname.replace("www.", "");
+        if (refHost.includes("google")) referrerSource = "google";
+        else if (refHost.includes("linkedin")) referrerSource = "linkedin";
+        else if (refHost.includes("instagram")) referrerSource = "instagram";
+        else if (refHost.includes("facebook")) referrerSource = "facebook";
+        else if (refHost.includes("twitter") || refHost.includes("x.com")) referrerSource = "twitter";
+        else referrerSource = refHost;
+      } catch { referrerSource = "direct"; }
+    }
+
     // Track ATS check synchronously so email is never lost
     let checkId: string | null = null;
     try {
-      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, ...(extractedEmail ? { email: extractedEmail } : {}) });
+      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, referrer: referrerSource, ...(extractedEmail ? { email: extractedEmail } : {}) });
       checkId = row?.id ?? null;
     } catch (dbErr) {
       console.error("DB insert error:", dbErr);

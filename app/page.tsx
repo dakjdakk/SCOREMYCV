@@ -262,6 +262,7 @@ function HeroSection({ onUpgrade }: {
       fd.append("file", file);
       fd.append("jobRole", jobRole);
       if (email.trim()) fd.append("email", email.trim());
+      fd.append("referrer", document.referrer || "direct");
       const res  = await fetch("/api/ats-score", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to score CV");

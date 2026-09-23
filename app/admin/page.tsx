@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-type AtsCheck  = { id: string; created_at: string; job_role: string; score: number; email?: string; device?: string; upgrade_clicked?: boolean };
+type AtsCheck  = { id: string; created_at: string; job_role: string; score: number; email?: string; device?: string; upgrade_clicked?: boolean; referrer?: string };
 type CvRewrite = {
   id: string; created_at: string; job_role: string; score_before: number;
   email: string; payment_id: string; original_pdf_url: string; rewritten_pdf_url: string;
@@ -191,6 +191,7 @@ export default function AdminPage() {
                     <th className="pb-2 pr-4">Score</th>
                     <th className="pb-2 pr-4">Dev</th>
                     <th className="pb-2 pr-4">Conv</th>
+                    <th className="pb-2 pr-4">Source</th>
                     <th className="pb-2">Email</th>
                   </tr>
                 </thead>
@@ -208,6 +209,11 @@ export default function AdminPage() {
                       <td className="py-2 pr-4">
                         {c.upgrade_clicked
                           ? <span className="font-bold text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700">✓</span>
+                          : <span className="text-slate-300 text-xs">—</span>}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {c.referrer
+                          ? <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${c.referrer === "google" ? "bg-yellow-100 text-yellow-700" : c.referrer === "linkedin" ? "bg-blue-100 text-blue-700" : c.referrer === "instagram" ? "bg-pink-100 text-pink-700" : c.referrer === "direct" ? "bg-slate-100 text-slate-500" : "bg-gray-100 text-gray-600"}`}>{c.referrer}</span>
                           : <span className="text-slate-300 text-xs">—</span>}
                       </td>
                       <td className="py-2 text-slate-600">{c.email || <span className="text-slate-300">—</span>}</td>

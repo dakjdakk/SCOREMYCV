@@ -370,7 +370,7 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       const showPortfolio4 = option === "6" ? !!userPortfolio : !!portfolioUrl;
       const portfolioDisplay4 = option === "6" ? normalizeUrl(userPortfolio) : portfolioUrl;
       if (showPortfolio4 && portfolioDisplay4) contactParts.push(`<a href="${portfolioDisplay4}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
-      else if (!showPortfolio4 && mentionsPortfolio4 && !linkedinUrl && !githubUrl) contactParts.push("Portfolio");
+      else if (option !== "6" && mentionsPortfolio4 && !linkedinUrl && !githubUrl) contactParts.push("Portfolio");
       if (relocateMatch4) contactParts.push("Open to Relocate");
       // Option 6: skip auto-detected extra URLs (they go into project bullets, not contact line)
       if (option !== "6") {

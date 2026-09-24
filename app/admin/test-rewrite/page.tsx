@@ -29,6 +29,7 @@ const OPTIONS = [
   { id: "3", label: "Option 3", desc: "Education + Certifications both always in right column", color: "green" },
   { id: "4", label: "Option 4", desc: "Single-column traditional format — no sidebar, full width", color: "orange" },
   { id: "5", label: "Option 5", desc: "Option 4 + ATS keyword injection in summary & skills only", color: "teal" },
+  { id: "6", label: "Option 6", desc: "Format & action verb fix only — no role, no content change (Word doc prep)", color: "rose" },
 ];
 
 export default function TestRewritePage() {
@@ -40,10 +41,11 @@ export default function TestRewritePage() {
   const [loading,  setLoading]  = useState<string | null>(null); // "1" | "2" | null
   const [error,    setError]    = useState("");
   const [done,     setDone]     = useState<string | null>(null); // which option completed
+  const [selectedOpt, setSelectedOpt] = useState<string>("1");
 
   async function handleGenerate(option: string) {
     if (!file) { setError("Please select a CV file first."); return; }
-    setLoading(option); setError(""); setDone(null);
+    setLoading(option); setSelectedOpt(option); setError(""); setDone(null);
 
     try {
       const fd = new FormData();
@@ -105,7 +107,8 @@ export default function TestRewritePage() {
             {file && <p className="text-xs text-slate-400 mt-1">{file.name}</p>}
           </div>
 
-          {/* Job Role */}
+          {/* Job Role — hidden for Option 6 */}
+          {selectedOpt !== "6" && (
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Job Role <span className="text-red-500">*</span></label>
             <select
@@ -116,6 +119,7 @@ export default function TestRewritePage() {
               {IT_JOB_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
+          )}
 
           {/* LinkedIn */}
           <div>
@@ -160,7 +164,7 @@ export default function TestRewritePage() {
             {OPTIONS.map(opt => (
               <button
                 key={opt.id}
-                onClick={() => handleGenerate(opt.id)}
+                onClick={() => { setSelectedOpt(opt.id); handleGenerate(opt.id); }}
                 disabled={!!loading}
                 className={`flex items-center gap-4 py-3 px-4 rounded-xl font-bold text-sm transition disabled:opacity-50 border-2 text-left
                   ${done === opt.id
@@ -169,6 +173,10 @@ export default function TestRewritePage() {
                     ? "bg-purple-600 hover:bg-purple-700 border-purple-600 text-white"
                     : opt.color === "blue"
                     ? "bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+                    : opt.color === "orange"
+                    ? "bg-orange-500 hover:bg-orange-600 border-orange-500 text-white"
+                    : opt.color === "rose"
+                    ? "bg-rose-600 hover:bg-rose-700 border-rose-600 text-white"
                     : "bg-teal-600 hover:bg-teal-700 border-teal-600 text-white"
                   }`}
               >

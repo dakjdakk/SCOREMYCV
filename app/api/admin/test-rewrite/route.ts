@@ -267,7 +267,7 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
     // Step 2 — Our server code builds 100% of the HTML from that JSON.
     // Gemini never touches HTML → eliminates all contact corruption, fabricated links,
     // wrong section names, bullet prefix bugs, and layout issues.
-    if (option === "4") {
+    if (option === "4" || option === "6") {
 
       // ── Build contact line server-side (before Gemini call) ──────────
       const emailMatch4   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
@@ -380,10 +380,10 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
 
 Rules:
 - Extract ONLY what exists in the CV. Never invent or add information.
-- "designation": Best title for a "${jobRole}" candidate (e.g. "Data Analyst & ML Engineer").
+- "designation": ${option === "6" ? "Use EXACTLY the candidate's current title/designation as written in the CV. Do NOT change or invent a new title." : `Best title for a "${jobRole}" candidate (e.g. "Data Analyst & ML Engineer").`}
 - "summary": Copy EXACTLY as written in the CV. Only fix grammar, punctuation, and action verbs — do NOT change the meaning, reorder sentences, or add/remove any facts.
 - skills[].items: comma-separated string of skills for that category.
-- For bullets: extract actual content, lightly improve phrasing for ATS but never fabricate facts.
+- For bullets: ${option === "6" ? "fix action verbs and grammar only — do NOT add, remove, or rephrase content beyond that. Preserve all facts exactly." : "extract actual content, lightly improve phrasing for ATS but never fabricate facts."}
 - "achievements": bullets from ANY section named "Coding Practices", "Achievements", "Awards", "Key Achievements". IMPORTANT: Strip any section-name prefix — if bullet says "Coding Practices: Solved 100+ problems..." just extract "Solved 100+ problems...". Never include the section name as a prefix inside the bullet text.
 - "leadership": items from "Leadership", "Extracurricular", "Activities" sections.
 - If a section does not exist in the CV, use null or empty array [].

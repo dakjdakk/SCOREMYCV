@@ -360,7 +360,7 @@ Rules:
 - SKILLS GROUPING: If the CV lists skills without sub-categories (e.g. a flat list under "Core Competencies", "Technical Skills", "Skills"), you MUST intelligently group them into standard categories. Use these category names where applicable: "Programming Languages", "Frameworks & Libraries", "Databases", "Cloud & DevOps", "Machine Learning & AI", "Data & Visualization Tools", "Tools & Platforms". Only use categories that have at least one skill. Do NOT use vague names like "Core Competencies" or "Technical Skills" as category names.
 - For bullets: extract actual content, lightly improve phrasing for ATS but never fabricate facts.
 - "achievements": bullets from ANY section named "Coding Practices", "Achievements", "Awards", "Key Achievements". IMPORTANT: Strip any section-name prefix — if bullet says "Coding Practices: Solved 100+ problems..." just extract "Solved 100+ problems...". Never include the section name as a prefix inside the bullet text.
-- "location": The candidate's current city and country (e.g. "Dublin, Ireland" or "Dubai, UAE" or "Bangalore, India"). Extract from the header/contact section. Use empty string if not found.
+- "location": The candidate's current city and country (e.g. "Dublin, Ireland" or "Dubai, UAE" or "Bangalore, India"). Extract ONLY from the header/contact section — the very top of the CV. If location is not explicitly written there, return empty string "". Do NOT guess, infer, or use any other text (tool names, company names, skills, etc.) as location.
 - "leadership": items from "Leadership", "Extracurricular", "Activities" sections.
 - If a section does not exist in the CV, use null or empty array [].
 - certifications[].issuer may be empty string if not mentioned.
@@ -619,7 +619,10 @@ ${cvText}`;
               imageExtRe: imgRe, getDomainLabel: getDL } = contactPartsBase;
       const contactParts: string[] = [];
       // Location: prefer Gemini-extracted, fallback to regex
-      const geminiLocation = (cvData.location || "").trim();
+      // Validate Gemini location — reject if it looks like a tech keyword, not a city
+      const TECH_KEYWORDS = /\b(python|java|sql|aws|gcp|azure|docker|kubernetes|react|node|mongo|postgres|mysql|linux|git|github|excel|power\s*bi|tableau|hadoop|spark|kafka|airflow|django|flask|tensorflow|pytorch|scikit|pandas|numpy|llm|nlp|api|html|css|javascript|typescript|c\+\+|golang|rust|scala|swift|kotlin|jenkins|terraform|ansible|redis|elasticsearch)\b/i;
+      const geminiLocationRaw = (cvData.location || "").trim();
+      const geminiLocation = (geminiLocationRaw && !TECH_KEYWORDS.test(geminiLocationRaw)) ? geminiLocationRaw : "";
       if (geminiLocation)      contactParts.push(geminiLocation);
       else if (lm)             contactParts.push(lm[1].trim());
       if (pn)  contactParts.push(pn);

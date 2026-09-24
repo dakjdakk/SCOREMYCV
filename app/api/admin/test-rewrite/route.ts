@@ -366,13 +366,19 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       else if (mentionsLinkedin4) contactParts.push("LinkedIn");
       if (githubUrl)           contactParts.push(`<a href="${githubUrl}" style="color:inherit;text-decoration:none;">GitHub</a>`);
       else if (mentionsGithub4)   contactParts.push("GitHub");
-      if (portfolioUrl)        contactParts.push(`<a href="${portfolioUrl}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
-      else if (mentionsPortfolio4 && !linkedinUrl && !githubUrl) contactParts.push("Portfolio");
+      // Option 6: only show portfolio if explicitly provided in form (no auto-detection)
+      const showPortfolio4 = option === "6" ? !!userPortfolio : !!portfolioUrl;
+      const portfolioDisplay4 = option === "6" ? normalizeUrl(userPortfolio) : portfolioUrl;
+      if (showPortfolio4 && portfolioDisplay4) contactParts.push(`<a href="${portfolioDisplay4}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
+      else if (!showPortfolio4 && mentionsPortfolio4 && !linkedinUrl && !githubUrl) contactParts.push("Portfolio");
       if (relocateMatch4) contactParts.push("Open to Relocate");
-      allExtractedUrls
-        .filter(u => u !== portfolioUrl && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imageExtRe4.test(u))
-        .slice(0, 2)
-        .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDomainLabel4(u)}</a>`));
+      // Option 6: skip auto-detected extra URLs (they go into project bullets, not contact line)
+      if (option !== "6") {
+        allExtractedUrls
+          .filter(u => u !== portfolioUrl && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imageExtRe4.test(u))
+          .slice(0, 2)
+          .forEach(u => contactParts.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDomainLabel4(u)}</a>`));
+      }
       console.log("[OPT4] contactParts:", contactParts);
 
       // ── STEP 1: Ask Gemini for structured JSON only ───────────────
@@ -623,7 +629,8 @@ ${cvText}`;
         cvText.split("\n").map((l: string) => l.trim()).find((l: string) => l.length > 1 && l.length < 60 && /^[A-Za-z]/.test(l)) ||
         "Candidate"
       );
-      const designation4 = esc(jobRole);
+      // Option 6: use CV's own designation; Options 1-5: use selected job role
+      const designation4 = option === "6" ? esc(cvData.designation || jobRole) : esc(jobRole);
 
       // Assemble final HTML — server owns every byte of this
       const rawHtml4 = `<!DOCTYPE html>

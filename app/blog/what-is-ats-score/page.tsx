@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "What is ATS Score? Complete Guide for Indian Job Seekers (2026) | ScoreMyCV",
+  title: "What is ATS Score? Check Yours Free in 30 Seconds | ScoreMyCV",
   description:
-    "What is ATS score and why does it matter? Learn how ATS scoring works, what a good ATS score is, and how to check your ATS score free in India. Full 2026 guide.",
+    "ATS score tells recruiters if your resume passes automated screening. Check your ATS score instantly — free tool, no signup needed. Used by 10,000+ job seekers in India.",
   keywords:
     "what is ats score, ats score meaning, ats score for resume, what is ats score in resume, ats score checker free India, ats resume score, what is a good ats score, ats score online free",
   alternates: {
@@ -13,9 +13,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "article",
     url: "https://scoremycv.in/blog/what-is-ats-score",
-    title: "What is ATS Score? Complete Guide for Indian Job Seekers (2026)",
+    title: "What is ATS Score? Check Yours Free in 30 Seconds",
     description:
-      "What is ATS score and why does it matter for your job search? Learn how it works and how to check yours for free.",
+      "ATS score tells recruiters if your resume passes automated screening. Check your ATS score instantly — free tool, no signup needed.",
     images: [{ url: "https://scoremycv.in/og-image.png", width: 1200, height: 630 }],
   },
 };

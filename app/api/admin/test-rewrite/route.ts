@@ -283,7 +283,14 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       };
       const phoneNorm4 = normalizePhone4(phoneRaw4);
       // Option 6: detect second phone number if present
-      const allPhoneMatches4 = option === "6" ? [...cvText.matchAll(/(\(?\+?[\d][\d\s\-().]{7,}\d)/g)].map(m => m[0].trim()) : [];
+      const allPhoneMatches4: string[] = [];
+      if (option === "6") {
+        const phoneRegex4 = /(\(?\+?[\d][\d\s\-().]{7,}\d)/g;
+        let phoneMatch4;
+        while ((phoneMatch4 = phoneRegex4.exec(cvText)) !== null) {
+          allPhoneMatches4.push(phoneMatch4[0].trim());
+        }
+      }
       const phoneNorm4b = (() => {
         if (option !== "6" || allPhoneMatches4.length < 2) return "";
         const second = allPhoneMatches4.find(p => normalizePhone4(p) !== phoneNorm4);

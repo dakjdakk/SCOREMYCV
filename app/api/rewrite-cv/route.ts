@@ -33,7 +33,12 @@ export async function POST(request: Request) {
 
     if (fileName.endsWith(".pdf")) {
       const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      text = (await pdfParse(buffer)).text;
+      try {
+        text = (await pdfParse(buffer)).text;
+      } catch (pdfErr) {
+        console.error("pdf-parse failed:", pdfErr);
+        return NextResponse.json({ error: "Could not read your PDF. Please convert it to DOCX and try again, or email us at scoremycv.in@gmail.com with your payment ID." }, { status: 422 });
+      }
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       text = (await mammoth.extractRawText({ buffer })).value;
@@ -54,22 +59,11 @@ export async function POST(request: Request) {
     if (fileName.endsWith(".pdf")) {
       const rawUrlsFromBinary: string[] = [];
       try {
-        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-        await pdfParse(buffer, {
-          pagerender: async (pageData: any) => {
-            try {
-              const annotations = await pageData.getAnnotations();
-              for (const annot of annotations) {
-                if (annot.url) rawUrlsFromBinary.push(annot.url);
-              }
-            } catch (_) {}
-            return "";
-          }
-        });
-      } catch (_) {
-        // Fallback: binary scan
+        // Binary scan for URLs — fast and reliable, no second pdf-parse call needed
         const pdfStr = buffer.toString("latin1");
         (pdfStr.match(/https?:\/\/[^\s)<>"\\]{8,}/gi) || []).forEach(u => rawUrlsFromBinary.push(u));
+      } catch (_) {
+        // ignore — URL extraction is best-effort
       }
       const httpUrls = rawUrlsFromBinary.filter(u => /^https?:\/\//i.test(u));
       const liMatch = httpUrls.find(u => /linkedin\.com\/in\//i.test(u));

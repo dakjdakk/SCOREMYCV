@@ -272,14 +272,22 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       // ── Build contact line server-side (before Gemini call) ──────────
       const emailMatch4   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
       const phoneRaw4     = cvText.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
-      const phoneNorm4 = (() => {
-        if (!phoneRaw4) return "";
-        const digits = phoneRaw4.replace(/\D/g, "");
-        if (phoneRaw4.startsWith("+91") || phoneRaw4.startsWith("(+91")) return phoneRaw4;
-        if ((phoneRaw4.startsWith("+") || phoneRaw4.startsWith("(+")) && !digits.startsWith("91")) return phoneRaw4;
+      const normalizePhone4 = (p: string) => {
+        if (!p) return "";
+        const digits = p.replace(/\D/g, "");
+        if (p.startsWith("+91") || p.startsWith("(+91")) return p;
+        if ((p.startsWith("+") || p.startsWith("(+")) && !digits.startsWith("91")) return p;
         if (digits.startsWith("91") && digits.length === 12) return `+91-${digits.slice(2)}`;
         if (digits.length === 10) return `+91-${digits}`;
-        return phoneRaw4;
+        return p;
+      };
+      const phoneNorm4 = normalizePhone4(phoneRaw4);
+      // Option 6: detect second phone number if present
+      const allPhoneMatches4 = option === "6" ? [...cvText.matchAll(/(\(?\+?[\d][\d\s\-().]{7,}\d)/g)].map(m => m[0].trim()) : [];
+      const phoneNorm4b = (() => {
+        if (option !== "6" || allPhoneMatches4.length < 2) return "";
+        const second = allPhoneMatches4.find(p => normalizePhone4(p) !== phoneNorm4);
+        return second ? normalizePhone4(second) : "";
       })();
       const headerLines4 = cvText.split("\n").slice(1, 10).join("\n");
       // Whitelist-based location detection — permanent fix, no tech keyword can ever match
@@ -361,6 +369,7 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
       const contactParts: string[] = [];
       if (locationMatch4) contactParts.push(locationMatch4[1].trim());
       if (phoneNorm4)     contactParts.push(phoneNorm4);
+      if (phoneNorm4b)    contactParts.push(phoneNorm4b);
       if (emailMatch4)    contactParts.push(`<a href="mailto:${emailMatch4[0]}" style="color:inherit;text-decoration:none;">${emailMatch4[0]}</a>`);
       if (linkedinUrl)         contactParts.push(`<a href="${linkedinUrl}" style="color:inherit;text-decoration:none;">LinkedIn</a>`);
       else if (mentionsLinkedin4) contactParts.push("LinkedIn");

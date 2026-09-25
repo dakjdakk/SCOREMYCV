@@ -157,8 +157,13 @@ export async function POST(request: Request) {
     if (fileName.endsWith(".pdf")) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-      const data = await pdfParse(buffer);
-      text = data.text;
+      try {
+        const data = await pdfParse(buffer);
+        text = data.text;
+      } catch (pdfErr) {
+        console.error("pdf-parse failed in ats-score:", pdfErr);
+        return NextResponse.json({ error: "Could not read your PDF. It may be a scanned image. Please upload a text-based PDF or convert to DOCX." }, { status: 422 });
+      }
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       const result  = await mammoth.extractRawText({ buffer });

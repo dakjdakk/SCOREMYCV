@@ -211,6 +211,19 @@ export async function POST(request: Request) {
       }, { status: 422 });
     }
 
+    // Auto-extract phone from CV text
+    const phoneMatch = text.match(/(?:\+91[\s\-]?|91[\s\-]?)?[6-9]\d{9}/);
+    const extractedPhone = phoneMatch ? phoneMatch[0].replace(/[\s\-]/g, "") : null;
+
+    // Auto-extract location from first 15 lines (best-effort)
+    const headerLines = text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 15);
+    let extractedLocation: string | null = null;
+    for (const line of headerLines) {
+      if (/@/.test(line) || /\d{7,}/.test(line) || /linkedin|github|http/i.test(line)) continue;
+      const locMatch = line.match(/^([A-Za-z][A-Za-z\s]{2,}),\s*([A-Za-z][A-Za-z\s]{2,})$/);
+      if (locMatch && line.length < 60) { extractedLocation = line.trim(); break; }
+    }
+
     const result = scoreResume(text, jobRole);
 
     // Detect device from User-Agent
@@ -235,7 +248,7 @@ export async function POST(request: Request) {
     // Track ATS check synchronously so email is never lost
     let checkId: string | null = null;
     try {
-      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, referrer: referrerSource, ...(extractedEmail ? { email: extractedEmail } : {}) });
+      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, referrer: referrerSource, ...(extractedEmail ? { email: extractedEmail } : {}), ...(extractedPhone ? { phone: extractedPhone } : {}), ...(extractedLocation ? { location: extractedLocation } : {}) });
       checkId = row?.id ?? null;
     } catch (dbErr) {
       console.error("DB insert error:", dbErr);

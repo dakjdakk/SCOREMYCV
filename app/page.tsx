@@ -73,7 +73,7 @@ const faqs = [
   },
   {
     q: "Is my data safe?",
-    a: "Yes. Your resume is used only to generate the rewritten CV. We do not store, sell, or share your information with any third party.",
+    a: "Yes. Your resume is used to generate your rewritten CV and improve our service. By using ScoreMyCV, you agree to our Terms & Conditions, which include data storage and partner sharing for career-related offers. See our full Terms & Conditions for details.",
   },
   {
     q: "Can I use this for any job role or industry?",
@@ -251,6 +251,7 @@ function HeroSection({ onUpgrade }: {
   const [error, setError]     = useState("");
   const [result, setResult]   = useState<ATSResult | null>(null);
   const [checkId, setCheckId] = useState<string | null>(null);
+  const [tcConsent, setTcConsent] = useState(true);
 
   const canCheck = !!file && !!jobRole;
 
@@ -566,6 +567,21 @@ function HeroSection({ onUpgrade }: {
               {error}
             </div>
           )}
+
+          <label className="flex items-start gap-2.5 mb-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={tcConsent}
+              onChange={(e) => setTcConsent(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-blue-600 cursor-pointer flex-shrink-0"
+            />
+            <span className="text-xs text-slate-500 leading-relaxed">
+              I agree to the{" "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700">
+                Terms &amp; Conditions
+              </a>
+            </span>
+          </label>
 
           <button onClick={handleCheck} disabled={!canCheck || loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold py-3.5 rounded-2xl transition text-sm">
@@ -1181,8 +1197,7 @@ function Footer() {
         </div>
         <p className="text-sm">© {new Date().getFullYear()} ScoreMyCV · Professional CV rewrite, instantly</p>
         <div className="flex gap-6 text-sm">
-          <a href="#" className="hover:text-white transition">Privacy</a>
-          <a href="#" className="hover:text-white transition">Terms</a>
+          <a href="/terms" className="hover:text-white transition">Terms &amp; Conditions &amp; Privacy Policy</a>
           <a href={`mailto:${OWNER_EMAIL}`} className="hover:text-white transition">Contact</a>
         </div>
       </div>

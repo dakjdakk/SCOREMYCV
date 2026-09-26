@@ -231,6 +231,7 @@ export async function POST(request: Request) {
     const device = /mobile|android|iphone|ipad|ipod/.test(ua) ? "M" : "D";
 
     // Parse referrer into a clean source label
+    const tcConsent = formData.get("tcConsent") !== "false";
     const rawReferrer = (formData.get("referrer") as string || "").trim();
     let referrerSource = "direct";
     if (rawReferrer && rawReferrer !== "direct") {
@@ -248,7 +249,7 @@ export async function POST(request: Request) {
     // Track ATS check synchronously so email is never lost
     let checkId: string | null = null;
     try {
-      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, referrer: referrerSource, ...(extractedEmail ? { email: extractedEmail } : {}), ...(extractedPhone ? { phone: extractedPhone } : {}), ...(extractedLocation ? { location: extractedLocation } : {}) });
+      const row = await dbInsertReturn("ats_checks", { job_role: jobRole, score: result.score, device, referrer: referrerSource, tc_consent: tcConsent, ...(extractedEmail ? { email: extractedEmail } : {}), ...(extractedPhone ? { phone: extractedPhone } : {}), ...(extractedLocation ? { location: extractedLocation } : {}) });
       checkId = row?.id ?? null;
     } catch (dbErr) {
       console.error("DB insert error:", dbErr);

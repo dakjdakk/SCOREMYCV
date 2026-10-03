@@ -353,9 +353,10 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
         while ((m4 = anyLocPattern4.exec(searchText4)) !== null) {
           if (FOREIGN_COUNTRIES4.has(m4[2].trim())) return [null, m4[0].trim()];
         }
+        const REAL_COUNTRY_CODES4 = new Set(["UAE","UK","US","USA","EU","KSA","GCC","NZ","SG","AU","CA","DE","FR","NL","CH","SE","NO","DK","FI","AT","BE","ES","IT","PT","JP","KR","MY","QA","BH","KW","OM","SA","JO","EG","ZA","NG","GH","PL","CZ","HU","RO","HR","RS","GR","IL","TR","PK","BD","LK","NP","PH","ID","TH","VN","CN","HK","TW"]);
         const foreignPattern4 = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
         while ((m4 = foreignPattern4.exec(searchText4)) !== null) {
-          if (/^(AM|PM|CV|HR|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(m4[2])) continue;
+          if (!REAL_COUNTRY_CODES4.has(m4[2])) continue;
           return [null, m4[0].trim()];
         }
         return null;
@@ -519,6 +520,7 @@ ${cvText}`;
       // ── Normalize date casing: "DEC 2024" → "Dec 2024", "JUNE" → "June" etc.
       const normDate = (s: string): string => {
         if (!s) return s;
+        if (/not\s+specified|n\/a|unknown|tbd|not\s+mentioned|not\s+provided/i.test(s)) return "";
         return s.replace(
           /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g,
           (m) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()
@@ -902,9 +904,10 @@ Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
         while ((m5 = anyLocPattern5.exec(searchText5)) !== null) {
           if (FOREIGN_COUNTRIES5.has(m5[2].trim())) return [null, m5[0].trim()];
         }
+        const REAL_COUNTRY_CODES5 = new Set(["UAE","UK","US","USA","EU","KSA","GCC","NZ","SG","AU","CA","DE","FR","NL","CH","SE","NO","DK","FI","AT","BE","ES","IT","PT","JP","KR","MY","QA","BH","KW","OM","SA","JO","EG","ZA","NG","GH","PL","CZ","HU","RO","HR","RS","GR","IL","TR","PK","BD","LK","NP","PH","ID","TH","VN","CN","HK","TW"]);
         const foreignPattern5 = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
         while ((m5 = foreignPattern5.exec(searchText5)) !== null) {
-          if (/^(AM|PM|CV|HR|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(m5[2])) continue;
+          if (!REAL_COUNTRY_CODES5.has(m5[2])) continue;
           return [null, m5[0].trim()];
         }
         return null;
@@ -1067,6 +1070,7 @@ ${cvText}`;
       // ── Normalize date casing: "DEC 2025" → "Dec 2025", "JUNE" → "June" etc.
       const normDate = (s: string): string => {
         if (!s) return s;
+        if (/not\s+specified|n\/a|unknown|tbd|not\s+mentioned|not\s+provided/i.test(s)) return "";
         return s.replace(
           /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g,
           (m) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()

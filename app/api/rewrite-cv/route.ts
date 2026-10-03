@@ -318,10 +318,12 @@ Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
           if (FOREIGN_COUNTRIES.has(country)) return [null, m[0].trim()];
         }
         // Pass 3: City + 2-3 letter ALL-CAPS country code (e.g. "Dubai, UAE" / "London, UK")
+        // Whitelist of real country codes only — prevents tech acronyms (SQL, API, AWS, ETL, etc.) from matching
+        const REAL_COUNTRY_CODES = new Set(["UAE","UK","US","USA","EU","KSA","GCC","NZ","SG","AU","CA","DE","FR","NL","CH","SE","NO","DK","FI","AT","BE","ES","IT","PT","JP","KR","MY","QA","BH","KW","OM","SA","JO","EG","ZA","NG","GH","PL","CZ","HU","RO","HR","RS","GR","IL","TR","PK","BD","LK","NP","PH","ID","TH","VN","CN","HK","TW"]);
         const foreignPattern = /\b([A-Za-z][a-z]{1,14}(?:\s[A-Z][a-z]{1,14})?)\s*[,|–\-]\s*([A-Z]{2,3})\b/g;
         while ((m = foreignPattern.exec(searchText)) !== null) {
           const code = m[2];
-          if (/^(AM|PM|CV|HR|LA|OK|IN|IS|OR|BE|GO|DO|MY)$/.test(code)) continue;
+          if (!REAL_COUNTRY_CODES.has(code)) continue;
           return [null, m[0].trim()];
         }
         return null;
@@ -358,6 +360,7 @@ Rules:
 - "leadership": items from "Leadership", "Extracurricular", "Activities" sections.
 - If a section does not exist in the CV, use null or empty array [].
 - certifications[].issuer may be empty string if not mentioned.
+- dates/date fields: if the CV does not mention dates for a job, project, or education, return empty string "" — do NOT write "Dates not specified", "N/A", "Not mentioned", or any placeholder text.
 - Do NOT extract personal details such as Date of Birth, DOB, Nationality, Religion, Gender, Marital Status, Languages Known, Father's Name, Mother's Name — skip these entirely.
 
 JSON Schema (output this exact structure):
@@ -484,6 +487,8 @@ ${cvText}`;
       // ── Normalize date casing: "DEC 202" → "Dec 202", "JUNE" → "June" etc.
       const normDate = (s: string): string => {
         if (!s) return s;
+        // Strip Gemini-generated placeholders like "Dates not specified", "N/A", "Present - Not specified"
+        if (/not\s+specified|n\/a|unknown|tbd|not\s+mentioned|not\s+provided/i.test(s)) return "";
         return s.replace(
           /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g,
           (m) => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()

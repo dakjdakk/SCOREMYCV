@@ -30,6 +30,7 @@ const OPTIONS = [
   { id: "4", label: "Option 4", desc: "Single-column traditional format — no sidebar, full width", color: "orange" },
   { id: "5", label: "Option 5", desc: "Option 4 + ATS keyword injection in summary & skills only", color: "teal" },
   { id: "6", label: "Option 6", desc: "Format & action verb fix only — no role, no content change (Word doc prep)", color: "rose" },
+  { id: "7", label: "Option 7 — PRODUCTION", desc: "Exact replica of live /api/rewrite-cv — use this as baseline for testing", color: "indigo" },
 ];
 
 export default function TestRewritePage() {
@@ -177,11 +178,13 @@ export default function TestRewritePage() {
                     ? "bg-orange-500 hover:bg-orange-600 border-orange-500 text-white"
                     : opt.color === "rose"
                     ? "bg-rose-600 hover:bg-rose-700 border-rose-600 text-white"
+                    : opt.color === "indigo"
+                    ? "bg-indigo-700 hover:bg-indigo-800 border-indigo-700 text-white"
                     : "bg-teal-600 hover:bg-teal-700 border-teal-600 text-white"
                   }`}
               >
                 <span className="text-xl shrink-0">
-                  {loading === opt.id ? "⏳" : done === opt.id ? "✅" : opt.id === "1" ? "📄" : opt.id === "2" ? "📐" : "🔀"}
+                  {loading === opt.id ? "⏳" : done === opt.id ? "✅" : opt.id === "1" ? "📄" : opt.id === "2" ? "📐" : opt.id === "7" ? "🏭" : "🔀"}
                 </span>
                 <div>
                   <div>{loading === opt.id ? "Generating..." : opt.label}</div>

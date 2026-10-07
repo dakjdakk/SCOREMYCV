@@ -1415,6 +1415,17 @@ ${leaderHtml5}
         return url;
       };
   
+      // ── Context-aware LinkedIn extraction (catches shortened URLs like tiny.cc) ──
+      // Pattern: "LinkedIn: <url>" or "LinkedIn URL: <url>" in the CV text
+      if (!extractedLinkedin7) {
+        const liContextMatch = text.match(/linkedin[\s:]*(?:url)?[\s:]*(https?:\/\/[^\s|,;)\]]+)/i);
+        if (liContextMatch) extractedLinkedin7 = liContextMatch[1].replace(/[.,;)]+$/, "");
+      }
+      if (!extractedGithub7) {
+        const ghContextMatch = text.match(/github[\s:]*(?:url)?[\s:]*(https?:\/\/[^\s|,;)\]]+)/i);
+        if (ghContextMatch) extractedGithub7 = ghContextMatch[1].replace(/[.,;)]+$/, "");
+      }
+
       // Form fields take priority over extracted URLs
       const linkedinUrl7  = normalizeUrl7(userLinkedin || extractedLinkedin7);
       const githubUrl7    = normalizeUrl7(userGithub    || extractedGithub7);
@@ -1517,7 +1528,23 @@ ${leaderHtml5}
 
         // ── Build contact line server-side (before Gemini call) ──────────
         const emailMatch   = cvText7.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-        const phoneRaw     = cvText7.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
+        // ── Smart phone extraction: scan ALL matches, skip 4-digit years ──
+        const phoneRaw = (() => {
+          const phoneRegexAll = /(\(?\+?[\d][\d\s\-().]{7,}\d)/g;
+          let m: RegExpExecArray | null;
+          while ((m = phoneRegexAll.exec(cvText7)) !== null) {
+            const candidate = m[1].trim();
+            const digits = candidate.replace(/\D/g, "");
+            // Skip if it's just 4-digit years smashed together (e.g. "2025 2025" = 8 digits all starting with 20)
+            if (/^(20\d{2}[\s\-]?){1,4}$/.test(candidate.trim())) continue;
+            if (digits.length < 7) continue;
+            // A real phone: must have 7–15 digits, not all the same, not a pure year sequence
+            const uniqueDigits = new Set(digits).size;
+            if (uniqueDigits < 3) continue; // e.g. "1111111" is not a phone
+            return candidate;
+          }
+          return "";
+        })();
         const phoneNorm = (() => {
           if (!phoneRaw) return "";
           const digits = phoneRaw.replace(/\D/g, "");

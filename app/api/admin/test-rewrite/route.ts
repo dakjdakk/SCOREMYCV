@@ -1327,7 +1327,7 @@ ${leaderHtml5}
       let cvText7 = cvText; // fallback to shared pdf-parse text if pdfjs fails
       if (fileName.endsWith(".pdf")) {
         try {
-          const pdfjs = await import("pdfjs-dist/legacy/build/pdf.js" as any);
+          const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs" as any);
           const pdfjsDoc = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
           let spatialText = "";
           for (let p = 1; p <= pdfjsDoc.numPages; p++) {

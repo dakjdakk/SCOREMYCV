@@ -204,13 +204,17 @@ export async function POST(request: Request) {
     const cvLower = cvText.toLowerCase();
     const missingKeywords = allRoleKeywords.filter(kw => !cvLower.includes(kw.toLowerCase()));
 
-    const keywordInstruction = missingKeywords.length > 0
+    // Title-case keywords before sending to Gemini so they appear properly capitalised in the CV
+    const toTitleCase = (s: string) => s.replace(/\b([a-z])/g, (c) => c.toUpperCase());
+    const missingKeywordsDisplay = missingKeywords.slice(0, 15).map(toTitleCase);
+
+    const keywordInstruction = missingKeywordsDisplay.length > 0
       ? `\nATS KEYWORD INJECTION (summary and skills ONLY — IMPORTANT):
 The following keywords are missing from this CV for a ${jobRole} role.
 Weave them naturally into the "summary" and "skills[].items" fields ONLY.
 Do NOT change experience bullets or project bullets for keyword injection — leave them exactly as they are.
 Do NOT invent experience. Only add where truthful and relevant.
-Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
+Missing keywords: ${missingKeywordsDisplay.join(", ")}\n`
       : "";
 
       // ── Build contact line server-side (before Gemini call) ──────────

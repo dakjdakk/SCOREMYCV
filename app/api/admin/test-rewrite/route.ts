@@ -253,12 +253,13 @@ export async function POST(request: Request) {
     const certSnippet = certIdx >= 0 ? cvText.slice(certIdx, certIdx + 600) : "";
     const certLineCount = certSnippet.split("\n").filter((l: string) => l.trim().length > 0).length;
     const certPlacement = certLineCount > 4 ? "LEFT" : "RIGHT";
+    const toTitleCase = (s: string) => s.replace(/\b([a-z])/g, (c) => c.toUpperCase());
     const keywordInstruction = missingKeywords.length > 0
       ? `\nATS KEYWORD OPTIMISATION (IMPORTANT):
 The following keywords are commonly expected for a ${jobRole} role but are missing from this CV.
 Weave them in naturally where truthful and relevant — in the summary, skills section, or experience bullet points.
 Use each keyword at most once. Do NOT repeat. Do NOT invent experience. Only add where it genuinely fits.
-Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
+Missing keywords: ${missingKeywords.slice(0, 15).map(toTitleCase).join(", ")}\n`
       : "";
 
     // ── Option 4: Single-column traditional format ────────────────
@@ -825,13 +826,14 @@ ${leaderHtml4}
       const allRoleKeywords5 = ROLE_KEYWORDS5[jobRole] || [];
       const cvLower5 = cvText.toLowerCase();
       const missingKeywords5 = allRoleKeywords5.filter(kw => !cvLower5.includes(kw.toLowerCase()));
+      const toTitleCase5 = (s: string) => s.replace(/\b([a-z])/g, (c) => c.toUpperCase());
       const keywordInstruction5 = missingKeywords5.length > 0
         ? `\nATS KEYWORD INJECTION (summary and skills ONLY — IMPORTANT):
 The following keywords are missing from this CV for a ${jobRole} role.
 Weave them naturally into the "summary" and "skills[].items" fields ONLY.
 Do NOT change experience bullets or project bullets for keyword injection — leave them exactly as they are.
 Do NOT invent experience. Only add where truthful and relevant.
-Missing keywords: ${missingKeywords5.slice(0, 15).join(", ")}\n`
+Missing keywords: ${missingKeywords5.slice(0, 15).map(toTitleCase5).join(", ")}\n`
         : "";
 
 
@@ -1470,15 +1472,16 @@ ${leaderHtml5}
       const cvLower = cvText.toLowerCase();
       const missingKeywords = allRoleKeywords.filter(kw => !cvLower.includes(kw.toLowerCase()));
   
+      const toTitleCaseOpt7 = (s: string) => s.replace(/\b([a-z])/g, (c) => c.toUpperCase());
       const keywordInstruction = missingKeywords.length > 0
         ? `\nATS KEYWORD INJECTION (summary and skills ONLY — IMPORTANT):
   The following keywords are missing from this CV for a ${jobRole} role.
   Weave them naturally into the "summary" and "skills[].items" fields ONLY.
   Do NOT change experience bullets or project bullets for keyword injection — leave them exactly as they are.
   Do NOT invent experience. Only add where truthful and relevant.
-  Missing keywords: ${missingKeywords.slice(0, 15).join(", ")}\n`
+  Missing keywords: ${missingKeywords.slice(0, 15).map(toTitleCaseOpt7).join(", ")}\n`
         : "";
-  
+
         // ── Build contact line server-side (before Gemini call) ──────────
         const emailMatch   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
         const phoneRaw     = cvText.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";

@@ -1528,22 +1528,31 @@ ${leaderHtml5}
 
         // ── Build contact line server-side (before Gemini call) ──────────
         const emailMatch   = cvText7.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-        // ── Smart phone extraction: scan ALL matches, skip 4-digit years ──
+        // ── Smart phone extraction ──
+        // Strategy: prefer raw pdf-parse text (which reads contact footer reliably)
+        // over pdfjs spatial text (which can group table-row years into phone-like patterns).
+        // Scans ALL matches, skips year sequences, requires ≥3 unique digits.
         const phoneRaw = (() => {
-          const phoneRegexAll = /(\(?\+?[\d][\d\s\-().]{7,}\d)/g;
-          let m: RegExpExecArray | null;
-          while ((m = phoneRegexAll.exec(cvText7)) !== null) {
-            const candidate = m[1].trim();
-            const digits = candidate.replace(/\D/g, "");
-            // Skip if it's just 4-digit years smashed together (e.g. "2025 2025" = 8 digits all starting with 20)
-            if (/^(20\d{2}[\s\-]?){1,4}$/.test(candidate.trim())) continue;
-            if (digits.length < 7) continue;
-            // A real phone: must have 7–15 digits, not all the same, not a pure year sequence
-            const uniqueDigits = new Set(digits).size;
-            if (uniqueDigits < 3) continue; // e.g. "1111111" is not a phone
-            return candidate;
-          }
-          return "";
+          const extractPhone = (src: string) => {
+            const phoneRegexAll = /(\(?\+?[\d][\d\s\-().]{7,}\d)/g;
+            let m: RegExpExecArray | null;
+            while ((m = phoneRegexAll.exec(src)) !== null) {
+              const candidate = m[1].trim();
+              const digits = candidate.replace(/\D/g, "");
+              if (digits.length < 7 || digits.length > 15) continue;
+              // Skip pure year sequences: e.g. "2025 2025", "2026 2024 2021"
+              if (/^[\s\-]*(20\d{2}[\s\-]*){1,6}$/.test(candidate)) continue;
+              // Skip if all digits are the same or nearly (e.g. "0000000")
+              if (new Set(digits).size < 3) continue;
+              return candidate;
+            }
+            return "";
+          };
+          // Try original pdf-parse text first (more reliable for contact lines)
+          const fromPdfParse = extractPhone(text);
+          if (fromPdfParse) return fromPdfParse;
+          // Fall back to pdfjs spatial text
+          return extractPhone(cvText7);
         })();
         const phoneNorm = (() => {
           if (!phoneRaw) return "";
@@ -1962,7 +1971,7 @@ ${leaderHtml5}
         if (pu)        contactParts7.push(`<a href="${pu}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
         else if (mp && !lu && !gu) contactParts7.push("Portfolio");
         if (rm) contactParts7.push("Open to Relocate");
-        aeu.filter(u => u !== pu && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imgRe.test(u))
+        aeu.filter(u => u !== pu && u !== lu && u !== gu && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imgRe.test(u))
            .slice(0, 2)
            .forEach(u => contactParts7.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDL(u)}</a>`));
         console.log("[OPT] contactParts7:", contactParts7, "geminiLocation:", geminiLocation);

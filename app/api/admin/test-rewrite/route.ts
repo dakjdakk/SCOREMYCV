@@ -1971,9 +1971,7 @@ ${leaderHtml5}
         if (pu)        contactParts7.push(`<a href="${pu}" style="color:inherit;text-decoration:none;">Portfolio</a>`);
         else if (mp && !lu && !gu) contactParts7.push("Portfolio");
         if (rm) contactParts7.push("Open to Relocate");
-        aeu.filter(u => u !== pu && u !== lu && u !== gu && !u.includes("linkedin.com") && !u.includes("github.com") && !u.includes("github.io") && !imgRe.test(u))
-           .slice(0, 2)
-           .forEach(u => contactParts7.push(`<a href="${u}" style="color:inherit;text-decoration:none;">${getDL(u)}</a>`));
+        // No random links — only LinkedIn, GitHub, and explicit Portfolio (from form field) are allowed in the contact line.
         console.log("[OPT] contactParts7:", contactParts7, "geminiLocation:", geminiLocation);
   
         // Candidate name and designation (from JSON, fallback to CV text scan)

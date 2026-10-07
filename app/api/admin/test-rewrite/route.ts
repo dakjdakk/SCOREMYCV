@@ -1320,6 +1320,39 @@ ${leaderHtml5}
 
     // ── OPTION 7: Exact replica of production /api/rewrite-cv ──────────
     if (option === "7") {
+      // ── Option 7: Re-extract CV text using pdfjs-dist spatial layout ──
+      // pdfjs extracts text items with x,y coords — we sort top→bottom, left→right
+      // to reconstruct visual reading order. Fixes table-heavy / photo CVs where
+      // pdf-parse returns garbled content-stream order.
+      let cvText7 = cvText; // fallback to shared pdf-parse text if pdfjs fails
+      if (fileName.endsWith(".pdf")) {
+        try {
+          const pdfjs = await import("pdfjs-dist/legacy/build/pdf.js" as any);
+          const pdfjsDoc = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
+          let spatialText = "";
+          for (let p = 1; p <= pdfjsDoc.numPages; p++) {
+            const page = await pdfjsDoc.getPage(p);
+            const content = await page.getTextContent();
+            const items = (content.items as any[])
+              .filter((i: any) => i.str?.trim().length > 0)
+              .map((i: any) => ({ str: i.str as string, x: Math.round(i.transform[4]), y: Math.round(i.transform[5]) }));
+            items.sort((a: any, b: any) => b.y - a.y || a.x - b.x);
+            const lines: string[][] = [];
+            let lineY = items[0]?.y ?? 0;
+            let line: string[] = [];
+            for (const item of items) {
+              if (Math.abs(item.y - lineY) <= 4) { line.push(item.str); }
+              else { if (line.length) lines.push(line); line = [item.str]; lineY = item.y; }
+            }
+            if (line.length) lines.push(line);
+            spatialText += lines.map((l: string[]) => l.join(" ")).join("\n") + "\n\n";
+          }
+          if (spatialText.trim().length > 100) cvText7 = spatialText.trim().slice(0, 8000);
+        } catch (e) {
+          console.log("[Option7] pdfjs spatial extraction failed, using pdf-parse fallback:", e);
+        }
+      }
+
       // ── Extract ALL URLs from PDF (annotation-based + binary fallback) ──
       let extractedLinkedin7 = "";
       let extractedGithub7   = "";
@@ -1389,8 +1422,8 @@ ${leaderHtml5}
       console.log("LinkedIn URL:", linkedinUrl7, "| GitHub URL:", githubUrl7, "| Portfolio:", portfolioUrl7);
   
       // ── Validate document looks like a CV ─────────────────────────
-      const hasEmail = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(cvText);
-      const hasPhone = /(\+?\d[\d\s\-().]{7,}\d)/.test(cvText);
+      const hasEmail = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(cvText7);
+      const hasPhone = /(\+?\d[\d\s\-().]{7,}\d)/.test(cvText7);
       if (!hasEmail || !hasPhone)
         return NextResponse.json(
           { error: "This doesn't look like a valid CV. Please upload a resume that contains your email address and phone number." },
@@ -1469,7 +1502,7 @@ ${leaderHtml5}
       };
   
       const allRoleKeywords = ROLE_KEYWORDS[jobRole] || [];
-      const cvLower = cvText.toLowerCase();
+      const cvLower = cvText7.toLowerCase();
       const missingKeywords = allRoleKeywords.filter(kw => !cvLower.includes(kw.toLowerCase()));
   
       const toTitleCaseOpt7 = (s: string) => s.replace(/\b([a-z])/g, (c) => c.toUpperCase());
@@ -1483,8 +1516,8 @@ ${leaderHtml5}
         : "";
 
         // ── Build contact line server-side (before Gemini call) ──────────
-        const emailMatch   = cvText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-        const phoneRaw     = cvText.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
+        const emailMatch   = cvText7.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+        const phoneRaw     = cvText7.match(/(\(?\+?[\d][\d\s\-().]{7,}\d)/)?.[0]?.trim() || "";
         const phoneNorm = (() => {
           if (!phoneRaw) return "";
           const digits = phoneRaw.replace(/\D/g, "");
@@ -1494,7 +1527,7 @@ ${leaderHtml5}
           if (digits.length === 10) return `+91-${digits}`;
           return phoneRaw;
         })();
-        const headerLines = cvText.split("\n").slice(1, 10).join("\n");
+        const headerLines = cvText7.split("\n").slice(1, 10).join("\n");
         // Whitelist of real Indian cities — only these can be detected as location.
         // This is permanent: no tech keyword can ever false-match because it's not in this list.
         const INDIAN_CITIES = new Set([
@@ -1560,7 +1593,7 @@ ${leaderHtml5}
           "Remote","Hybrid"
         ]);
         const locationMatch = (() => {
-          const searchText = cvText.split("\n").slice(0, 15).join("\n");
+          const searchText = cvText7.split("\n").slice(0, 15).join("\n");
           // Known foreign countries (full names)
           const FOREIGN_COUNTRIES = new Set([
             "Ireland","United Kingdom","England","Scotland","Wales","UAE","United Arab Emirates",
@@ -1597,8 +1630,8 @@ ${leaderHtml5}
           }
           return null;
         })();
-        const relocateMatch = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText);
-        const headerText   = cvText.split("\n").slice(0, 10).join(" ");
+        const relocateMatch = /open\s+to\s+relocat|willing\s+to\s+relocat|available\s+immediately/i.test(cvText7);
+        const headerText   = cvText7.split("\n").slice(0, 10).join(" ");
         const mentionsLinkedin  = /linkedin/i.test(headerText);
         const mentionsGithub    = /github/i.test(headerText);
         const mentionsPortfolio = /portfolio/i.test(headerText);
@@ -1649,7 +1682,7 @@ ${leaderHtml5}
   
   ${keywordInstruction}
   CV:
-  ${cvText}`;
+  ${cvText7}`;
   
         const geminiKey = process.env.GEMINI_API_KEY;
         if (!geminiKey) return NextResponse.json({ error: "API key not configured" }, { status: 500 });
@@ -1910,7 +1943,7 @@ ${leaderHtml5}
         // Candidate name and designation (from JSON, fallback to CV text scan)
         const candidateName = esc(
           cvData.name ||
-          cvText.split("\n").map((l: string) => l.trim()).find((l: string) => l.length > 1 && l.length < 60 && /^[A-Za-z]/.test(l)) ||
+          cvText7.split("\n").map((l: string) => l.trim()).find((l: string) => l.length > 1 && l.length < 60 && /^[A-Za-z]/.test(l)) ||
           "Candidate"
         );
         const designation = esc(jobRole);
@@ -2022,7 +2055,7 @@ ${leaderHtml5}
             score_before:        scoreBefore || null,
             email:               userEmail   || null,
             payment_id:          paymentId   || null,
-            original_cv_text:    cvText,
+            original_cv_text:    cvText7,
             rewritten_cv_text:   rawHtml7,
             original_pdf_url:    originalPdfUrl,
             rewritten_pdf_url:   rewrittenPdfUrl,

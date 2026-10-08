@@ -162,12 +162,12 @@ export default function BlogIndex() {
         <div className="bg-blue-600 rounded-3xl p-8 text-center text-white mt-12">
           <h2 className="text-2xl font-extrabold mb-2">Stop Getting Rejected. Fix Your CV Today.</h2>
           <p className="text-blue-200 text-sm mb-5 max-w-md mx-auto">
-            Free ATS score check. See missing keywords. Get your CV fully rewritten for ₹19.
+            Free ATS score check. See missing keywords. Get your CV fully rewritten for ₹49.
           </p>
           <Link href="/" className="inline-block bg-white text-blue-700 font-bold px-8 py-4 rounded-2xl hover:bg-blue-50 transition text-base shadow-lg">
             🔍 Check My ATS Score — Free
           </Link>
-          <p className="text-blue-300 text-xs mt-4">No sign-up · Results in seconds · CV rewrite for ₹19</p>
+          <p className="text-blue-300 text-xs mt-4">No sign-up · Results in seconds · CV rewrite for ₹49</p>
         </div>
       </main>
 
